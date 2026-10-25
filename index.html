@@ -236,7 +236,13 @@ button small{font-size:9px;margin-top:0}
 <button id="raceBtn" style="display:none;background:#14532d;border-color:#4ade80;font-weight:700">🏁 Yarış (500₺)</button>
 <button id="kuryeBtn" style="display:none;background:#b45309;border-color:#ffd54a;font-weight:700">🛵 Kurye Teslim</button>
 <button id="bankBtn" style="display:none;background:#0f766e;border-color:#2dd4bf;font-weight:700">🏦 Banka & ATM</button>
+<button id="casinoBtn" style="display:none;background:#7e22ce;border-color:#e879f9;font-weight:700">🎰 Kumarhane</button>
+<button id="fishBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:700">🎣 Balık Tut</button>
+<button id="digBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:700">📡 Dedektörle Kaz!</button>
+<button id="sellFindsBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:700">💰 Bulduklarını Sat</button>
 </div>
+<div id="driftHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:6;background:linear-gradient(135deg,rgba(220,38,38,.92),rgba(234,88,12,.92));border:2px solid #fde047;color:#fff;padding:6px 14px;border-radius:999px;font-weight:900;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,.55);pointer-events:none;white-space:nowrap">🔥 DRİFT: 0 Puan (x1)</div>
+<div id="detHud" style="display:none;position:fixed;bottom:max(14px,calc(env(safe-area-inset-bottom) + 10px));left:50%;transform:translateX(-50%);z-index:6;background:rgba(14,18,26,.92);border:2px solid #4ade80;color:#fff;padding:5px 12px;border-radius:12px;font-weight:700;font-size:12px;pointer-events:none;white-space:nowrap">📡 Dedektör: Aranıyor...</div>
 <button id="driftBtn" style="display:none;position:fixed;left:150px;bottom:706px;z-index:3;padding:12px 14px;background:#4a3a1e;font-weight:700;font-size:15px">🌀 Drift: Açık</button>
 <button id="hornBtn" style="display:none;position:fixed;left:290px;bottom:706px;z-index:3;padding:12px 14px;background:#5a1e1e;font-weight:700;font-size:15px">📯 Korna (H)</button>
 <div id="char" class="modal">
@@ -423,6 +429,32 @@ button small{font-size:9px;margin-top:0}
     </div>
     <div id="bankMsg" style="min-height:18px;font-size:12px;margin-top:6px;font-weight:700;color:#4ade80"></div>
     <button id="bankCloseBtn" class="wide" style="margin-top:8px">Kapat</button>
+  </div>
+</div>
+<div id="casinoModal" class="modal" style="z-index:26">
+  <div class="card" style="text-align:center;max-width:390px">
+    <h2>🎰 Royal Kumarhane</h2>
+    <p style="font-size:12px;margin-bottom:6px">Bahsini seç, kolu çevir! 3 aynı sembol <b>10x</b>, 2 aynı sembol <b>2.5x</b> kazandırır. Kırmızı/Siyah <b>2x</b> verir!</p>
+    <div id="casinoBalBox" style="padding:7px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:14px;margin-bottom:8px"></div>
+    <div id="slotReels" style="display:flex;justify-content:center;gap:10px;margin:8px 0;padding:12px;border-radius:12px;background:#090d16;border:2px solid #f59e0b;font-size:34px">
+      <span id="reel0" style="width:58px;height:58px;display:flex;align-items:center;justify-content:center;background:#1e293b;border-radius:10px">🍒</span>
+      <span id="reel1" style="width:58px;height:58px;display:flex;align-items:center;justify-content:center;background:#1e293b;border-radius:10px">💎</span>
+      <span id="reel2" style="width:58px;height:58px;display:flex;align-items:center;justify-content:center;background:#1e293b;border-radius:10px">7️⃣</span>
+    </div>
+    <input id="casinoBetIn" type="number" min="10" value="100" placeholder="Bahis tutarı (₺)..." style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);background:#222b38;color:var(--ink);font-size:15px;text-align:center">
+    <div style="display:flex;gap:5px;margin-top:6px;justify-content:center;flex-wrap:wrap">
+      <button class="cBetQ" data-v="50" style="padding:5px 8px;font-size:12px">50₺</button>
+      <button class="cBetQ" data-v="250" style="padding:5px 8px;font-size:12px">250₺</button>
+      <button class="cBetQ" data-v="1000" style="padding:5px 8px;font-size:12px">1000₺</button>
+      <button id="cBetMax" style="padding:5px 8px;font-size:12px;background:#7e22ce;border-color:#e879f9">Yarısı</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px">
+      <button id="slotSpinBtn" style="padding:10px 6px;background:#ca8a04;border-color:#fde047;font-weight:800;font-size:13px">🎰 KOLU ÇEVİR</button>
+      <button id="roulRedBtn" style="padding:10px 6px;background:#dc2626;border-color:#fca5a5;font-weight:800;font-size:13px">🔴 KIRMIZI (2x)</button>
+      <button id="roulBlkBtn" style="padding:10px 6px;background:#111827;border-color:#9ca3af;font-weight:800;font-size:13px">⚫ SİYAH (2x)</button>
+    </div>
+    <div id="casinoMsg" style="min-height:20px;font-size:13px;margin-top:8px;font-weight:700;color:#fde047"></div>
+    <button id="casinoCloseBtn" class="wide" style="margin-top:8px">Kapat</button>
   </div>
 </div>
 <div id="chatBox" class="panel" style="display:none;left:10px;top:92px;width:250px;max-height:220px;z-index:8;padding:8px;flex-direction:column;gap:6px">
@@ -1883,6 +1915,161 @@ banker.position.set(2.0, 0, 0.6);
 banker.rotation.y = Math.PI / 2;
 bankGroup.add(banker);
 
+// 1) KÖPÜKLÜ ARABA YIKAMA İSTASYONU (sol kaldırımda, z=-39)
+const WASH_POS = {x: -11.5, z: -39};
+const carWashGroup = new THREE.Group();
+carWashGroup.position.set(WASH_POS.x, 0, WASH_POS.z);
+scene.add(carWashGroup);
+addTo(carWashGroup, B(4.8, 0.08, 7.6), M(0x334155), 0, 0.04, 0); // yıkama zemini
+addTo(carWashGroup, B(4.6, 0.25, 7.2), M(0x0284c7), 0, 3.65, 0); // üst mavi çatı
+[[-2.1, -3.2], [2.1, -3.2], [-2.1, 3.2], [2.1, 3.2]].forEach(([x, z]) => {
+  addTo(carWashGroup, B(0.22, 3.6, 0.22), M(0xe2e8f0), x, 1.8, z);
+});
+const washBrushL = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 2.8, 10), M(0x38bdf8));
+washBrushL.position.set(-1.55, 1.5, 0);
+carWashGroup.add(washBrushL);
+const washBrushR = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 2.8, 10), M(0x38bdf8));
+washBrushR.position.set(1.55, 1.5, 0);
+carWashGroup.add(washBrushR);
+const washBrushTop = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 3.6, 10).rotateZ(Math.PI / 2), M(0xf43f5e));
+washBrushTop.position.set(0, 2.95, 0);
+carWashGroup.add(washBrushTop);
+const washSignTex = tex(256, 80, (g, w, h) => {
+  g.fillStyle = '#0369a1'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#7dd3fc'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#ffffff'; g.font = 'bold 34px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🧼 OTO YIKAMA', w / 2, h / 2 + 2);
+});
+const washSign = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.85), new THREE.MeshBasicMaterial({map: washSignTex, side: THREE.DoubleSide}));
+washSign.position.set(2.35, 3.65, 0);
+washSign.rotation.y = Math.PI / 2;
+carWashGroup.add(washSign);
+
+// 2) ROYAL KUMARHANE BİNASI (sol kaldırımda, z=-68)
+const CASINO_POS = {x: -9.8, z: -68, doorX: -7.8, doorZ: -68};
+const casinoGroup = new THREE.Group();
+casinoGroup.position.set(CASINO_POS.x, 0, CASINO_POS.z);
+scene.add(casinoGroup);
+[[B(3.2, 0.1, 5.2), 0x3b0764, 0, 0.05, 0],
+ [B(0.12, 3.8, 5.2), 0x1e1b4b, -1.54, 1.9, 0],
+ [B(3.2, 3.8, 0.12), 0x2e1065, 0, 1.9, -2.54],
+ [B(3.2, 3.8, 0.12), 0x2e1065, 0, 1.9, 2.54],
+ [B(3.5, 0.3, 5.5), 0xd97706, 0, 3.9, 0]
+].forEach(([geo, col, x, y, z]) => addTo(casinoGroup, geo, M(col), x, y, z));
+// Neon sütunlar ve altın giriş
+[-2.1, 2.1].forEach(z => addTo(casinoGroup, new THREE.CylinderGeometry(0.16, 0.18, 3.7, 8), M(0xfbbf24), 1.52, 1.85, z));
+const casinoSignTex = tex(256, 96, (g, w, h) => {
+  g.fillStyle = '#4c1d95'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#fde047'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#fef08a'; g.font = 'bold 36px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🎰 KUMARHANE', w / 2, h / 2 + 2);
+});
+const casinoSign = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.95), new THREE.MeshBasicMaterial({map: casinoSignTex}));
+casinoSign.position.set(1.64, 3.25, 0);
+casinoSign.rotation.y = Math.PI / 2;
+casinoGroup.add(casinoSign);
+// İçeride slot makineleri (görsel)
+[-1.2, 0, 1.2].forEach(z => {
+  addTo(casinoGroup, B(0.6, 1.5, 0.65), M(0xb91c1c), -0.6, 0.8, z);
+  addTo(casinoGroup, B(0.08, 0.45, 0.5), new THREE.MeshBasicMaterial({color: 0xfef08a}), -0.28, 1.15, z);
+});
+const croupier = human(0x991b1b, 0x111827, pick(SKINS), pick(HAIRS));
+croupier.position.set(1.9, 0, 0);
+croupier.rotation.y = Math.PI / 2;
+casinoGroup.add(croupier);
+
+// 3) BALIK TUTMA GÖLETİ VE İSKELE (parkta, x=-29, z=-22)
+const POND_POS = {x: -29, z: -22, dockX: -24.5, dockZ: -22};
+const pondGroup = new THREE.Group();
+pondGroup.position.set(POND_POS.x, 0, POND_POS.z);
+scene.add(pondGroup);
+const pondWater = new THREE.Mesh(new THREE.CircleGeometry(5.6, 16), new THREE.MeshBasicMaterial({color: 0x0ea5e9}));
+pondWater.rotation.x = -Math.PI / 2;
+pondWater.position.y = 0.05;
+pondGroup.add(pondWater);
+// Gölet etrafı taşlar
+for(let i = 0; i < 14; i++){
+  const ang = (i / 14) * Math.PI * 2;
+  if(Math.abs(ang) < 0.35) continue; // iskele tarafı açık
+  addTo(pondGroup, B(0.9, 0.28, 0.7), M(0x64748b), Math.cos(ang) * 5.5, 0.14, Math.sin(ang) * 5.5).rotation.y = ang;
+}
+// Ahşap iskele
+addTo(pondGroup, B(4.2, 0.18, 1.8), M(0x92400e), 3.8, 0.18, 0);
+[[2.2, -0.75], [2.2, 0.75], [5.4, -0.75], [5.4, 0.75]].forEach(([x, z]) => {
+  addTo(pondGroup, new THREE.CylinderGeometry(0.1, 0.1, 0.7, 6), M(0x78350f), x, 0.35, z);
+});
+const pondSignTex = tex(256, 80, (g, w, h) => {
+  g.fillStyle = '#0c4a6e'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#38bdf8'; g.lineWidth = 5; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#ffffff'; g.font = 'bold 34px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🎣 BALIK GÖLETİ', w / 2, h / 2 + 2);
+});
+const pondSign = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.7), new THREE.MeshBasicMaterial({map: pondSignTex, side: THREE.DoubleSide}));
+pondSign.position.set(5.4, 1.35, -1.1);
+pondSign.rotation.y = Math.PI / 2;
+pondGroup.add(pondSign);
+addTo(pondGroup, B(0.1, 1.4, 0.1), M(0x78350f), 5.4, 0.7, -1.1);
+// Suda yüzen balık gölgeleri
+const pondFishes = [];
+for(let i = 0; i < 4; i++){
+  const fg = new THREE.Mesh(B(0.45, 0.05, 0.18), M(0xf97316));
+  fg.position.set(0, 0.07, 0);
+  pondGroup.add(fg);
+  pondFishes.push({m: fg, a: i * 1.57, r: 1.5 + i * 0.7, sp: 0.8 + i * 0.25});
+}
+
+// 4) ÇİTLE ÇEVRİLİ DEDEKTÖRLÜ HAZİNE ARAMA ALANI (parktaki boş çimli alan: x -36..-20, z -74..-50)
+const DIG_ZONE = {minX: -36, maxX: -20, minZ: -74, maxZ: -50, gateX: -20, gateZ: -62};
+const digFenceGroup = new THREE.Group();
+scene.add(digFenceGroup);
+const digWoodM = M(0x8d6e4b), digPostM = M(0x5d4037);
+// Kuzey, Güney ve Batı çitleri
+addTo(digFenceGroup, B(16, 0.14, 0.12), digWoodM, -28, 0.75, -74);
+addTo(digFenceGroup, B(16, 0.14, 0.12), digWoodM, -28, 0.38, -74);
+addTo(digFenceGroup, B(16, 0.14, 0.12), digWoodM, -28, 0.75, -50);
+addTo(digFenceGroup, B(16, 0.14, 0.12), digWoodM, -28, 0.38, -50);
+addTo(digFenceGroup, B(0.12, 0.14, 24), digWoodM, -36, 0.75, -62);
+addTo(digFenceGroup, B(0.12, 0.14, 24), digWoodM, -36, 0.38, -62);
+// Doğu çiti (ortada z=-64..-60 arası 4m kapı boşluğu bırakıldı)
+addTo(digFenceGroup, B(0.12, 0.14, 9.5), digWoodM, -20, 0.75, -69.25);
+addTo(digFenceGroup, B(0.12, 0.14, 9.5), digWoodM, -20, 0.38, -69.25);
+addTo(digFenceGroup, B(0.12, 0.14, 9.5), digWoodM, -20, 0.75, -54.75);
+addTo(digFenceGroup, B(0.12, 0.14, 9.5), digWoodM, -20, 0.38, -54.75);
+for(let x = -36; x <= -20; x += 4){
+  addTo(digFenceGroup, B(0.18, 1.05, 0.18), digPostM, x, 0.52, -74);
+  addTo(digFenceGroup, B(0.18, 1.05, 0.18), digPostM, x, 0.52, -50);
+}
+for(let z = -74; z <= -50; z += 4){
+  addTo(digFenceGroup, B(0.18, 1.05, 0.18), digPostM, -36, 0.52, z);
+  if(z < -64 || z > -60) addTo(digFenceGroup, B(0.18, 1.05, 0.18), digPostM, -20, 0.52, z);
+}
+// Kapı kemeri ve tabela
+addTo(digFenceGroup, B(0.22, 2.8, 0.22), digPostM, -20, 1.4, -64.2);
+addTo(digFenceGroup, B(0.22, 2.8, 0.22), digPostM, -20, 1.4, -59.8);
+const digSignTex = tex(256, 80, (g, w, h) => {
+  g.fillStyle = '#713f12'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#fde047'; g.lineWidth = 5; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#fef08a'; g.font = 'bold 28px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('📡 HAZİNE ARAMA ALANI', w / 2, h / 2 + 2);
+});
+const digSign = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 0.85), new THREE.MeshBasicMaterial({map: digSignTex, side: THREE.DoubleSide}));
+digSign.position.set(-20, 2.75, -62);
+digSign.rotation.y = Math.PI / 2;
+digFenceGroup.add(digSign);
+// Girişte Hazine Alıcısı / antikacı tezgâhı ve gömülü nokta işaretçisi
+const relicBuyer = human(0xca8a04, 0x422006, pick(SKINS), pick(HAIRS));
+relicBuyer.position.set(-18.8, 0, -58.5);
+relicBuyer.rotation.y = Math.PI / 2;
+scene.add(relicBuyer);
+const digSpotRing = new THREE.Mesh(new THREE.CircleGeometry(0.85, 12), new THREE.MeshBasicMaterial({color: 0xfde047, transparent: true, opacity: 0.75, depthWrite: false}));
+digSpotRing.rotation.x = -Math.PI / 2;
+digSpotRing.position.set(-28, 0.06, -62);
+scene.add(digSpotRing);
+
 // arabacı: karavanın yanında bekler; tünelden gece yoluna (ve geri) götürür
 const driver = human(0xf1c40f, 0x222222, pick(SKINS), pick(HAIRS));
 driver.position.set(5.6, 0, 6.2);
@@ -2780,6 +2967,13 @@ function free(x, z){
   if(x > -11.4 && x < -8.2 && z > -8.5 && z < -3.5) return false; // market binası
   if(x > -11.4 && x < -8.2 && z > -16.9 && z < -12.1) return false; // banka binası
   if(x > -11.4 && x < -8.2 && z > -26.5 && z < -21.5) return false; // galeri binası
+  if(x > -11.4 && x < -8.2 && z > -70.6 && z < -65.4) return false; // kumarhane binası
+  if(Math.hypot(x + 29, z + 22) < 5.0 && !(x > -27.2 && Math.abs(z + 22) < 1.0)) return false; // balık göleti (iskele hariç)
+  // çitle çevrili hazine kazı alanı (yalnızca kapıdan girilir: x=-20, z=-64..-60)
+  if(z >= -74.2 && z <= -49.8 && x >= -36.2 && x <= -19.8){
+    if(Math.abs(x + 36) < 0.35 || Math.abs(z + 74) < 0.35 || Math.abs(z + 50) < 0.35) return false;
+    if(Math.abs(x + 20) < 0.35 && !(z > -64.1 && z < -59.9)) return false;
+  }
   if(x > -7.5 && x < -6.1 && z > -62 && z < -42) return false; // benzin istasyonu (kaldırımda)
   // ev ve bahçe: ev yalnızca kapıdan girilir; bahçeye evin yanındaki koridordan geçilir
   if(x > 10.4){
@@ -5718,6 +5912,29 @@ canvas.addEventListener('pointerup', e => {
     } else flash('Bankaya veya ATM\'ye biraz yaklaş', '#f87171');
     return;
   }
+  // kumarhaneye / krupiyeye dokunmak = kumarhane ekranı
+  if(ray.intersectObject(casinoGroup, true).length || ray.intersectObject(croupier, true).length){
+    if(Math.hypot(P.x - CASINO_POS.doorX, P.z - CASINO_POS.doorZ) < 6.5){
+      askNPC('Krupiye', -7.8, -66.2, ['Royal Casino\'ya hoş geldin! Şansını denemeye hazır mısın?']);
+      openCasinoModal();
+    } else flash('Kumarhaneye biraz yaklaş', '#f87171');
+    return;
+  }
+  // balık göletine dokunmak = balık tut
+  if(ray.intersectObject(pondGroup, true).length){
+    if(Math.hypot(P.x - POND_POS.dockX, P.z - POND_POS.dockZ) < 6.5){
+      castFishingLine();
+    } else flash('Balık tutmak için gölet iskelesine yaklaş', '#f87171');
+    return;
+  }
+  // antikacıya dokunmak = bulunan hazineleri sat
+  if(ray.intersectObject(relicBuyer, true).length){
+    if(Math.hypot(P.x - (-18.8), P.z - (-58.5)) < 6){
+      if(dugFinds.length > 0) sellDugFinds();
+      else askNPC('Antikacı', -18.8, -58.5, ['Çitle çevrili çimli alana gir, dedektörle gömülü hazineleri bulup bana getir!']);
+    } else flash('Antikacıya biraz yaklaş', '#f87171');
+    return;
+  }
   // arabacıya dokunmak = taksi
   if(ray.intersectObject(driver, true).length){
     // arabacıdan da araba alınır (galeri listesi)
@@ -6560,6 +6777,292 @@ if($('bankPayLoanBtn')) $('bankPayLoanBtn').onclick = () => {
   if(msg){ msg.style.color = '#4ade80'; msg.textContent = `🧾 ${pay.toLocaleString('tr-TR')}₺ kredi borcu ödendi!`; }
   flash(`🧾 ${pay.toLocaleString('tr-TR')}₺ kredi borcu ödendi!`, '#4ade80');
 };
+
+/* ================= Kumarhane, Oto Yıkama, Drift Sayacı, Balık Tutma & Dedektör ================= */
+const SLOT_SYMS = ['🍒', '🍋', '🔔', '💎', '7️⃣', '👑'];
+let casinoSpinning = false;
+function renderCasinoModal(){
+  if($('casinoBalBox')){
+    $('casinoBalBox').innerHTML = `💵 Cüzdanındaki Nakit: <b style="color:#4ade80">${(S.money || 0).toLocaleString('tr-TR')}₺</b>`;
+  }
+}
+function openCasinoModal(){
+  setOpen = true;
+  if($('casinoMsg')) $('casinoMsg').textContent = '';
+  renderCasinoModal();
+  if($('casinoModal')) $('casinoModal').style.display = 'flex';
+}
+function closeCasinoModal(){
+  setOpen = false;
+  if($('casinoModal')) $('casinoModal').style.display = 'none';
+  renderAll();
+}
+if($('casinoBtn')) $('casinoBtn').onclick = openCasinoModal;
+if($('casinoCloseBtn')) $('casinoCloseBtn').onclick = closeCasinoModal;
+document.querySelectorAll('.cBetQ').forEach(btn => {
+  btn.onclick = () => {
+    const inp = $('casinoBetIn');
+    if(!inp) return;
+    inp.value = (Number(inp.value) || 0) + (Number(btn.dataset.v) || 0);
+  };
+});
+if($('cBetMax')) $('cBetMax').onclick = () => {
+  const inp = $('casinoBetIn');
+  if(inp) inp.value = Math.max(0, Math.floor(S.money || 0));
+};
+if($('slotSpinBtn')) $('slotSpinBtn').onclick = () => {
+  if(casinoSpinning) return;
+  const bet = Math.floor(Number($('casinoBetIn') && $('casinoBetIn').value) || 0);
+  const msg = $('casinoMsg');
+  if(bet <= 0){ if(msg){ msg.style.color = '#f87171'; msg.textContent = 'Geçerli bir bahis tutarı yaz!'; } return; }
+  if((S.money || 0) < bet){ if(msg){ msg.style.color = '#f87171'; msg.textContent = 'Bu bahis için yeterli nakit paran yok!'; } return; }
+  S.money -= bet;
+  casinoSpinning = true;
+  renderCasinoModal(); renderAll();
+  if(msg){ msg.style.color = '#ffd54a'; msg.textContent = '🎰 Çarklar dönüyor...'; }
+  let ticks = 0;
+  const iv = setInterval(() => {
+    ticks++;
+    for(let i = 0; i < 3; i++){
+      const el = $('reel' + i);
+      if(el) el.textContent = SLOT_SYMS[(Math.random() * SLOT_SYMS.length) | 0];
+    }
+    beep(420 + ticks * 25, 0.04, 'triangle', 0.05);
+    if(ticks >= 12){
+      clearInterval(iv);
+      casinoSpinning = false;
+      const r0 = SLOT_SYMS[(Math.random() * SLOT_SYMS.length) | 0];
+      const r1 = SLOT_SYMS[(Math.random() * SLOT_SYMS.length) | 0];
+      const r2 = SLOT_SYMS[(Math.random() * SLOT_SYMS.length) | 0];
+      if($('reel0')) $('reel0').textContent = r0;
+      if($('reel1')) $('reel1').textContent = r1;
+      if($('reel2')) $('reel2').textContent = r2;
+      let win = 0;
+      if(r0 === r1 && r1 === r2){
+        win = Math.round(bet * 10);
+      } else if(r0 === r1 || r1 === r2 || r0 === r2){
+        win = Math.round(bet * 2.5);
+      }
+      if(win > 0){
+        S.money += win;
+        beep(880, 0.22, 'sine', 0.14);
+        if(r0 === r1 && r1 === r2) spawnFirework(CASINO_POS.x, CASINO_POS.z);
+        if(msg){ msg.style.color = '#4ade80'; msg.textContent = `🎉 TEBRİKLER! +${win.toLocaleString('tr-TR')}₺ kazandın!`; }
+        flash(`🎰 Slot Kazancı: +${win.toLocaleString('tr-TR')}₺!`, '#4ade80');
+      } else {
+        beep(220, 0.14, 'sawtooth', 0.06);
+        if(msg){ msg.style.color = '#f87171'; msg.textContent = `😢 Kaybettin (${bet.toLocaleString('tr-TR')}₺). Tekrar dene!`; }
+      }
+      save(); renderCasinoModal(); renderAll();
+    }
+  }, 75);
+};
+function playRouletteColor(pickRed){
+  if(casinoSpinning) return;
+  const bet = Math.floor(Number($('casinoBetIn') && $('casinoBetIn').value) || 0);
+  const msg = $('casinoMsg');
+  if(bet <= 0){ if(msg){ msg.style.color = '#f87171'; msg.textContent = 'Geçerli bir bahis tutarı yaz!'; } return; }
+  if((S.money || 0) < bet){ if(msg){ msg.style.color = '#f87171'; msg.textContent = 'Bu bahis için yeterli nakit paran yok!'; } return; }
+  S.money -= bet;
+  const resRed = Math.random() < 0.485;
+  const won = (pickRed === resRed);
+  const resLbl = resRed ? '🔴 KIRMIZI' : '⚫ SİYAH';
+  if(won){
+    const prize = bet * 2;
+    S.money += prize;
+    beep(840, 0.18, 'sine', 0.12);
+    if(msg){ msg.style.color = '#4ade80'; msg.textContent = `${resLbl} geldi! +${prize.toLocaleString('tr-TR')}₺ kazandın!`; }
+    flash(`🎰 Rulet ${resLbl}: +${prize.toLocaleString('tr-TR')}₺!`, '#4ade80');
+  } else {
+    beep(210, 0.15, 'sawtooth', 0.06);
+    if(msg){ msg.style.color = '#f87171'; msg.textContent = `${resLbl} geldi! ${bet.toLocaleString('tr-TR')}₺ kaybettin.`; }
+  }
+  save(); renderCasinoModal(); renderAll();
+}
+if($('roulRedBtn')) $('roulRedBtn').onclick = () => playRouletteColor(true);
+if($('roulBlkBtn')) $('roulBlkBtn').onclick = () => playRouletteColor(false);
+
+// Köpüklü Araba Yıkama & Drift Puan Sayacı
+let washTimer = 0, washCD = 0, washFoamTick = 0;
+let driftScore = 0, driftTime = 0, driftMult = 1, driftIdleT = 0;
+function updateCarWashAndDrift(dt){
+  if(washCD > 0) washCD = Math.max(0, washCD - dt);
+  const inWash = C.driving && Math.abs(C.x - WASH_POS.x) < 2.6 && Math.abs(C.z - WASH_POS.z) < 4.2;
+  if(inWash){
+    washBrushL.rotation.y += dt * 9;
+    washBrushR.rotation.y -= dt * 9;
+    washBrushTop.rotation.x += dt * 9;
+    washTimer += dt;
+    washFoamTick += dt;
+    if(washFoamTick > 0.12){
+      washFoamTick = 0;
+      spawnSmoke(C.x + (Math.random() - 0.5) * 1.8, C.z + (Math.random() - 0.5) * 2.2);
+    }
+    if(washTimer >= 1.6 && washCD <= 0){
+      washCD = 25;
+      washTimer = 0;
+      S.money = (S.money || 0) + 75;
+      beep(780, 0.18, 'sine', 0.1);
+      flash('🧼 Aracın köpükle yıkandı, pırıl pırıl oldu! (+75₺ Temizlik Bonusu)', '#38bdf8');
+      renderAll();
+    }
+  } else {
+    washTimer = Math.max(0, washTimer - dt * 0.5);
+  }
+  // Drift puan sayacı
+  if(C.driving && C.drifting && Math.abs(C.v) > 2.2){
+    driftIdleT = 0;
+    driftTime += dt;
+    driftMult = Math.min(5, 1 + Math.floor(driftTime / 1.5));
+    driftScore += Math.abs(C.v) * 26 * dt;
+    disp('driftHud', 'block');
+    txt('driftHud', `🔥 DRİFT: ${Math.floor(driftScore)} Puan (x${driftMult})`);
+  } else {
+    if(driftScore > 0){
+      driftIdleT += dt;
+      if(!C.driving || driftIdleT > 0.85){
+        if(driftScore >= 25){
+          const cash = Math.max(5, Math.round((driftScore * driftMult) / 12));
+          S.money = (S.money || 0) + cash;
+          beep(740, 0.12, 'triangle', 0.08);
+          flash(`🔥 Drift Tamamlandı! ${Math.floor(driftScore)}x${driftMult} Puan = +${cash}₺`, '#fbbf24');
+          renderAll();
+        }
+        driftScore = 0; driftTime = 0; driftMult = 1; driftIdleT = 0;
+        disp('driftHud', 'none');
+      }
+    } else {
+      disp('driftHud', 'none');
+    }
+  }
+}
+
+// Balık Tutma Göleti
+let fishBusy = false;
+const FISH_LOOT = [
+  {name: '🐟 İstavrit Balığı', val: 45, xp: 15, col: '#38bdf8'},
+  {name: '🐠 Somon Balığı', val: 95, xp: 25, col: '#4ade80'},
+  {name: '🐡 Levrek Balığı', val: 130, xp: 30, col: '#a78bfa'},
+  {name: '🦈 Efsanevi Altın Balık', val: 280, xp: 60, col: '#ffd54a'},
+  {name: '👑 Batık Hazine Sandığı', val: 600, xp: 100, col: '#fbbf24'},
+  {name: '👢 Eski Çizme', val: 10, xp: 5, col: '#9ca3af'}
+];
+function castFishingLine(){
+  if(fishBusy) return;
+  fishBusy = true;
+  beep(520, 0.1, 'sine', 0.08);
+  flash('🎣 Olta suya atıldı, balık bekleniyor...', '#38bdf8');
+  setTimeout(() => {
+    fishBusy = false;
+    const r = Math.random();
+    const pick = r < 0.32 ? FISH_LOOT[0] : r < 0.58 ? FISH_LOOT[1] : r < 0.76 ? FISH_LOOT[2] : r < 0.88 ? FISH_LOOT[3] : r < 0.94 ? FISH_LOOT[4] : FISH_LOOT[5];
+    S.money = (S.money || 0) + pick.val;
+    S.xp = (S.xp || 0) + pick.xp;
+    checkLevelUp();
+    beep(820, 0.18, 'sine', 0.12);
+    flash(`🎣 Yakaladın: ${pick.name} (+${pick.val}₺)`, pick.col);
+    renderAll();
+  }, 1500);
+}
+if($('fishBtn')) $('fishBtn').onclick = castFishingLine;
+
+function updatePondFishes(dt){
+  for(let i = 0; i < pondFishes.length; i++){
+    const f = pondFishes[i];
+    f.ang += dt * f.spd;
+    f.mesh.position.set(Math.cos(f.ang) * f.rad, 0.04, Math.sin(f.ang) * f.rad);
+    f.mesh.rotation.y = -f.ang;
+  }
+}
+
+// Dedektörle Çitle Çevrili Çimli Alanda Eşya Bulup Satma
+const RELIC_ITEMS = [
+  {name: '🪙 Tarihi Gümüş Sikke', val: 85},
+  {name: '💍 Altın Yüzük', val: 190},
+  {name: '🗡️ Antik Bronz Hançer', val: 260},
+  {name: '🏺 Antik Çömlek Vazo', val: 340},
+  {name: '💎 Elmas Broş', val: 520},
+  {name: '👑 Kayıp Kral Tacı', val: 800}
+];
+let dugFinds = [];
+let digTarget = {x: -28, z: -62};
+let detBeepTimer = 0;
+function pickNewDigTarget(){
+  digTarget.x = -34.5 + Math.random() * 13.0; // -34.5 .. -21.5
+  digTarget.z = -72.5 + Math.random() * 21.0; // -72.5 .. -51.5
+}
+pickNewDigTarget();
+
+function digTreasureNow(){
+  const dist = Math.hypot(P.x - digTarget.x, P.z - digTarget.z);
+  if(dist > 3.2){
+    flash('📡 Sinyal zayıf! Dedektör sesini takip edip hedefe yaklaş.', '#fbbf24');
+    return;
+  }
+  const item = RELIC_ITEMS[(Math.random() * RELIC_ITEMS.length) | 0];
+  dugFinds.push(item);
+  S.xp = (S.xp || 0) + 35;
+  checkLevelUp();
+  beep(880, 0.18, 'sine', 0.13);
+  spawnSmoke(digTarget.x, digTarget.z);
+  flash(`⛏️ Topraktan çıkardın: ${item.name} (Değeri: ${item.val}₺)! Çantanda ${dugFinds.length} eşya var.`, '#4ade80');
+  pickNewDigTarget();
+  renderAll();
+}
+function sellDugFinds(){
+  if(!dugFinds.length){
+    flash('Çantanda satılacak kazı eşyası yok!', '#f87171');
+    return;
+  }
+  let total = 0;
+  for(let i = 0; i < dugFinds.length; i++) total += dugFinds[i].val;
+  const cnt = dugFinds.length;
+  dugFinds = [];
+  S.money = (S.money || 0) + total;
+  beep(920, 0.2, 'sine', 0.14);
+  flash(`💰 ${cnt} adet buluntu Antikacıya satıldı: +${total.toLocaleString('tr-TR')}₺!`, '#ffd54a');
+  renderAll();
+}
+if($('digBtn')) $('digBtn').onclick = digTreasureNow;
+if($('sellFindsBtn')) $('sellFindsBtn').onclick = sellDugFinds;
+
+function updateDetectorZone(dt){
+  const inZone = !C.driving && !D.driving && P.x >= DIG_ZONE.minX && P.x <= DIG_ZONE.maxX && P.z >= DIG_ZONE.minZ && P.z <= DIG_ZONE.maxZ;
+  if(inZone){
+    const dist = Math.hypot(P.x - digTarget.x, P.z - digTarget.z);
+    disp('detHud', 'block');
+    const sigPct = Math.max(5, Math.min(100, Math.round((1 - Math.min(dist, 16) / 16) * 100)));
+    const statusTxt = dist < 2.6 ? '🔥 ÇOK YAKIN! KAZ!' : dist < 6 ? '⚡ Yaklaşıyorsun' : '📡 Aranıyor...';
+    txt('detHud', `📡 DEDEKTÖR: %${sigPct} (${dist.toFixed(1)}m) — ${statusTxt}`);
+    detBeepTimer -= dt;
+    const interval = Math.max(0.14, Math.min(1.1, dist / 11));
+    if(detBeepTimer <= 0){
+      detBeepTimer = interval;
+      beep(Math.round(520 + sigPct * 4.5), 0.045, 'sine', 0.05);
+    }
+    if(dist < 3.5){
+      digSpotRing.visible = true;
+      digSpotRing.position.set(digTarget.x, 0.04, digTarget.z);
+      const sc = 0.85 + Math.abs(Math.sin(performance.now() * 0.008)) * 0.35;
+      digSpotRing.scale.set(sc, sc, 1);
+    } else {
+      digSpotRing.visible = false;
+    }
+    disp('digBtn', dist < 2.9 ? 'block' : 'none');
+  } else {
+    disp('detHud', 'none');
+    disp('digBtn', 'none');
+    digSpotRing.visible = false;
+  }
+  const nearBuyer = !C.driving && !D.driving && Math.hypot(P.x - (-18.8), P.z - (-58.5)) < 5.5;
+  const showSell = dugFinds.length > 0 && (nearBuyer || inZone);
+  disp('sellFindsBtn', showSell ? 'block' : 'none');
+  if(showSell){
+    let sum = 0;
+    for(let i = 0; i < dugFinds.length; i++) sum += dugFinds[i].val;
+    txt('sellFindsBtn', `💰 Bulduklarını Sat (${dugFinds.length} Eşya = ${sum}₺)`);
+  }
+}
 function renderGallery(){
   const box = $('galBody');
   box.innerHTML = '';
@@ -7570,6 +8073,13 @@ function frame(now){
   disp('carExit', C.driving && Math.abs(C.v) < 1 ? 'block' : 'none');
   const nearBank = !C.driving && !D.driving && !CM.driving && Math.hypot(P.x - BANK_POS.atmX, P.z - BANK_POS.atmZ) < 4.8;
   disp('bankBtn', nearBank ? 'block' : 'none');
+  const nearCasino = !C.driving && !D.driving && !CM.driving && Math.hypot(P.x - CASINO_POS.doorX, P.z - CASINO_POS.doorZ) < 5.2;
+  disp('casinoBtn', nearCasino ? 'block' : 'none');
+  const nearPond = !C.driving && !D.driving && !CM.driving && Math.hypot(P.x - POND_POS.dockX, P.z - POND_POS.dockZ) < 5.0;
+  disp('fishBtn', nearPond ? 'block' : 'none');
+  updateCarWashAndDrift(dt);
+  updatePondFishes(dt);
+  updateDetectorZone(dt);
   const nearPeerCarKey = (!C.driving && !D.driving && !CM.driving) ? findNearbyPeerCar() : null;
   disp('passBtn', (passengerOf || nearPeerCarKey) ? 'block' : 'none');
   if(passengerOf || nearPeerCarKey){
@@ -8637,7 +9147,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-25-215535';
+const APP_VERSION = '2026-10-25-224035';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
