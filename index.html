@@ -238,8 +238,22 @@ button small{font-size:9px;margin-top:0}
 <button id="bankBtn" style="display:none;background:#0f766e;border-color:#2dd4bf;font-weight:700">🏦 Banka & ATM</button>
 <button id="casinoBtn" style="display:none;background:#7e22ce;border-color:#e879f9;font-weight:700">🎰 Kumarhane</button>
 <button id="fishBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:700">🎣 Balık Tut</button>
-<button id="digBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:700">📡 Dedektörle Kaz!</button>
+<button id="buyDetBtn" style="display:none;background:#0f766e;border-color:#2dd4bf;font-weight:700">📡 Dedektör Al (250₺)</button>
+<button id="buyPickBtn" style="display:none;background:#9a3412;border-color:#fb923c;font-weight:700">⛏️ Kazma Al (150₺)</button>
+<button id="digBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:700">⛏️ Kazmayla Kaz!</button>
 <button id="sellFindsBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:700">💰 Bulduklarını Sat</button>
+</div>
+<div id="fishFightBox" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;width:min(360px,90vw);background:rgba(12,18,28,.96);border:2px solid #38bdf8;border-radius:14px;padding:12px;text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.75)">
+  <div id="fishFightTitle" style="font-weight:900;font-size:15px;color:#7dd3fc;margin-bottom:6px">🎣 BALIK OLTAYA TAKILDI!</div>
+  <div style="font-size:11px;color:#cbd5e1;margin-bottom:8px">Yeşil kutuyu balığın (🐟) üstünde tut!</div>
+  <div id="fishTrack" style="position:relative;height:28px;background:#090d16;border:2px solid #334155;border-radius:999px;overflow:hidden;margin-bottom:8px">
+    <div id="fishCatchZone" style="position:absolute;top:0;bottom:0;width:28%;left:36%;background:rgba(74,222,128,.38);border-left:2px solid #4ade80;border-right:2px solid #4ade80"></div>
+    <div id="fishIconEl" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;line-height:1">🐟</div>
+  </div>
+  <div style="height:10px;background:#1e293b;border-radius:999px;overflow:hidden;margin-bottom:10px;border:1px solid #475569">
+    <div id="fishProgBar" style="height:100%;width:35%;background:linear-gradient(90deg,#f59e0b,#4ade80)"></div>
+  </div>
+  <button id="fishPullBtn" style="width:100%;padding:12px;font-size:16px;font-weight:900;background:#0284c7;border-color:#7dd3fc;border-radius:10px;touch-action:manipulation">💪 OLTAYI ÇEK (BASILI TUT / TIKLA)</button>
 </div>
 <div id="driftHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:6;background:linear-gradient(135deg,rgba(220,38,38,.92),rgba(234,88,12,.92));border:2px solid #fde047;color:#fff;padding:6px 14px;border-radius:999px;font-weight:900;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,.55);pointer-events:none;white-space:nowrap">🔥 DRİFT: 0 Puan (x1)</div>
 <div id="detHud" style="display:none;position:fixed;bottom:max(14px,calc(env(safe-area-inset-bottom) + 10px));left:50%;transform:translateX(-50%);z-index:6;background:rgba(14,18,26,.92);border:2px solid #4ade80;color:#fff;padding:5px 12px;border-radius:12px;font-weight:700;font-size:12px;pointer-events:none;white-space:nowrap">📡 Dedektör: Aranıyor...</div>
@@ -5927,11 +5941,13 @@ canvas.addEventListener('pointerup', e => {
     } else flash('Balık tutmak için gölet iskelesine yaklaş', '#f87171');
     return;
   }
-  // antikacıya dokunmak = bulunan hazineleri sat
+  // antikacıya dokunmak = bulunan hazineleri sat veya dedektör/kazma al
   if(ray.intersectObject(relicBuyer, true).length){
     if(Math.hypot(P.x - (-18.8), P.z - (-58.5)) < 6){
       if(dugFinds.length > 0) sellDugFinds();
-      else askNPC('Antikacı', -18.8, -58.5, ['Çitle çevrili çimli alana gir, dedektörle gömülü hazineleri bulup bana getir!']);
+      else if(!S.mk.detektor) buyDetectorTool();
+      else if(!S.mk.kazma) buyPickaxeTool();
+      else askNPC('Antikacı', -18.8, -58.5, ['Dedektörün ve kazman hazır! Çitle çevrili çimli alana girip gömülü hazineleri bul ve bana getir!']);
     } else flash('Antikacıya biraz yaklaş', '#f87171');
     return;
   }
@@ -6937,34 +6953,51 @@ function updateCarWashAndDrift(dt){
   }
 }
 
-// Balık Tutma Göleti
+// Balık Tutma Göleti & Balık Çekme Mücadelesi
 let fishBusy = false;
+let fishFight = {active: false, fishPos: 0.5, fishVel: 0, zonePos: 0.36, pulling: false, prog: 0.35, target: null, spd: 1};
 const FISH_LOOT = [
-  {name: '🐟 İstavrit Balığı', val: 45, xp: 15, col: '#38bdf8'},
-  {name: '🐠 Somon Balığı', val: 95, xp: 25, col: '#4ade80'},
-  {name: '🐡 Levrek Balığı', val: 130, xp: 30, col: '#a78bfa'},
-  {name: '🦈 Efsanevi Altın Balık', val: 280, xp: 60, col: '#ffd54a'},
-  {name: '👑 Batık Hazine Sandığı', val: 600, xp: 100, col: '#fbbf24'},
-  {name: '👢 Eski Çizme', val: 10, xp: 5, col: '#9ca3af'}
+  {name: '🐟 İstavrit Balığı', val: 45, xp: 15, col: '#38bdf8', spd: 0.9},
+  {name: '🐠 Somon Balığı', val: 95, xp: 25, col: '#4ade80', spd: 1.15},
+  {name: '🐡 Levrek Balığı', val: 130, xp: 30, col: '#a78bfa', spd: 1.3},
+  {name: '🦈 Efsanevi Altın Balık', val: 280, xp: 60, col: '#ffd54a', spd: 1.65},
+  {name: '👑 Batık Hazine Sandığı', val: 600, xp: 100, col: '#fbbf24', spd: 1.8},
+  {name: '👢 Eski Çizme', val: 10, xp: 5, col: '#9ca3af', spd: 0.65}
 ];
 function castFishingLine(){
-  if(fishBusy) return;
+  if(fishBusy || fishFight.active) return;
   fishBusy = true;
   beep(520, 0.1, 'sine', 0.08);
   flash('🎣 Olta suya atıldı, balık bekleniyor...', '#38bdf8');
   setTimeout(() => {
     fishBusy = false;
     const r = Math.random();
-    const pick = r < 0.32 ? FISH_LOOT[0] : r < 0.58 ? FISH_LOOT[1] : r < 0.76 ? FISH_LOOT[2] : r < 0.88 ? FISH_LOOT[3] : r < 0.94 ? FISH_LOOT[4] : FISH_LOOT[5];
-    S.money = (S.money || 0) + pick.val;
-    S.xp = (S.xp || 0) + pick.xp;
-    checkLevelUp();
-    beep(820, 0.18, 'sine', 0.12);
-    flash(`🎣 Yakaladın: ${pick.name} (+${pick.val}₺)`, pick.col);
-    renderAll();
-  }, 1500);
+    const pick = r < 0.30 ? FISH_LOOT[0] : r < 0.56 ? FISH_LOOT[1] : r < 0.75 ? FISH_LOOT[2] : r < 0.88 ? FISH_LOOT[3] : r < 0.95 ? FISH_LOOT[4] : FISH_LOOT[5];
+    fishFight.active = true;
+    fishFight.fishPos = 0.5;
+    fishFight.fishVel = (Math.random() < 0.5 ? -1 : 1) * 0.4;
+    fishFight.zonePos = 0.36;
+    fishFight.pulling = false;
+    fishFight.prog = 0.38;
+    fishFight.target = pick;
+    fishFight.spd = pick.spd || 1;
+    beep(740, 0.14, 'triangle', 0.12);
+    disp('fishFightBox', 'block');
+    txt('fishFightTitle', `🎣 OLTAYA TAKILDI! Mücadele Et!`);
+  }, 900);
 }
 if($('fishBtn')) $('fishBtn').onclick = castFishingLine;
+if($('fishPullBtn')){
+  const pb = $('fishPullBtn');
+  pb.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    fishFight.pulling = true;
+    fishFight.zonePos = Math.min(0.72, fishFight.zonePos + 0.06);
+    beep(620, 0.04, 'sine', 0.04);
+  });
+  window.addEventListener('pointerup', () => { fishFight.pulling = false; });
+  pb.addEventListener('pointercancel', () => { fishFight.pulling = false; });
+}
 
 function updatePondFishes(dt){
   for(let i = 0; i < pondFishes.length; i++){
@@ -6974,9 +7007,68 @@ function updatePondFishes(dt){
     f.m.position.set(Math.cos(f.a) * f.r, 0.07, Math.sin(f.a) * f.r);
     f.m.rotation.y = -f.a;
   }
+  if(fishFight.active){
+    if(Math.random() < dt * 2.6 * fishFight.spd){
+      fishFight.fishVel = (Math.random() - 0.5) * 1.35 * fishFight.spd;
+    }
+    fishFight.fishPos = Math.max(0.06, Math.min(0.94, fishFight.fishPos + fishFight.fishVel * dt));
+    if(fishFight.fishPos <= 0.07 || fishFight.fishPos >= 0.93) fishFight.fishVel *= -0.8;
+    const zSpd = fishFight.pulling ? 0.58 : -0.44;
+    fishFight.zonePos = Math.max(0, Math.min(0.72, fishFight.zonePos + zSpd * dt));
+    const inZone = fishFight.fishPos >= fishFight.zonePos - 0.03 && fishFight.fishPos <= fishFight.zonePos + 0.31;
+    if(inZone){
+      fishFight.prog = Math.min(1, fishFight.prog + dt * 0.42);
+    } else {
+      fishFight.prog = Math.max(0, fishFight.prog - dt * 0.28);
+    }
+    sty('fishCatchZone', 'left', (fishFight.zonePos * 100).toFixed(1) + '%');
+    sty('fishIconEl', 'left', (fishFight.fishPos * 100).toFixed(1) + '%');
+    sty('fishProgBar', 'width', (fishFight.prog * 100).toFixed(1) + '%');
+    if(fishFight.prog >= 1){
+      const pick = fishFight.target || FISH_LOOT[0];
+      fishFight.active = false;
+      fishFight.pulling = false;
+      disp('fishFightBox', 'none');
+      S.money = (S.money || 0) + pick.val;
+      S.xp = (S.xp || 0) + pick.xp;
+      checkLevelUp();
+      beep(880, 0.2, 'sine', 0.14);
+      flash(`🎣 Mücadeleyi kazandın! Yakaladın: ${pick.name} (+${pick.val}₺)`, pick.col);
+      renderAll();
+    } else if(fishFight.prog <= 0){
+      fishFight.active = false;
+      fishFight.pulling = false;
+      disp('fishFightBox', 'none');
+      beep(210, 0.18, 'sawtooth', 0.08);
+      flash('🐟 Balık oltadan kurtulup kaçtı! Tekrar dene.', '#f87171');
+    }
+  }
 }
 
-// Dedektörle Çitle Çevrili Çimli Alanda Eşya Bulup Satma
+// Dedektörle Çitle Çevrili Çimli Alanda Eşya Bulup Satma (Önce Dedektör & Kazma Alınır)
+const DETECTOR_PRICE = 250;
+const PICKAXE_PRICE = 150;
+function buyDetectorTool(){
+  if(S.mk && S.mk.detektor){ flash('Dedektörün zaten var!', '#4ade80'); return; }
+  if((S.money || 0) < DETECTOR_PRICE){ flash(`Dedektör için ${DETECTOR_PRICE}₺ gerekli!`, '#f87171'); return; }
+  S.money -= DETECTOR_PRICE;
+  S.mk.detektor = true;
+  beep(780, 0.15, 'sine', 0.12);
+  flash('📡 Metal Dedektörü satın aldın! Çitli alana girip arama yapabilirsin.', '#2dd4bf');
+  renderAll();
+}
+function buyPickaxeTool(){
+  if(S.mk && S.mk.kazma){ flash('Kazman zaten var!', '#4ade80'); return; }
+  if((S.money || 0) < PICKAXE_PRICE){ flash(`Kazma için ${PICKAXE_PRICE}₺ gerekli!`, '#f87171'); return; }
+  S.money -= PICKAXE_PRICE;
+  S.mk.kazma = true;
+  beep(740, 0.15, 'sine', 0.12);
+  flash('⛏️ Çelik Kazma satın aldın! Artık sinyali bulunca toprağı kazabilirsin.', '#fb923c');
+  renderAll();
+}
+if($('buyDetBtn')) $('buyDetBtn').onclick = buyDetectorTool;
+if($('buyPickBtn')) $('buyPickBtn').onclick = buyPickaxeTool;
+
 const RELIC_ITEMS = [
   {name: '🪙 Tarihi Gümüş Sikke', val: 85},
   {name: '💍 Altın Yüzük', val: 190},
@@ -6995,6 +7087,14 @@ function pickNewDigTarget(){
 pickNewDigTarget();
 
 function digTreasureNow(){
+  if(!(S.mk && S.mk.detektor)){
+    flash(`📡 Önce girişten Dedektör (${DETECTOR_PRICE}₺) satın almalısın!`, '#f87171');
+    return;
+  }
+  if(!(S.mk && S.mk.kazma)){
+    flash(`⛏️ Toprağı kazmak için önce girişten Kazma (${PICKAXE_PRICE}₺) satın almalısın!`, '#f87171');
+    return;
+  }
   const dist = Math.hypot(P.x - digTarget.x, P.z - digTarget.z);
   if(dist > 3.2){
     flash('📡 Sinyal zayıf! Dedektör sesini takip edip hedefe yaklaş.', '#fbbf24');
@@ -7006,7 +7106,7 @@ function digTreasureNow(){
   checkLevelUp();
   beep(880, 0.18, 'sine', 0.13);
   spawnSmoke(digTarget.x, digTarget.z);
-  flash(`⛏️ Topraktan çıkardın: ${item.name} (Değeri: ${item.val}₺)! Çantanda ${dugFinds.length} eşya var.`, '#4ade80');
+  flash(`⛏️ Kazmayla çıkardın: ${item.name} (Değeri: ${item.val}₺)! Çantanda ${dugFinds.length} eşya var.`, '#4ade80');
   pickNewDigTarget();
   renderAll();
 }
@@ -7029,33 +7129,43 @@ if($('sellFindsBtn')) $('sellFindsBtn').onclick = sellDugFinds;
 
 function updateDetectorZone(dt){
   const inZone = !C.driving && !D.driving && P.x >= DIG_ZONE.minX && P.x <= DIG_ZONE.maxX && P.z >= DIG_ZONE.minZ && P.z <= DIG_ZONE.maxZ;
+  const nearBuyer = !C.driving && !D.driving && Math.hypot(P.x - (-18.8), P.z - (-58.5)) < 6.2;
+  const hasDet = !!(S.mk && S.mk.detektor);
+  const hasPick = !!(S.mk && S.mk.kazma);
+  disp('buyDetBtn', (!hasDet && (nearBuyer || inZone)) ? 'block' : 'none');
+  disp('buyPickBtn', (!hasPick && (nearBuyer || inZone)) ? 'block' : 'none');
   if(inZone){
-    const dist = Math.hypot(P.x - digTarget.x, P.z - digTarget.z);
     disp('detHud', 'block');
-    const sigPct = Math.max(5, Math.min(100, Math.round((1 - Math.min(dist, 16) / 16) * 100)));
-    const statusTxt = dist < 2.6 ? '🔥 ÇOK YAKIN! KAZ!' : dist < 6 ? '⚡ Yaklaşıyorsun' : '📡 Aranıyor...';
-    txt('detHud', `📡 DEDEKTÖR: %${sigPct} (${dist.toFixed(1)}m) — ${statusTxt}`);
-    detBeepTimer -= dt;
-    const interval = Math.max(0.14, Math.min(1.1, dist / 11));
-    if(detBeepTimer <= 0){
-      detBeepTimer = interval;
-      beep(Math.round(520 + sigPct * 4.5), 0.045, 'sine', 0.05);
-    }
-    if(dist < 3.5){
-      digSpotRing.visible = true;
-      digSpotRing.position.set(digTarget.x, 0.04, digTarget.z);
-      const sc = 0.85 + Math.abs(Math.sin(performance.now() * 0.008)) * 0.35;
-      digSpotRing.scale.set(sc, sc, 1);
-    } else {
+    if(!hasDet){
+      txt('detHud', `📡 Hazine aramak için önce Dedektör (${DETECTOR_PRICE}₺) ve Kazma (${PICKAXE_PRICE}₺) al!`);
       digSpotRing.visible = false;
+      disp('digBtn', 'none');
+    } else {
+      const dist = Math.hypot(P.x - digTarget.x, P.z - digTarget.z);
+      const sigPct = Math.max(5, Math.min(100, Math.round((1 - Math.min(dist, 16) / 16) * 100)));
+      const statusTxt = dist < 2.6 ? (hasPick ? '🔥 ÇOK YAKIN! KAZMAYLA KAZ!' : '⚠️ KAZMA ALMALISIN!') : dist < 6 ? '⚡ Yaklaşıyorsun' : '📡 Aranıyor...';
+      txt('detHud', `📡 DEDEKTÖR: %${sigPct} (${dist.toFixed(1)}m) — ${statusTxt}`);
+      detBeepTimer -= dt;
+      const interval = Math.max(0.14, Math.min(1.1, dist / 11));
+      if(detBeepTimer <= 0){
+        detBeepTimer = interval;
+        beep(Math.round(520 + sigPct * 4.5), 0.045, 'sine', 0.05);
+      }
+      if(dist < 3.5){
+        digSpotRing.visible = true;
+        digSpotRing.position.set(digTarget.x, 0.04, digTarget.z);
+        const sc = 0.85 + Math.abs(Math.sin(performance.now() * 0.008)) * 0.35;
+        digSpotRing.scale.set(sc, sc, 1);
+      } else {
+        digSpotRing.visible = false;
+      }
+      disp('digBtn', (dist < 2.9 && hasPick) ? 'block' : 'none');
     }
-    disp('digBtn', dist < 2.9 ? 'block' : 'none');
   } else {
     disp('detHud', 'none');
     disp('digBtn', 'none');
     digSpotRing.visible = false;
   }
-  const nearBuyer = !C.driving && !D.driving && Math.hypot(P.x - (-18.8), P.z - (-58.5)) < 5.5;
   const showSell = dugFinds.length > 0 && (nearBuyer || inZone);
   disp('sellFindsBtn', showSell ? 'block' : 'none');
   if(showSell){
@@ -9148,7 +9258,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-25-225557';
+const APP_VERSION = '2026-10-25-230808';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
