@@ -2982,7 +2982,7 @@ function free(x, z){
   if(x > -11.4 && x < -8.2 && z > -16.9 && z < -12.1) return false; // banka binası
   if(x > -11.4 && x < -8.2 && z > -26.5 && z < -21.5) return false; // galeri binası
   if(x > -11.4 && x < -8.2 && z > -70.6 && z < -65.4) return false; // kumarhane binası
-  if(Math.hypot(x + 29, z + 22) < 5.0 && !(x > -27.2 && Math.abs(z + 22) < 1.0)) return false; // balık göleti (iskele hariç)
+  // balık göleti: yürünebilir ve içinde yüzülebilir!
   // çitle çevrili hazine kazı alanı (yalnızca kapıdan girilir: x=-20, z=-64..-60)
   if(z >= -74.2 && z <= -49.8 && x >= -36.2 && x <= -19.8){
     if(Math.abs(x + 36) < 0.35 || Math.abs(z + 74) < 0.35 || Math.abs(z + 50) < 0.35) return false;
@@ -8095,25 +8095,40 @@ function frame(now){
     camera.rotation.set(P.pitch - 0.15, vh + Math.PI + (P.yaw + Math.PI / 2), 0);
   } else {
     if(passengerOf) passengerOf = null;
+    const onDock = P.x > -27.2 && P.x < -23.0 && Math.abs(P.z + 22) < 1.0;
+    const inPondWater = !onDock && Math.hypot(P.x - POND_POS.x, P.z - POND_POS.z) < 5.2;
+    const swimBob = inPondWater ? Math.sin(performance.now() * 0.006) * 0.08 : 0;
+    if(inPondWater && !window._wasInWater){
+      window._wasInWater = true;
+      beep(340, 0.12, 'sine', 0.08);
+      flash('🏊 Gölete girdin, yüzüyorsun! Suya dalıp serinledin.', '#38bdf8');
+    } else if(!inPondWater && window._wasInWater){
+      window._wasInWater = false;
+    }
     if(thirdPerson){
       // dış görüş: karakterin arkasından
-      camera.position.set(P.x + Math.sin(P.yaw) * 3, 2.4, P.z + Math.cos(P.yaw) * 3);
+      camera.position.set(P.x + Math.sin(P.yaw) * 3, (inPondWater ? 1.55 : 2.4) + swimBob, P.z + Math.cos(P.yaw) * 3);
       camera.rotation.set(P.pitch - 0.2, P.yaw, 0);
     } else {
-      camera.position.set(P.x, 1.65, P.z);
+      camera.position.set(P.x, (inPondWater ? 0.65 : 1.65) + swimBob, P.z);
       camera.rotation.set(P.pitch, P.yaw, 0);
     }
     playerMesh.visible = thirdPerson;
-    playerMesh.position.set(P.x, 0, P.z);
+    playerMesh.position.set(P.x, inPondWater ? (-0.75 + swimBob) : 0, P.z);
     playerMesh.rotation.y = P.yaw + Math.PI;
-    // yürüme animasyonu: hareket ettikçe kol ve bacaklar sallanır
+    // yürüme veya yüzme animasyonu: hareket ettikçe kol ve bacaklar sallanır / kulaç atar
     const pSpeed = Math.hypot(P.x - pLastX, P.z - pLastZ) / Math.max(dt, 0.001);
     pLastX = P.x; pLastZ = P.z;
     const pMoving = pSpeed > 0.3;
     if(pMoving){ pPh += dt * 7; myEmoteT = 0; }
     const pSw = pMoving ? Math.sin(pPh) * 0.6 : 0;
     legPose(pLegL, pSw); legPose(pLegR, -pSw);
-    pArmL.rotation.x = -pSw * 0.7; pArmR.rotation.x = pSw * 0.7;
+    if(inPondWater){
+      pArmL.rotation.x = -1.35 + Math.sin(pPh * 1.3) * 0.95;
+      pArmR.rotation.x = -1.35 - Math.sin(pPh * 1.3) * 0.95;
+    } else {
+      pArmL.rotation.x = -pSw * 0.7; pArmR.rotation.x = pSw * 0.7;
+    }
     if(myEmoteT > 0){
       myEmoteT -= dt;
       const et = myEmoteT * 11;
@@ -9258,7 +9273,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-25-230808';
+const APP_VERSION = '2026-10-25-232122';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
