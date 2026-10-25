@@ -6969,9 +6969,10 @@ if($('fishBtn')) $('fishBtn').onclick = castFishingLine;
 function updatePondFishes(dt){
   for(let i = 0; i < pondFishes.length; i++){
     const f = pondFishes[i];
-    f.ang += dt * f.spd;
-    f.mesh.position.set(Math.cos(f.ang) * f.rad, 0.04, Math.sin(f.ang) * f.rad);
-    f.mesh.rotation.y = -f.ang;
+    if(!f || !f.m) continue;
+    f.a += dt * f.sp;
+    f.m.position.set(Math.cos(f.a) * f.r, 0.07, Math.sin(f.a) * f.r);
+    f.m.rotation.y = -f.a;
   }
 }
 
@@ -9147,7 +9148,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-25-224035';
+const APP_VERSION = '2026-10-25-225557';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
