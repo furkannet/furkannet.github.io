@@ -345,6 +345,7 @@ button small{font-size:9px;margin-top:0}
     <div class="set-row"><span>Bakış hassasiyeti</span><input id="sSens" type="range" min="0.5" max="2" step="0.1"></div>
     <div class="set-row"><span>Dikey bakışı ters çevir</span><input id="sInv" type="checkbox"></div>
     <div class="set-row"><span>Sol el düzeni (joystick sağda)</span><input id="sLeft" type="checkbox"></div>
+    <div class="set-row"><span>Araba şarkıları (Trafik müziği)</span><input id="sCarMusic" type="checkbox" checked></div>
     <div class="set-row"><span>Araba hızı</span><input id="sCarSpd" type="range" min="0.5" max="2" step="0.1"></div>
     <div class="set-row"><span>İsmin</span><input id="sName" maxlength="16" style="flex:1;padding:6px;border-radius:8px;border:1px solid var(--line);background:#222b38;color:var(--ink)"></div>
     <button id="setOk" class="wide">Tamam</button>
@@ -593,7 +594,7 @@ const DEF = {
   up:{kesici:0, reklam:0, sabir:0, kasa:0},
   unlock:{porsiyon:false, buzdolabi:false, fritoz:false},
   kar:{motor:false, tampon:false, ocak:false, led:false, staff:false, masa:false, garson:false, kurye:false},
-  settings:{sens:1, invY:false, left:false},
+  settings:{sens:1, invY:false, left:false, carMusic:true},
   mk:{kahve:false, hali:false, robot:false, pc:false, toys:false, guard:false, cam:false, klima:false, comogene:false, comoStaff:false, masa:false, garson:false, kurye:false},
   wageDue:0,
   fuel:100,
@@ -2243,13 +2244,19 @@ const MOD_CAR_TPL = [
 
 let tacoTrafficAudio = null;
 function updateTacoTrafficMusic(nearestDist){
+  if(S.settings && S.settings.carMusic === false){
+    if(tacoTrafficAudio && !tacoTrafficAudio.paused){
+      tacoTrafficAudio.volume = 0;
+      try{ tacoTrafficAudio.pause(); }catch(e){}
+    }
+    return;
+  }
   const url = 'https://archive.org/download/its-raining-tacos-roblox-music-video-fj-r-0u-ukzcp-y/ITS%20RAINING%20TACOS_%20%28Roblox%20Music%20Video%29%20%5BfjR0uUKZCpY%5D.mp3';
   if(nearestDist < 38){
     if(!tacoTrafficAudio){
       try{
         tacoTrafficAudio = new Audio(url);
         tacoTrafficAudio.loop = true;
-        tacoTrafficAudio.crossOrigin = 'anonymous';
       }catch(e){}
     }
     if(tacoTrafficAudio){
@@ -2437,8 +2444,9 @@ function passSound(pan){
 function spawnCar(forceDir){
   whoosh();
   const dir = forceDir || (Math.random() < 0.5 ? 1 : -1);
-  const laneX = dir > 0 ? -2.0 : 2.0;
-  const startZ = dir > 0 ? -91.5 : 5.5;
+  // Sağdan akan trafik: +z yönüne gidenler sağ şeritte (x = +2.0), -z yönüne gidenler sol şeritte (x = -2.0)
+  const laneX = dir > 0 ? 2.0 : -2.0;
+  const startZ = dir > 0 ? -91.5 : 8.5;
   const roll = Math.random();
   let c, isMoto = false, isModCar = false;
   if(roll < 0.22){
@@ -2454,8 +2462,8 @@ function spawnCar(forceDir){
   c.position.set(laneX, 0, startZ);
   scene.add(c);
   const spd = isMoto ? (16 + Math.random() * 6) : (isModCar ? (14 + Math.random() * 5) : (12 + Math.random() * 6));
-  // bazı arabalar (sol şerittekiler) benzinci hizasında kısa süre durur
-  cars.push({g:c, speed: spd, snd: makeCarSound(), fuelStop: (dir > 0 && !isMoto && Math.random() < 0.25), stopT: 0, stopped: false, laneX, dir, isMoto, isModCar});
+  // bazı arabalar (sol şerittekiler, benzincinin olduğu tarafta) benzinci hizasında kısa süre durur
+  cars.push({g:c, speed: spd, snd: makeCarSound(), fuelStop: (dir < 0 && !isMoto && Math.random() < 0.25), stopT: 0, stopped: false, laneX, dir, isMoto, isModCar});
 }
 
 // yayılar kaldırımdan çıkmaz ve engellerden kaçar: ileri adım yoksa yan kaymaya bakar, uzun süre takılırsa çekilir
@@ -5494,6 +5502,7 @@ $('setBtn').onclick = () => {
   $('sSens').value = S.settings.sens;
   $('sInv').checked = S.settings.invY;
   $('sLeft').checked = S.settings.left;
+  if($('sCarMusic')) $('sCarMusic').checked = S.settings.carMusic !== false;
   $('sCarSpd').value = S.settings.carSpeed || 1;
   $('sName').value = S.settings.name || '';
   $('set').style.display = 'flex';
@@ -5507,6 +5516,11 @@ $('setOk').onclick = () => {
   S.settings.sens = parseFloat($('sSens').value);
   S.settings.invY = $('sInv').checked;
   S.settings.left = $('sLeft').checked;
+  if($('sCarMusic')) S.settings.carMusic = $('sCarMusic').checked;
+  if(S.settings.carMusic === false && tacoTrafficAudio && !tacoTrafficAudio.paused){
+    tacoTrafficAudio.volume = 0;
+    try{ tacoTrafficAudio.pause(); }catch(e){}
+  }
   S.settings.carSpeed = parseFloat($('sCarSpd').value);
   S.settings.name = newName;
   applySettings();
@@ -6843,9 +6857,9 @@ function step(dt, play){
     });
     // benzinci: seçilmiş araba istasyonun altına gelir, 3 sn durur, sonra yoluna döner
     let atStation = false;
-    if(dir > 0 && c.fuelStop && !c.stopped && zc > -66 && zc < -46){
+    if(dir < 0 && c.fuelStop && !c.stopped && zc < -38 && zc > -58){
       c.g.position.x += (BENZIN_X - c.g.position.x) * Math.min(1, 2 * dt);
-      atStation = zc > -54 && zc < -50;
+      atStation = zc < -50 && zc > -54;
       if(atStation && Math.abs(BENZIN_X - c.g.position.x) < 0.3){
         c.stopT += dt;
         if(c.stopT > 3) c.stopped = true;
@@ -6874,7 +6888,7 @@ function step(dt, play){
     }
     const d = c.cur * dt;
     c.g.position.z += d * dir;
-    c.g.visible = c.g.position.z > -91; // tünel ağzından çıkarken/girerken görünür (tünelin içinde gizli)
+    c.g.visible = c.g.position.z > -91 && c.g.position.z < 8.5; // tünel ağzından çıkarken/girerken görünür (tünelin içinde gizli)
     // yanımızdan geçen araç: bir kez "viyuv" sesi
     if(!c.passSnd && Math.abs(c.g.position.z - myWp.z) < 3 && Math.abs(c.g.position.x - myWp.x) < 14){
       c.passSnd = true;
@@ -6886,13 +6900,13 @@ function step(dt, play){
       c.snd.g.gain.value = Math.max(0, 1 - distToMe / 40) * 0.03;
       if(c.snd.pan) c.snd.pan.pan.value = Math.max(-1, Math.min(1, (c.g.position.x - myWp.x) / 10));
     }
-    // tekerlekler hıza göre döner
-    c.g.children.forEach(ch => { if(ch.name === 'wheel') ch.rotation.x += d / 0.36; });
+    // tekerlekler hıza göre ileri doğru döner
+    c.g.children.forEach(ch => { if(ch.name === 'wheel') ch.rotation.x -= d / 0.36; });
   });
   updateTacoTrafficMusic(nearestModCarDist);
   cars = cars.filter(c => {
     const dir = c.dir || 1;
-    if((dir > 0 && c.g.position.z > 6) || (dir < 0 && c.g.position.z < -92)){
+    if((dir > 0 && c.g.position.z > 8.5) || (dir < 0 && c.g.position.z < -92)){
       scene.remove(c.g);
       if(c.snd){ try{ c.snd.src.stop(); }catch(e){} }
       return false;
@@ -8612,7 +8626,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-25-210951';
+const APP_VERSION = '2026-10-25-213755';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
