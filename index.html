@@ -242,8 +242,9 @@ button small{font-size:9px;margin-top:0}
 <button id="buyPickBtn" style="display:none;background:#9a3412;border-color:#fb923c;font-weight:700">⛏️ Kazma Al (150₺)</button>
 <button id="digBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:700">⛏️ Kazmayla Kaz!</button>
 <button id="sellFindsBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:700">💰 Bulduklarını Sat</button>
-<button id="minerBtn" style="display:none;background:#b45309;border-color:#fbbf24;font-weight:700">🪏 Maden Dükkânı</button>
-<button id="mineHitBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">🪏 Kürekle Toprağı Kaz!</button>
+<button id="minerBtn" style="display:none;background:#b45309;border-color:#fbbf24;font-weight:700">⛏️ Maden Dükkânı</button>
+<button id="mineHitBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">⛏️ Bloğu Kır!</button>
+<button id="mineSurfaceBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:900">⬆️ Yüzeye Çık</button>
 <button id="mineTntBtn" style="display:none;background:#dc2626;border-color:#fca5a5;font-weight:900">🧨 TNT Patlat!</button>
 <button id="mineCartBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:900">🛒 Vagonla Sat!</button>
 </div>
@@ -2188,19 +2189,19 @@ digSpotRing.rotation.x = -Math.PI / 2;
 digSpotRing.position.set(-28, 0.06, -62);
 scene.add(digSpotRing);
 
-// 5) ⛏️ YERALTI KÜP BLOK MADENİ (sağ çimli alanda yerin altına inen merdivenli maden ocağı: x=15.5, z=-45)
+// 5) ⛏️ YERALTI 14 KATLI DERİN KÜP BLOK MADENİ (sağ çimli alanda: x=15.5, z=-45)
 const MINER_POS = {x: 15.5, z: -45, doorX: 11.4, doorZ: -45};
 const minerGroup = new THREE.Group();
 minerGroup.position.set(MINER_POS.x, 0, MINER_POS.z);
 scene.add(minerGroup);
 const rockCaveM = M(0x334155), darkRockM = M(0x1e293b), beamWoodM = M(0x78350f), railIronM = M(0x94a3b8);
-// Yerin altına doğru inen derin maden çukuru duvarları ve tabanı (y: 0'dan -4.8m'ye kadar yer altı!)
+// Yerin altına doğru 14 katman (-17m derinliğe kadar!) inen derin maden kuyusu duvarları ve tabanı
 [
-  [B(10.0, 0.25, 6.6), darkRockM, 1.4, -4.9, 0],     // en dip yeraltı mağara tabanı
-  [B(0.4, 5.2, 6.6), rockCaveM, 6.2, -2.3, 0],       // doğu yeraltı kaya duvarı
-  [B(10.0, 5.2, 0.4), rockCaveM, 1.4, -2.3, -3.1],   // kuzey yeraltı kaya duvarı
-  [B(10.0, 5.2, 0.4), rockCaveM, 1.4, -2.3, 3.1],    // güney yeraltı kaya duvarı
-  [B(0.4, 5.2, 6.6), rockCaveM, -3.4, -2.3, 0],      // batı giriş altı kaya duvarı
+  [B(10.0, 0.35, 6.6), darkRockM, 1.4, -17.3, 0],    // en dip yeraltı mağara tabanı (-17.3m)
+  [B(0.4, 17.6, 6.6), rockCaveM, 6.2, -8.6, 0],      // doğu yeraltı kaya duvarı
+  [B(10.0, 17.6, 0.4), rockCaveM, 1.4, -8.6, -3.1],  // kuzey yeraltı kaya duvarı
+  [B(10.0, 17.6, 0.4), rockCaveM, 1.4, -8.6, 3.1],   // güney yeraltı kaya duvarı
+  [B(0.4, 17.6, 6.6), rockCaveM, -3.4, -8.6, 0],     // batı giriş altı kaya duvarı
   // Maden ocağı çevresinde ahşap korkuluk/çerçeve (yüzeyde)
   [B(9.6, 0.35, 0.25), beamWoodM, 1.4, 0.2, -3.15],
   [B(9.6, 0.35, 0.25), beamWoodM, 1.4, 0.2, 3.15],
@@ -2232,50 +2233,95 @@ mineCartGoldPile.visible = false;
 });
 minerGroup.add(mineCartMesh);
 
-// Kare Küp Blok Türleri: Toprak, Siyah Kömür, Beyaz Demir, Sarı Altın, Mavi Elmas!
+// Taşın içinde parlayan maden cevheri dokusu üreteci (64x64 hafif CanvasTexture, tüm bloklarda paylaşılır)
+function makeOreBlockMat(baseCol, veinCol, veinBorder){
+  const t = tex(64, 64, (g, w, h) => {
+    g.fillStyle = baseCol;
+    g.fillRect(0, 0, w, h);
+    // Doğal taş dokusu lekeleri
+    g.fillStyle = 'rgba(0,0,0,0.16)';
+    [[4,4,14,10],[38,8,18,12],[12,36,16,14],[42,40,14,16],[24,20,12,12]].forEach(([x,y,bw,bh]) => g.fillRect(x,y,bw,bh));
+    g.fillStyle = 'rgba(255,255,255,0.08)';
+    [[20,6,12,8],[6,22,12,10],[46,24,10,12],[26,48,14,10]].forEach(([x,y,bw,bh]) => g.fillRect(x,y,bw,bh));
+    // Taşın içindeki cevher damarları (altın, elmas, kömür, demir, zümrüt, yakut parçaları)
+    if(veinCol){
+      const spots = [[10,10,12,10],[38,12,14,11],[22,26,15,12],[10,44,13,11],[40,42,14,12],[28,10,8,8],[16,32,9,9]];
+      spots.forEach(([x, y, bw, bh]) => {
+        if(veinBorder){
+          g.fillStyle = veinBorder;
+          g.fillRect(x - 2, y - 2, bw + 4, bh + 4);
+        }
+        g.fillStyle = veinCol;
+        g.fillRect(x, y, bw, bh);
+      });
+    }
+    g.strokeStyle = 'rgba(0,0,0,0.35)';
+    g.lineWidth = 3;
+    g.strokeRect(1, 1, w - 2, h - 2);
+  });
+  return new THREE.MeshLambertMaterial({map: t});
+}
+
+// Kare Küp Blok Türleri: Normal Taş + Taşın İçinde Kömür, Demir, Altın, Elmas, Zümrüt, Yakut ve Antik Efsanevi Cevher!
 const BLOCK_TYPES = {
-  dirt:    {id: 'dirt',    name: '🟫 Toprak Bloğu', col: 0x854d0e, val: 15,  hp: 1},
-  coal:    {id: 'coal',    name: '⬛ Siyah Kömür Bloğu', col: 0x111827, val: 55,  hp: 2},
-  iron:    {id: 'iron',    name: '⬜ Beyaz Demir Bloğu', col: 0xf8fafc, val: 110, hp: 3},
-  gold:    {id: 'gold',    name: '🟨 Sarı Altın Bloğu',  col: 0xfacc15, val: 220, hp: 4},
-  diamond: {id: 'diamond', name: '🟦 Mavi Elmas Bloğu',  col: 0x38bdf8, val: 420, hp: 5}
+  dirt:    {id: 'dirt',    name: '🟫 Toprak Bloğu',               val: 10,   hp: 1},
+  stone:   {id: 'stone',   name: '🪨 Normal Taş Bloğu',           val: 20,   hp: 1},
+  coal:    {id: 'coal',    name: '⬛ Taş İçinde Siyah Kömür',     val: 65,   hp: 2},
+  iron:    {id: 'iron',    name: '⬜ Taş İçinde Beyaz Demir',     val: 130,  hp: 3},
+  gold:    {id: 'gold',    name: '🟨 Taş İçinde Sarı Altın',      val: 260,  hp: 4},
+  diamond: {id: 'diamond', name: '🟦 Taş İçinde Mavi Elmas',      val: 520,  hp: 5},
+  emerald: {id: 'emerald', name: '🟩 Derin Yeşil Zümrüt Cevheri', val: 850,  hp: 6},
+  ruby:    {id: 'ruby',    name: '🟥 Çok Derin Kırmızı Yakut',    val: 1350, hp: 7},
+  ancient: {id: 'ancient', name: '🟪 Efsanevi Antik Cevher',      val: 2200, hp: 8}
 };
 const BLOCK_MATS = {
-  dirt:    M(0x854d0e),
-  coal:    M(0x111827),
-  iron:    M(0xf8fafc),
-  gold:    M(0xfacc15),
-  diamond: M(0x38bdf8)
+  dirt:    makeOreBlockMat('#78350f', '#5c280b', null),
+  stone:   makeOreBlockMat('#64748b', null, null),
+  coal:    makeOreBlockMat('#64748b', '#0f172a', '#334155'),
+  iron:    makeOreBlockMat('#64748b', '#f8fafc', '#cbd5e1'),
+  gold:    makeOreBlockMat('#64748b', '#facc15', '#b45309'),
+  diamond: makeOreBlockMat('#64748b', '#38bdf8', '#0284c7'),
+  emerald: makeOreBlockMat('#475569', '#4ade80', '#15803d'),
+  ruby:    makeOreBlockMat('#334155', '#f43f5e', '#9f1239'),
+  ancient: makeOreBlockMat('#1e293b', '#c084fc', '#facc15')
 };
 const cubeBlockGeo = B(1.12, 1.12, 1.12);
 const MINE_NODES = [];
 const MINE_COLS_X = [0.8, 2.0, 3.2, 4.4];
 const MINE_COLS_Z = [-1.8, -0.6, 0.6, 1.8];
-const MINE_LAYERS_Y = [-0.6, -1.8, -3.0, -4.2]; // 4 kat yerin altına doğru!
+// 14 Katman derinlik (y: -0.6m'den -16.2m'ye kadar çok aşağı iner!)
+const MINE_LAYERS_Y = [];
+for(let li = 0; li < 14; li++) MINE_LAYERS_Y.push(-0.6 - li * 1.2);
 
 function pickCubeBlockType(layerIdx){
   const r = Math.random();
-  // Üst katta daha çok toprak/kömür, derine indikçe sarı altın ve mavi elmas artar!
-  if(layerIdx === 0){
-    if(r < 0.45) return BLOCK_TYPES.dirt;
+  // Blokların önemli kısmı taş/toprak; aşağı doğru çok indikçe daha pahalı madenler çıkar!
+  if(layerIdx <= 1){
+    if(r < 0.35) return BLOCK_TYPES.dirt;
+    if(r < 0.78) return BLOCK_TYPES.stone;
+    if(r < 0.94) return BLOCK_TYPES.coal;
+    return BLOCK_TYPES.iron;
+  } else if(layerIdx <= 4){
+    if(r < 0.55) return BLOCK_TYPES.stone;
     if(r < 0.78) return BLOCK_TYPES.coal;
     if(r < 0.94) return BLOCK_TYPES.iron;
     return BLOCK_TYPES.gold;
-  } else if(layerIdx === 1){
-    if(r < 0.25) return BLOCK_TYPES.dirt;
-    if(r < 0.58) return BLOCK_TYPES.coal;
-    if(r < 0.82) return BLOCK_TYPES.iron;
-    if(r < 0.96) return BLOCK_TYPES.gold;
+  } else if(layerIdx <= 7){
+    if(r < 0.50) return BLOCK_TYPES.stone;
+    if(r < 0.68) return BLOCK_TYPES.iron;
+    if(r < 0.88) return BLOCK_TYPES.gold;
     return BLOCK_TYPES.diamond;
-  } else if(layerIdx === 2){
-    if(r < 0.15) return BLOCK_TYPES.coal;
-    if(r < 0.48) return BLOCK_TYPES.iron;
-    if(r < 0.80) return BLOCK_TYPES.gold;
-    return BLOCK_TYPES.diamond;
+  } else if(layerIdx <= 10){
+    if(r < 0.45) return BLOCK_TYPES.stone;
+    if(r < 0.65) return BLOCK_TYPES.gold;
+    if(r < 0.85) return BLOCK_TYPES.diamond;
+    return BLOCK_TYPES.emerald;
   } else {
-    if(r < 0.22) return BLOCK_TYPES.iron;
-    if(r < 0.62) return BLOCK_TYPES.gold;
-    return BLOCK_TYPES.diamond;
+    if(r < 0.38) return BLOCK_TYPES.stone;
+    if(r < 0.56) return BLOCK_TYPES.diamond;
+    if(r < 0.76) return BLOCK_TYPES.emerald;
+    if(r < 0.92) return BLOCK_TYPES.ruby;
+    return BLOCK_TYPES.ancient;
   }
 }
 
@@ -2297,12 +2343,26 @@ MINE_LAYERS_Y.forEach((ly, layerIdx) => {
         val: bType.val,
         maxHp: bType.hp,
         hp: bType.hp,
-        respawnT: 0,
         mesh
       });
     });
   });
 });
+
+function resetMineForNewShift(){
+  for(let i = 0; i < MINE_NODES.length; i++){
+    const nd = MINE_NODES[i];
+    const bType = pickCubeBlockType(nd.layerIdx || 0);
+    nd.bType = bType;
+    nd.name = bType.name;
+    nd.val = bType.val;
+    nd.maxHp = bType.hp;
+    nd.hp = bType.hp;
+    nd.mesh.material = BLOCK_MATS[bType.id];
+    nd.mesh.scale.set(1, 1, 1);
+    nd.mesh.visible = true;
+  }
+}
 
 const minerSignTex = tex(256, 96, (g, w, h) => {
   g.fillStyle = '#1e293b'; g.fillRect(0, 0, w, h);
@@ -5753,7 +5813,8 @@ function startShift(){
     flash(`Çalışanın maaşı birikti: ${S.wageDue}₺ (💵 ile öde)`, '#ffd54a');
   }
   Object.assign(D, {x: (S.kar.restoran || S.mk.restoran) ? 17.8 : 13.2, z:-1, h:0, v:0, driving:false});
-  P.x = (S.kar.restoran || S.mk.restoran) ? 14.5 : 10.8; P.z = 0; P.yaw = -Math.PI/2;
+  P.x = (S.kar.restoran || S.mk.restoran) ? 14.5 : 10.8; P.z = 0; P.y = 0; P.yaw = -Math.PI/2;
+  if(typeof resetMineForNewShift === 'function') resetMineForNewShift();
   can = MAX_LIVES; shiftEarned = 0; shiftT = SHIFT_LEN; shiftEnded = false; over = false;
   rushCD = RUSH_EVERY; rushLeft = 0; rushOn = false;
   hotCD = 90; hotLeft = 0;
@@ -7477,7 +7538,7 @@ function getMineFloorY(px, pz){
     const t = Math.max(0, Math.min(1, (lx + 3.3) / 3.5));
     return -t * 3.0;
   }
-  // Küp blok sütunları (4x4 sütun, 4 kat derinlik): en üstteki kırılmamış bloğun üstünde durur, hepsi kırıldıysa mağara tabanına (-4.75m) iner!
+  // Küp blok sütunları (4x4 sütun, 14 kat derinlik): en üstteki kırılmamış bloğun üstünde durur, hepsi kırıldıysa mağara tabanına (-16.8m) iner!
   let bestCx = 0, bestDx = 99;
   for(let i = 0; i < MINE_COLS_X.length; i++){
     const d = Math.abs(lx - MINE_COLS_X[i]);
@@ -7495,7 +7556,7 @@ function getMineFloorY(px, pz){
       return nd.ly + 0.56; // bloğun tam üst yüzeyi
     }
   }
-  return -4.75; // tüm katmanlar kırıldıysa en dip yeraltı tabanı
+  return -16.8; // tüm 14 katman kırıldıysa en dip yeraltı tabanı
 }
 
 function ensureMinerRigs(){
@@ -7650,10 +7711,9 @@ function hitMineRock(targetNode){
     flash('Yakınında kırılacak blok yok, maden çukurundaki küp bloklara yaklaş veya üstüne tıkla!', '#fbbf24');
     return;
   }
-  // Tıklayınca tek seferde kırılsın (kullanıcı isteği: "kare olsun tıklayınca gitsin blok")
+  // Tıklayınca tek seferde kırılsın; yalnızca yeni vardiyada sıfırlanır!
   nd.hp = 0;
   nd.mesh.visible = false;
-  nd.respawnT = 22;
   spawnSmoke(nd.wx, nd.wz);
   const pk = PICK_TIERS[Math.max(1, S.rigs.pickLv)] || PICK_TIERS[1];
   const earnedVal = Math.round(nd.val * pk.mult);
@@ -7661,11 +7721,19 @@ function hitMineRock(targetNode){
   S.rigs.bagCnt += 1;
   S.xp = (S.xp || 0) + 25;
   checkLevelUp();
-  beep(760 + (nd.layerIdx || 0) * 70, 0.13, 'sine', 0.13);
-  flash(`${nd.name} kırıldı! (+${earnedVal}₺) · Çanta: ${S.rigs.bagVal}₺`, '#4ade80');
+  const depthM = Math.round(Math.abs(nd.ly));
+  beep(680 + Math.min(500, (nd.layerIdx || 0) * 35), 0.13, 'sine', 0.13);
+  flash(`${nd.name} kırıldı! (-${depthM}m Derinlik · +${earnedVal}₺) · Çanta: ${S.rigs.bagVal}₺`, '#4ade80');
   save(); renderAll();
 }
 if($('mineHitBtn')) $('mineHitBtn').onclick = () => hitMineRock(null);
+if($('mineSurfaceBtn')) $('mineSurfaceBtn').onclick = () => {
+  P.x = MINER_POS.x - 4.0;
+  P.z = MINER_POS.z;
+  P.y = 0;
+  beep(580, 0.12, 'sine', 0.12);
+  flash('⬆️ Maden asansörü/merdiveniyle yüzeye çıktın!', '#7dd3fc');
+};
 
 function detonateMineTNT(){
   ensureMinerRigs();
@@ -7675,7 +7743,7 @@ function detonateMineTNT(){
   }
   const activeNodes = MINE_NODES.filter(nd => nd.hp > 0).slice(0, 16);
   if(!activeNodes.length){
-    flash('Şu an madende patlatılacak blok kalmadı, yeni blokların çıkmasını bekle!', '#fbbf24');
+    flash('Bu vardiyadaki tüm maden bloklarını zaten kırdın! Yeni vardiyada sıfırlanacak.', '#fbbf24');
     return;
   }
   S.rigs.tnt -= 1;
@@ -7685,7 +7753,6 @@ function detonateMineTNT(){
   activeNodes.forEach(nd => {
     nd.hp = 0;
     nd.mesh.visible = false;
-    nd.respawnT = 24;
     const v = Math.round(nd.val * pk.mult);
     totalAdded += v;
     foundCnt++;
@@ -7697,30 +7764,14 @@ function detonateMineTNT(){
   S.xp = (S.xp || 0) + 90;
   checkLevelUp();
   beep(140, 0.35, 'sawtooth', 0.2);
-  flash(`🧨 BÜYÜK PATLAMA! ${foundCnt} küp blok parçalandı (+${totalAdded}₺)! Kalan TNT: ${S.rigs.tnt}`, '#f87171');
+  flash(`🧨 BÜYÜK PATLAMA! 1 katman (${foundCnt} küp blok) parçalandı (+${totalAdded}₺)! Kalan TNT: ${S.rigs.tnt}`, '#f87171');
   save(); renderAll();
 }
 if($('mineTntBtn')) $('mineTntBtn').onclick = detonateMineTNT;
 
 function updateMinerPlace(dt){
   ensureMinerRigs();
-  for(let i = 0; i < MINE_NODES.length; i++){
-    const nd = MINE_NODES[i];
-    if(nd.hp <= 0){
-      nd.respawnT -= dt;
-      if(nd.respawnT <= 0){
-        const bType = pickCubeBlockType(nd.layerIdx || 0);
-        nd.bType = bType;
-        nd.name = bType.name;
-        nd.val = bType.val;
-        nd.maxHp = bType.hp;
-        nd.hp = bType.hp;
-        nd.mesh.material = BLOCK_MATS[bType.id];
-        nd.mesh.scale.set(1, 1, 1);
-        nd.mesh.visible = true;
-      }
-    }
-  }
+  // Kırılan bloklar kendi kendine çıkmaz, her yeni vardiyada (startShift) sıfırlanır!
   mineCartGoldPile.visible = S.rigs.bagVal > 0;
   if(mineCartAnimT > 0){
     mineCartAnimT = Math.max(0, mineCartAnimT - dt);
@@ -7730,8 +7781,9 @@ function updateMinerPlace(dt){
     mineCartMesh.position.x = -3.8;
   }
   const distMine = Math.hypot(P.x - MINER_POS.x, P.z - MINER_POS.z);
-  const inOrNearMine = !C.driving && !D.driving && !CM.driving && distMine < 9.0;
+  const inOrNearMine = !C.driving && !D.driving && !CM.driving && distMine < 9.5;
   const nearNode = inOrNearMine ? findNearestMineNode() : null;
+  const deepInMine = inOrNearMine && (P.y || 0) < -1.5;
   disp('minerBtn', inOrNearMine ? 'block' : 'none');
   if(inOrNearMine){
     const pk = PICK_TIERS[S.rigs.pickLv] || PICK_TIERS[0];
@@ -7740,6 +7792,10 @@ function updateMinerPlace(dt){
   disp('mineHitBtn', nearNode ? 'block' : 'none');
   if(nearNode){
     txt('mineHitBtn', `⛏️ ${nearNode.name} Kır!`);
+  }
+  disp('mineSurfaceBtn', deepInMine ? 'block' : 'none');
+  if(deepInMine){
+    txt('mineSurfaceBtn', `⬆️ Yüzeye Çık (${Math.round(Math.abs(P.y || 0))}m Derindesin)`);
   }
   disp('mineTntBtn', (inOrNearMine && S.rigs.tnt > 0) ? 'block' : 'none');
   if(inOrNearMine && S.rigs.tnt > 0){
@@ -9885,7 +9941,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-26-214200';
+const APP_VERSION = '2026-10-26-215454';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
