@@ -6187,13 +6187,9 @@ canvas.addEventListener('pointerup', e => {
   if(e.pointerId !== look.id) return;
   look.id = null;
   if(look.moved > 10 || !active()) return;
-  handleCanvasTapAt(e.clientX, e.clientY);
-});
-function handleCanvasTapAt(clientX, clientY){
-  if(!active()) return;
   const r = canvas.getBoundingClientRect();
-  ptr.x = ((clientX - r.left) / r.width) * 2 - 1;
-  ptr.y = -((clientY - r.top) / r.height) * 2 + 1;
+  ptr.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+  ptr.y = -((e.clientY - r.top) / r.height) * 2 + 1;
   ray.setFromCamera(ptr, camera);
   // saate dokunmak = saati söyle
   if(ray.intersectObject(clockMesh, false).length){ sayTime(); return; }
@@ -9981,7 +9977,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-26-223250';
+const APP_VERSION = '2026-10-26-223610';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
