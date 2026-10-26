@@ -197,6 +197,7 @@ button small{font-size:9px;margin-top:0}
   <button id="leadBtn" title="Liderlik Tablosu">🏆<span class="t"> Liderlik</span></button>
   <button id="nightBtn" title="Gece">🌙<span class="t"> Gece</span></button>
   <button id="codeBtn" title="Kod">🎟<span class="t"> Kod</span></button>
+  <button id="autoClickBtn" title="0.0sn Otomatik Tıklayıcı" style="background:#4c1d95;border-color:#c084fc;font-weight:700">⚡<span class="t"> Auto Clicker: Kapalı</span></button>
   <button id="invBtn" title="Envanter">🎒<span class="t"> Envanter</span></button>
   <button id="tablet" style="display:none" title="Tablet">📱<span class="t"> Tablet</span></button>
   <button id="drive">🚚 Sür</button>
@@ -7731,23 +7732,25 @@ function findNearestMineNode(){
   return bestD < 3.5 ? best : null;
 }
 
-function hitMineRock(targetNode){
+function hitMineRock(targetNode, isSilentAuto){
   ensureMinerRigs();
   const nd = targetNode || findNearestMineNode();
   if(!nd || nd.hp <= 0){
-    flash('Yakınında kırılacak blok yok, maden çukurundaki küp bloklara yaklaş veya üstüne tıkla!', '#fbbf24');
+    if(!isSilentAuto) flash('Yakınında kırılacak blok yok, maden çukurundaki küp bloklara yaklaş veya üstüne tıkla!', '#fbbf24');
     return;
   }
   const pk = PICK_TIERS[Math.max(1, S.rigs.pickLv)] || PICK_TIERS[1];
   const dmg = S.rigs.pickLv > 0 ? pk.dmg : 1; // başlangıçta 1 hasar (üst bloklar 2 vuruşta kırılır!), güçlü kazmayla daha hızlı kırılır
   nd.hp = Math.max(0, nd.hp - dmg);
-  spawnSmoke(nd.wx, nd.wz);
+  if(!isSilentAuto) spawnSmoke(nd.wx, nd.wz);
   const depthM = Math.round(Math.abs(nd.ly));
   if(nd.hp > 0){
     const sc = 0.78 + 0.22 * (nd.hp / nd.maxHp);
     nd.mesh.scale.set(sc, sc, sc);
-    beep(360 + (S.rigs.pickLv || 1) * 55, 0.06, 'triangle', 0.1);
-    flash(`⛏️ ${nd.name} kazılıyor... (Can: ${nd.hp}/${nd.maxHp} · -${depthM}m)`, '#fde047');
+    if(!isSilentAuto){
+      beep(360 + (S.rigs.pickLv || 1) * 55, 0.06, 'triangle', 0.1);
+      flash(`⛏️ ${nd.name} kazılıyor... (Can: ${nd.hp}/${nd.maxHp} · -${depthM}m)`, '#fde047');
+    }
   } else {
     nd.mesh.visible = false;
     ensureInfiniteMineDepth(nd.ly);
@@ -7756,12 +7759,33 @@ function hitMineRock(targetNode){
     S.rigs.bagCnt += 1;
     S.xp = (S.xp || 0) + 25;
     checkLevelUp();
-    beep(680 + Math.min(500, (nd.layerIdx || 0) * 35), 0.13, 'sine', 0.13);
-    flash(`${nd.name} kırıldı! (-${depthM}m Derinlik · +${earnedVal}₺) · Çanta: ${S.rigs.bagVal}₺`, '#4ade80');
-    save(); renderAll();
+    const nowMs = performance.now();
+    if(!isSilentAuto || nowMs - (window._lastAutoBeep || 0) > 120){
+      window._lastAutoBeep = nowMs;
+      beep(680 + Math.min(500, (nd.layerIdx || 0) * 35), 0.09, 'sine', 0.11);
+      flash(`⚡ ${nd.name} kırıldı! (-${depthM}m · +${earnedVal}₺) · Çanta: ${S.rigs.bagVal}₺`, '#4ade80');
+      save(); renderAll();
+    }
   }
 }
-if($('mineHitBtn')) $('mineHitBtn').onclick = () => hitMineRock(null);
+if($('mineHitBtn')) $('mineHitBtn').onclick = () => hitMineRock(null, false);
+
+// ⚡ 0.0 Saniye Ultra Hızlı Auto Clicker Sistemi
+let autoClickerOn = false;
+function toggleAutoClicker(){
+  autoClickerOn = !autoClickerOn;
+  const b = $('autoClickBtn');
+  if(b){
+    b.style.background = autoClickerOn ? '#15803d' : '#4c1d95';
+    b.style.borderColor = autoClickerOn ? '#4ade80' : '#c084fc';
+    b.innerHTML = autoClickerOn
+      ? '⚡<span class="t"> Auto Clicker: 0.0s AÇIK</span>'
+      : '⚡<span class="t"> Auto Clicker: Kapalı</span>';
+  }
+  beep(autoClickerOn ? 880 : 340, 0.12, 'sine', 0.12);
+  flash(autoClickerOn ? '⚡ Auto Clicker AÇILDI! (0.0 saniye hızında otomatik tıklıyor!)' : '⚡ Auto Clicker kapatıldı.', autoClickerOn ? '#4ade80' : '#cbd5e1');
+}
+if($('autoClickBtn')) $('autoClickBtn').onclick = toggleAutoClicker;
 if($('mineSurfaceBtn')) $('mineSurfaceBtn').onclick = () => {
   P.x = MINER_POS.x - 4.0;
   P.z = MINER_POS.z;
@@ -7819,6 +7843,18 @@ function updateMinerPlace(dt){
     mineCartMesh.position.x = -3.8;
   }
   const nearNode = inOrNearMine ? findNearestMineNode() : null;
+  if(autoClickerOn && !escPaused && !setOpen){
+    // 0.0 saniye bekleme süresiyle (her karede anında çoklu tıklama!) en yakın bloğu veya hazine noktasını kazar
+    if(inOrNearMine){
+      for(let ac = 0; ac < 3; ac++){
+        const targetNd = findNearestMineNode();
+        if(!targetNd) break;
+        hitMineRock(targetNd, true);
+      }
+    } else if($('digBtn') && $('digBtn').style.display !== 'none'){
+      $('digBtn').click();
+    }
+  }
   const deepInMine = inOrNearMine && (P.y || 0) < -1.5;
   disp('minerBtn', inOrNearMine ? 'block' : 'none');
   if(inOrNearMine){
@@ -9977,7 +10013,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-26-220222';
+const APP_VERSION = '2026-10-26-221312';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
