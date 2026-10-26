@@ -242,8 +242,8 @@ button small{font-size:9px;margin-top:0}
 <button id="buyPickBtn" style="display:none;background:#9a3412;border-color:#fb923c;font-weight:700">⛏️ Kazma Al (150₺)</button>
 <button id="digBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:700">⛏️ Kazmayla Kaz!</button>
 <button id="sellFindsBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:700">💰 Bulduklarını Sat</button>
-<button id="minerBtn" style="display:none;background:#b45309;border-color:#fbbf24;font-weight:700">⛏️ Maden Dükkânı</button>
-<button id="mineHitBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">⛏️ Kayayı Kaz!</button>
+<button id="minerBtn" style="display:none;background:#b45309;border-color:#fbbf24;font-weight:700">🪏 Maden Dükkânı</button>
+<button id="mineHitBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">🪏 Kürekle Toprağı Kaz!</button>
 <button id="mineTntBtn" style="display:none;background:#dc2626;border-color:#fca5a5;font-weight:900">🧨 TNT Patlat!</button>
 <button id="mineCartBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:900">🛒 Vagonla Sat!</button>
 </div>
@@ -477,17 +477,17 @@ button small{font-size:9px;margin-top:0}
 </div>
 <div id="minerModal" class="modal" style="z-index:26">
   <div class="card" style="text-align:center;max-width:420px">
-    <h2>⛏️ Yeraltı Altın & Elmas Madeni</h2>
-    <p style="font-size:12px;margin-bottom:6px">Güçlü kazmalar, <b>🧨 TNT Dinamit</b> ve <b>🛒 Maden Vagonu</b> al! Mağaranın içine girip altın ve elmas kayalarını kır!</p>
+    <h2>🪏 Yeraltı Kürekle Kazı Madeni</h2>
+    <p style="font-size:12px;margin-bottom:6px">Güçlü kürekler, <b>🧨 TNT Dinamit</b> ve <b>🛒 Maden Vagonu</b> al! Mağaranın içindeki <b>toprak yığınlarını kürekle kazarak</b> altında gömülü altın, elmas ve hazine sandıklarını bul!</p>
     <div id="minerInfoBox" style="padding:8px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:13px;text-align:left;line-height:1.5;margin-bottom:8px"></div>
-    <button id="minerCollectBtn" class="wide" style="padding:10px;background:#15803d;border-color:#4ade80;font-weight:900;font-size:15px;margin-bottom:8px">🛒 Vagonla Madenleri Sat (0₺)</button>
+    <button id="minerCollectBtn" class="wide" style="padding:10px;background:#15803d;border-color:#4ade80;font-weight:900;font-size:15px;margin-bottom:8px">🛒 Vagonla Bulduklarını Sat (0₺)</button>
     <div style="display:grid;grid-template-columns:1fr;gap:5px;text-align:left;max-height:210px;overflow-y:auto">
-      <div class="row"><span>🪨 <b>Taş Kazma</b><small>Hasar: 1 · Temel maden kazması</small></span><button id="buyPick1Btn" style="background:#475569;border-color:#94a3b8">150₺</button></div>
-      <div class="row"><span>⚙️ <b>Demir Kazma</b><small>Hasar: 2 · +%25 daha çok maden verir</small></span><button id="buyPick2Btn" style="background:#0284c7;border-color:#7dd3fc">600₺</button></div>
-      <div class="row"><span>👑 <b>Altın Kazma</b><small>Hasar: 4 · +%60 daha çok altın/elmas verir</small></span><button id="buyPick3Btn" style="background:#ca8a04;border-color:#fde047">1.800₺</button></div>
-      <div class="row"><span>💎 <b>Elmas Kazma</b><small>Hasar: 8 · Kayaları tek vuruşta kırar, 2x kazanç!</small></span><button id="buyPick4Btn" style="background:#7e22ce;border-color:#e879f9">4.500₺</button></div>
-      <div class="row"><span>🧨 <b>TNT Dinamit Paketi (3 Adet)</b><small>Mağaradaki tüm kayaları tek seferde patlatır!</small></span><button id="buyTntBtn" style="background:#dc2626;border-color:#fca5a5">450₺ Al</button></div>
-      <div class="row"><span>🛒 <b>Raylı Maden Vagonu</b><small>Madenleri vagonla taşıyıp +%35 ekstra fiyata satar!</small></span><button id="buyCartBtn" style="background:#b45309;border-color:#fbbf24">1.200₺ Al</button></div>
+      <div class="row"><span>🪨 <b>Taş Kürek</b><small>Kazı Gücü: 1 · Temel toprak kazma küreği</small></span><button id="buyPick1Btn" style="background:#475569;border-color:#94a3b8">150₺</button></div>
+      <div class="row"><span>⚙️ <b>Demir Kürek</b><small>Kazı Gücü: 2 · +%25 daha değerli hazine çıkarır</small></span><button id="buyPick2Btn" style="background:#0284c7;border-color:#7dd3fc">600₺</button></div>
+      <div class="row"><span>👑 <b>Altın Kürek</b><small>Kazı Gücü: 3 · +%60 daha çok altın ve elmas bulur</small></span><button id="buyPick3Btn" style="background:#ca8a04;border-color:#fde047">1.800₺</button></div>
+      <div class="row"><span>💎 <b>Elmas Kürek</b><small>Kazı Gücü: 5 · Toprağı anında kazar, 2x kazanç!</small></span><button id="buyPick4Btn" style="background:#7e22ce;border-color:#e879f9">4.500₺</button></div>
+      <div class="row"><span>🧨 <b>TNT Dinamit Paketi (3 Adet)</b><small>Tüm toprak bloklarını tek seferde patlatıp hazineleri çıkarır!</small></span><button id="buyTntBtn" style="background:#dc2626;border-color:#fca5a5">450₺ Al</button></div>
+      <div class="row"><span>🛒 <b>Raylı Maden Vagonu</b><small>Bulduğun madenleri vagonla taşıyıp +%35 ekstra fiyata satar!</small></span><button id="buyCartBtn" style="background:#b45309;border-color:#fbbf24">1.200₺ Al</button></div>
     </div>
     <div id="minerMsg" style="min-height:18px;font-size:12px;margin-top:6px;font-weight:700;color:#4ade80"></div>
     <button id="minerCloseBtn" class="wide" style="margin-top:8px">Kapat</button>
@@ -2217,37 +2217,56 @@ mineCartGoldPile.visible = false;
 });
 minerGroup.add(mineCartMesh);
 
-// Mağara içindeki kazılabilir Altın, Elmas, Zümrüt ve Kömür/Demir Kayaları (6 adet)
-const MINE_NODES = [
-  {lx: 1.6, lz: -3.1, type: 'gold', name: '👑 Altın Damarı', col: 0xfbbf24, val: 95, maxHp: 4},
-  {lx: 3.5, lz: -2.4, type: 'diamond', name: '💎 Elmas Kayası', col: 0x38bdf8, val: 210, maxHp: 6},
-  {lx: 3.8, lz: 0.0,  type: 'emerald', name: '🟢 Zümrüt Kayası', col: 0x4ade80, val: 150, maxHp: 5},
-  {lx: 3.5, lz: 2.4,  type: 'diamond', name: '💎 Elmas Kayası', col: 0x38bdf8, val: 210, maxHp: 6},
-  {lx: 1.6, lz: 3.1,  type: 'gold', name: '👑 Altın Damarı', col: 0xfbbf24, val: 95, maxHp: 4},
-  {lx: 0.2, lz: -3.2, type: 'iron', name: '⚙️ Demir & Altın Kayası', col: 0xf59e0b, val: 65, maxHp: 3}
+// Mağara içindeki kürekle kazılarak altında gizli hazine aranan Toprak Yığınları (9 adet 3x3 kazı alanı)
+const MINE_LOOT_POOL = [
+  {name: '🪨 Toprak & Çakıl (Boş çıktı, kazmaya devam!)', col: 0x78350f, val: 0},
+  {name: '🪙 Eski Bakır Sikke', col: 0xd97706, val: 55},
+  {name: '👑 Altın Külçesi', col: 0xfbbf24, val: 120},
+  {name: '🟢 Zümrüt Taşı', col: 0x4ade80, val: 175},
+  {name: '💎 Parlayan Elmas', col: 0x38bdf8, val: 250},
+  {name: '🎁 Antik Hazine Sandığı!', col: 0xa855f7, val: 420}
 ];
-MINE_NODES.forEach(nd => {
-  const rg = new THREE.Group();
-  rg.position.set(nd.lx, 0.12, nd.lz);
-  addTo(rg, B(1.15, 1.05, 1.15), M(0x475569), 0, 0.52, 0); // ana kaya
-  // Üzerinde parlayan cevher kristalleri
-  [[-0.3, 0.65, -0.3], [0.32, 0.78, 0.25], [-0.15, 0.95, 0.3], [0.28, 0.45, -0.35], [0, 1.08, 0]].forEach(([ox, oy, oz]) => {
-    addTo(rg, B(0.32, 0.32, 0.32), new THREE.MeshBasicMaterial({color: nd.col}), ox, oy, oz);
+const MINE_NODES = [];
+const dirtSoilM = M(0x78350f), dirtTopM = M(0x92400e), holePitM = M(0x1c1917);
+[0.4, 2.0, 3.6].forEach(lx => {
+  [-2.6, 0.0, 2.6].forEach(lz => {
+    const rg = new THREE.Group();
+    rg.position.set(lx, 0.12, lz);
+    // Kazılınca altta görünecek koyu çukur halkası
+    const pit = addTo(rg, B(1.2, 0.05, 1.2), holePitM, 0, 0.02, 0);
+    // Kürekle kazılacak katmanlı toprak yığını (üstte gizli, içinde ne olduğu kazınca belli olur!)
+    const mound = new THREE.Group();
+    addTo(mound, B(1.18, 0.45, 1.18), dirtSoilM, 0, 0.22, 0);
+    addTo(mound, B(0.92, 0.35, 0.92), dirtTopM, 0, 0.55, 0);
+    addTo(mound, B(0.62, 0.24, 0.62), dirtSoilM, 0, 0.80, 0);
+    rg.add(mound);
+    // Toprak tamamen kazılınca çukurun içinden çıkan sürpriz hazine modeli
+    const prizeMat = new THREE.MeshBasicMaterial({color: 0xfbbf24});
+    const prizeMesh = addTo(rg, B(0.46, 0.46, 0.46), prizeMat, 0, 0.28, 0);
+    prizeMesh.visible = false;
+    minerGroup.add(rg);
+    MINE_NODES.push({
+      lx, lz,
+      wx: MINER_POS.x + lx,
+      wz: MINER_POS.z + lz,
+      name: 'Toprak Yığını',
+      maxHp: 3,
+      hp: 3,
+      respawnT: 0,
+      mesh: rg,
+      mound,
+      prizeMesh,
+      prizeMat
+    });
   });
-  minerGroup.add(rg);
-  nd.mesh = rg;
-  nd.hp = nd.maxHp;
-  nd.respawnT = 0;
-  nd.wx = MINER_POS.x + nd.lx;
-  nd.wz = MINER_POS.z + nd.lz;
 });
 
 const minerSignTex = tex(256, 96, (g, w, h) => {
   g.fillStyle = '#451a03'; g.fillRect(0, 0, w, h);
   g.strokeStyle = '#fbbf24'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
-  g.fillStyle = '#fde047'; g.font = 'bold 30px sans-serif';
+  g.fillStyle = '#fde047'; g.font = 'bold 28px sans-serif';
   g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText('⛏️ YERALTI MADENİ', w / 2, h / 2 + 2);
+  g.fillText('🪏 KÜREKLE KAZI MADENİ', w / 2, h / 2 + 2);
 });
 const minerSign = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 1.05), new THREE.MeshBasicMaterial({map: minerSignTex, side: THREE.DoubleSide}));
 minerSign.position.set(-3.48, 3.85, 0);
@@ -7396,15 +7415,26 @@ function updateDetectorZone(dt){
   }
 }
 
-// ⛏️ Yeraltı Altın & Elmas Madeni Tüneli, Kademeli Kazmalar, Raylı Vagon ve TNT Dinamit Sistemi
+// 🪏 Yeraltı Kürekle Toprak Kazı Madeni, Kademeli Kürekler, Raylı Vagon ve TNT Dinamit Sistemi
 const PICK_TIERS = [
-  {lv: 0, name: 'Yok (Kazma Al!)', dmg: 0, mult: 1.0, price: 0},
-  {lv: 1, name: '🪨 Taş Kazma', dmg: 1, mult: 1.0, price: 150},
-  {lv: 2, name: '⚙️ Demir Kazma', dmg: 2, mult: 1.25, price: 600},
-  {lv: 3, name: '👑 Altın Kazma', dmg: 4, mult: 1.6, price: 1800},
-  {lv: 4, name: '💎 Elmas Kazma', dmg: 8, mult: 2.0, price: 4500}
+  {lv: 0, name: 'Yok (Kürek Al!)', dmg: 0, mult: 1.0, price: 0},
+  {lv: 1, name: '🪨 Taş Kürek', dmg: 1, mult: 1.0, price: 150},
+  {lv: 2, name: '⚙️ Demir Kürek', dmg: 2, mult: 1.25, price: 600},
+  {lv: 3, name: '👑 Altın Kürek', dmg: 3, mult: 1.6, price: 1800},
+  {lv: 4, name: '💎 Elmas Kürek', dmg: 5, mult: 2.0, price: 4500}
 ];
 let mineCartAnimT = 0;
+
+function rollDigLoot(shovelLv){
+  // Kürek seviyesi yükseldikçe boş çıkma ihtimali azalır, altın/elmas/sandık çıkma şansı artar!
+  const r = Math.random() + (shovelLv - 1) * 0.11;
+  if(r < 0.22) return MINE_LOOT_POOL[0]; // boş toprak
+  if(r < 0.45) return MINE_LOOT_POOL[1]; // bakır sikke
+  if(r < 0.72) return MINE_LOOT_POOL[2]; // altın külçesi
+  if(r < 0.90) return MINE_LOOT_POOL[3]; // zümrüt
+  if(r < 1.08) return MINE_LOOT_POOL[4]; // elmas
+  return MINE_LOOT_POOL[5];              // antik hazine sandığı
+}
 
 function ensureMinerRigs(){
   if(!S.rigs || typeof S.rigs !== 'object') S.rigs = {pickLv: 0, tnt: 0, cart: false, bagVal: 0, bagCnt: 0};
@@ -7424,14 +7454,14 @@ function renderMinerModal(){
   if($('minerInfoBox')){
     $('minerInfoBox').innerHTML =
       `💵 Cüzdanındaki Nakit: <b style="color:#4ade80">${(S.money || 0).toLocaleString('tr-TR')}₺</b><br>` +
-      `⛏️ Elindeki Kazma: <b style="color:#fde047">${pk.name}</b> <small>(Hasar: ${pk.dmg}, Cevher: x${pk.mult})</small><br>` +
+      `🪏 Elindeki Kürek: <b style="color:#fde047">${pk.name}</b> <small>(Kazı Gücü: ${pk.dmg}, Değer: x${pk.mult})</small><br>` +
       `🧨 TNT Dinamit: <b style="color:#f87171">${S.rigs.tnt} Adet</b> · 🛒 Vagon: <b style="color:${S.rigs.cart ? '#4ade80' : '#9ca3af'}">${S.rigs.cart ? 'Aktif (+%35 Satış)' : 'Yok'}</b><br>` +
-      `💎 Çantadaki Cevher: <b>${S.rigs.bagCnt} Adet</b> (<b style="color:#fbbf24">${sellTotal.toLocaleString('tr-TR')}₺</b>)`;
+      `💎 Kazıdan Çıkan Hazine: <b>${S.rigs.bagCnt} Adet</b> (<b style="color:#fbbf24">${sellTotal.toLocaleString('tr-TR')}₺</b>)`;
   }
   if($('minerCollectBtn')){
     $('minerCollectBtn').textContent = S.rigs.cart
       ? `🛒 Vagonla +%35 Bonuslu Sat (${sellTotal.toLocaleString('tr-TR')}₺)`
-      : `💰 Çantadaki Madenleri Sat (${sellTotal.toLocaleString('tr-TR')}₺)`;
+      : `💰 Bulduğun Hazineleri Sat (${sellTotal.toLocaleString('tr-TR')}₺)`;
     $('minerCollectBtn').disabled = sellTotal <= 0;
   }
   [1, 2, 3, 4].forEach(lv => {
@@ -7464,7 +7494,7 @@ if($('minerCloseBtn')) $('minerCloseBtn').onclick = closeMinerModal;
 function sellMinedOres(){
   ensureMinerRigs();
   if(S.rigs.bagVal <= 0){
-    flash('Satılacak maden cevherin yok! Mağaradaki kayaları kaz.', '#f87171');
+    flash('Satılacak hazinen yok! Kürekle mağaradaki toprak yığınlarını kazıp altın ve elmas bul.', '#f87171');
     return;
   }
   const bonusMult = S.rigs.cart ? 1.35 : 1.0;
@@ -7478,8 +7508,8 @@ function sellMinedOres(){
   mineCartAnimT = 2.4;
   beep(920, 0.2, 'sine', 0.14);
   const msgTxt = S.rigs.cart
-    ? `🛒 ${cnt} maden Raylı Vagonla +%35 bonusla satıldı: +${total.toLocaleString('tr-TR')}₺!`
-    : `💰 ${cnt} maden cevheri satıldı: +${total.toLocaleString('tr-TR')}₺!`;
+    ? `🛒 ${cnt} hazine Raylı Vagonla +%35 bonusla satıldı: +${total.toLocaleString('tr-TR')}₺!`
+    : `💰 ${cnt} hazine satıldı: +${total.toLocaleString('tr-TR')}₺!`;
   if($('minerMsg')){ $('minerMsg').style.color = '#4ade80'; $('minerMsg').textContent = msgTxt; }
   flash(msgTxt, '#ffd54a');
   save(); renderMinerModal(); renderAll();
@@ -7498,10 +7528,10 @@ function buyPickTier(lv){
   }
   S.money -= tier.price;
   S.rigs.pickLv = lv;
-  S.mk.kazma = true; // hazine kazı alanında da geçerli olur
+  S.mk.kazma = true;
   beep(820, 0.16, 'sine', 0.13);
-  if(msg){ msg.style.color = '#4ade80'; msg.textContent = `✅ ${tier.name} satın alındı! Şimdi kayaları kırabilirsin!`; }
-  flash(`⛏️ ${tier.name} kuşanıldı!`, '#fde047');
+  if(msg){ msg.style.color = '#4ade80'; msg.textContent = `✅ ${tier.name} satın alındı! Şimdi toprağı kazıp hazine arayabilirsin!`; }
+  flash(`🪏 ${tier.name} kuşanıldı!`, '#fde047');
   save(); renderMinerModal(); renderAll();
 }
 [1, 2, 3, 4].forEach(lv => {
@@ -7519,7 +7549,7 @@ if($('buyTntBtn')) $('buyTntBtn').onclick = () => {
   S.rigs.tnt += 3;
   beep(740, 0.14, 'sawtooth', 0.1);
   if(msg){ msg.style.color = '#4ade80'; msg.textContent = `🧨 +3 TNT Dinamit alındı! (Toplam: ${S.rigs.tnt} adet)`; }
-  flash(`🧨 3 Adet TNT Dinamit aldın! Mağarada patlatabilirsin.`, '#f87171');
+  flash(`🧨 3 Adet TNT Dinamit aldın! Mağaradaki tüm toprağı patlatabilirsin.`, '#f87171');
   save(); renderMinerModal(); renderAll();
 };
 
@@ -7534,7 +7564,7 @@ if($('buyCartBtn')) $('buyCartBtn').onclick = () => {
   S.money -= 1200;
   S.rigs.cart = true;
   beep(860, 0.16, 'sine', 0.12);
-  if(msg){ msg.style.color = '#4ade80'; msg.textContent = '🛒 Raylı Maden Vagonu aktif! Artık madenler +%35 pahalıya satılıyor!'; }
+  if(msg){ msg.style.color = '#4ade80'; msg.textContent = '🛒 Raylı Maden Vagonu aktif! Artık buldukların +%35 pahalıya satılıyor!'; }
   flash('🛒 Raylı Maden Vagonu alındı! (+%35 Satış Bonusu)', '#4ade80');
   save(); renderMinerModal(); renderAll();
 };
@@ -7547,18 +7577,18 @@ function findNearestMineNode(){
     const d = Math.hypot(P.x - nd.wx, P.z - nd.wz);
     if(d < bestD){ bestD = d; best = nd; }
   }
-  return bestD < 3.6 ? best : null;
+  return bestD < 3.4 ? best : null;
 }
 
 function hitMineRock(targetNode){
   ensureMinerRigs();
   const nd = targetNode || findNearestMineNode();
   if(!nd || nd.hp <= 0){
-    flash('Yakınında kırılacak maden kayası yok, mağaranın içine yürü!', '#fbbf24');
+    flash('Yakınında kazılacak toprak yığını yok, mağaradaki diğer topraklara yaklaş!', '#fbbf24');
     return;
   }
   if(S.rigs.pickLv <= 0){
-    flash('⛏️ Kayaları kırmak için önce Maden Dükkânından bir Kazma (Taş/Demir/Altın/Elmas) almalısın!', '#f87171');
+    flash('🪏 Toprağı kazmak için önce Maden Dükkânından bir Kürek (Taş/Demir/Altın/Elmas) almalısın!', '#f87171');
     openMinerModal();
     return;
   }
@@ -7566,21 +7596,30 @@ function hitMineRock(targetNode){
   nd.hp = Math.max(0, nd.hp - pk.dmg);
   spawnSmoke(nd.wx, nd.wz);
   if(nd.hp > 0){
-    beep(380 + S.rigs.pickLv * 60, 0.07, 'triangle', 0.1);
-    const sc = 0.72 + 0.28 * (nd.hp / nd.maxHp);
-    nd.mesh.scale.set(sc, sc, sc);
-    flash(`⛏️ ${nd.name} kazılıyor... (Can: ${nd.hp}/${nd.maxHp})`, '#fde047');
+    beep(340 + S.rigs.pickLv * 55, 0.07, 'triangle', 0.1);
+    const scY = Math.max(0.25, nd.hp / nd.maxHp);
+    if(nd.mound) nd.mound.scale.set(1, scY, 1);
+    flash(`🪏 Toprak kürekle kazılıyor... (Kalan Katman: ${nd.hp}/${nd.maxHp})`, '#fde047');
   } else {
-    nd.mesh.visible = false;
-    nd.respawnT = 11;
-    const earnedVal = Math.round(nd.val * pk.mult);
-    S.rigs.bagVal += earnedVal;
-    S.rigs.bagCnt += 1;
-    S.xp = (S.xp || 0) + 30;
-    checkLevelUp();
-    beep(880, 0.16, 'sine', 0.14);
-    flash(`💎 Kırdın: ${nd.name} (+${earnedVal}₺ değerinde)! Vagon/Çanta: ${S.rigs.bagVal}₺`, '#4ade80');
-    save(); renderAll();
+    if(nd.mound) nd.mound.visible = false;
+    nd.respawnT = 9;
+    const loot = rollDigLoot(S.rigs.pickLv);
+    if(loot.val <= 0){
+      if(nd.prizeMesh) nd.prizeMesh.visible = false;
+      beep(240, 0.12, 'sawtooth', 0.08);
+      flash(`🪨 ${loot.name}`, '#cbd5e1');
+    } else {
+      const earnedVal = Math.round(loot.val * pk.mult);
+      if(nd.prizeMat) nd.prizeMat.color.setHex(loot.col);
+      if(nd.prizeMesh) nd.prizeMesh.visible = true;
+      S.rigs.bagVal += earnedVal;
+      S.rigs.bagCnt += 1;
+      S.xp = (S.xp || 0) + 28;
+      checkLevelUp();
+      beep(880, 0.16, 'sine', 0.14);
+      flash(`🎉 Toprağın altından çıktı: ${loot.name} (+${earnedVal}₺)! Vagon/Çanta: ${S.rigs.bagVal}₺`, '#4ade80');
+      save(); renderAll();
+    }
   }
 }
 if($('mineHitBtn')) $('mineHitBtn').onclick = () => hitMineRock(null);
@@ -7593,28 +7632,36 @@ function detonateMineTNT(){
   }
   const activeNodes = MINE_NODES.filter(nd => nd.hp > 0);
   if(!activeNodes.length){
-    flash('Şu an mağarada patlatılacak kaya yok, yeni kayaların çıkmasını bekle!', '#fbbf24');
+    flash('Şu an mağarada kazılacak toprak kalmadı, yeni toprakların dolmasını bekle!', '#fbbf24');
     return;
   }
   S.rigs.tnt -= 1;
-  const pk = PICK_TIERS[Math.max(1, S.rigs.pickLv)] || PICK_TIERS[1];
-  let totalAdded = 0, brokenCnt = 0;
+  const lv = Math.max(1, S.rigs.pickLv);
+  const pk = PICK_TIERS[lv] || PICK_TIERS[1];
+  let totalAdded = 0, foundCnt = 0;
   activeNodes.forEach(nd => {
     nd.hp = 0;
-    nd.mesh.visible = false;
-    nd.respawnT = 12;
-    const v = Math.round(nd.val * pk.mult * 1.15);
-    totalAdded += v;
-    brokenCnt++;
+    if(nd.mound) nd.mound.visible = false;
+    nd.respawnT = 10;
+    const loot = rollDigLoot(lv + 1);
+    if(loot.val > 0){
+      const v = Math.round(loot.val * pk.mult);
+      totalAdded += v;
+      foundCnt++;
+      if(nd.prizeMat) nd.prizeMat.color.setHex(loot.col);
+      if(nd.prizeMesh) nd.prizeMesh.visible = true;
+    } else if(nd.prizeMesh){
+      nd.prizeMesh.visible = false;
+    }
     spawnSmoke(nd.wx, nd.wz);
   });
   if(typeof spawnFirework === 'function') spawnFirework(MINER_POS.x + 2, MINER_POS.z);
   S.rigs.bagVal += totalAdded;
-  S.rigs.bagCnt += brokenCnt;
+  S.rigs.bagCnt += foundCnt;
   S.xp = (S.xp || 0) + 90;
   checkLevelUp();
   beep(140, 0.35, 'sawtooth', 0.2);
-  flash(`🧨 BÜYÜK PATLAMA! ${brokenCnt} kaya tek seferde parçalandı (+${totalAdded}₺ cevher)! Kalan TNT: ${S.rigs.tnt}`, '#f87171');
+  flash(`🧨 BÜYÜK PATLAMA! Toprakların altından ${foundCnt} hazine çıktı (+${totalAdded}₺)! Kalan TNT: ${S.rigs.tnt}`, '#f87171');
   save(); renderAll();
 }
 if($('mineTntBtn')) $('mineTntBtn').onclick = detonateMineTNT;
@@ -7625,10 +7672,16 @@ function updateMinerPlace(dt){
     const nd = MINE_NODES[i];
     if(nd.hp <= 0){
       nd.respawnT -= dt;
+      if(nd.prizeMesh && nd.prizeMesh.visible){
+        nd.prizeMesh.rotation.y += dt * 2.5;
+      }
       if(nd.respawnT <= 0){
         nd.hp = nd.maxHp;
-        nd.mesh.scale.set(1, 1, 1);
-        nd.mesh.visible = true;
+        if(nd.mound){
+          nd.mound.scale.set(1, 1, 1);
+          nd.mound.visible = true;
+        }
+        if(nd.prizeMesh) nd.prizeMesh.visible = false;
       }
     }
   }
@@ -7646,11 +7699,11 @@ function updateMinerPlace(dt){
   disp('minerBtn', inOrNearMine ? 'block' : 'none');
   if(inOrNearMine){
     const pk = PICK_TIERS[S.rigs.pickLv] || PICK_TIERS[0];
-    txt('minerBtn', `⛏️ Maden Dükkânı (${pk.lv ? pk.name : 'Kazma Al'})`);
+    txt('minerBtn', `🪏 Maden Dükkânı (${pk.lv ? pk.name : 'Kürek Al'})`);
   }
   disp('mineHitBtn', nearNode ? 'block' : 'none');
   if(nearNode){
-    txt('mineHitBtn', `⛏️ ${nearNode.name} Kaz (${nearNode.hp}/${nearNode.maxHp})`);
+    txt('mineHitBtn', `🪏 Kürekle Toprağı Kaz! (${nearNode.hp}/${nearNode.maxHp})`);
   }
   disp('mineTntBtn', (inOrNearMine && S.rigs.tnt > 0) ? 'block' : 'none');
   if(inOrNearMine && S.rigs.tnt > 0){
@@ -9794,7 +9847,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-26-212019';
+const APP_VERSION = '2026-10-26-212647';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
