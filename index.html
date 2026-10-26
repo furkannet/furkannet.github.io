@@ -998,6 +998,10 @@ scene.add(road);
 const walkMat = new THREE.MeshLambertMaterial({map:tileTex});
 const sideL = new THREE.Mesh(B(5,0.3,110), walkMat); sideL.position.set(-6.5,0.15,-40); sideL.receiveShadow = true; scene.add(sideL);
 const sideR = new THREE.Mesh(B(7,0.3,110), walkMat); sideR.position.set(7.5,0.15,-40); sideR.receiveShadow = true; scene.add(sideR);
+const rightLawn = new THREE.Mesh(new THREE.PlaneGeometry(14, 110), M(0x4f9d55));
+rightLawn.rotation.x = -Math.PI / 2;
+rightLawn.position.set(17.5, 0.02, -40);
+scene.add(rightLawn);
 
 const dashMat = M(0xe9e4d0);
 for(let z = -88; z < 8; z += 6){
@@ -1574,7 +1578,7 @@ const addTo = (parent, geo, mat, x, y, z) => {
 // karavan ölçeği: tüm karavan bu oranda büyür, etkileşim mesafeleri de buna göre ayarlanır
 const TS = 1.15;
 const stall = new THREE.Group();
-stall.position.set(9.4, 0, -1); // COMOGENE ile aynı hizada
+stall.position.set(13.2, 0, -1); // kaldırımın arkasındaki çimli alanda durur
 stall.scale.set(TS, TS, TS);
 scene.add(stall);
 const CREAM = M(0xf3e9d2), RED = M(0xc0392b), ROOF = M(0xf5f5f5), DARK = M(0x2a2e35), STEEL = M(0xbfc5cc), TIRE = M(0x111111);
@@ -2223,18 +2227,18 @@ TABLES_POS.forEach(tb => {
 function syncRestaurantLayout(){
   const isRest = !!(S.kar.restoran || S.mk.restoran);
   if(TABLES_POS[0]){
-    TABLES_POS[0].x = isRest ? 5.6 : 6.4;
+    TABLES_POS[0].x = isRest ? 12.6 : 11.4;
     TABLES_POS[0].z = isRest ? -4.2 : -6.8;
     TABLES_POS[0].seatX = TABLES_POS[0].x;
     TABLES_POS[0].seatZ = TABLES_POS[0].z - 0.7;
-    if(TABLES_POS[0].meshGroup) TABLES_POS[0].meshGroup.position.set(TABLES_POS[0].x, 0.3, TABLES_POS[0].z);
+    if(TABLES_POS[0].meshGroup) TABLES_POS[0].meshGroup.position.set(TABLES_POS[0].x, isRest ? 0.05 : 0.02, TABLES_POS[0].z);
   }
   if(TABLES_POS[1]){
-    TABLES_POS[1].x = isRest ? 5.6 : 6.4;
+    TABLES_POS[1].x = isRest ? 12.6 : 11.4;
     TABLES_POS[1].z = isRest ? 1.8 : -9.6;
     TABLES_POS[1].seatX = TABLES_POS[1].x;
     TABLES_POS[1].seatZ = TABLES_POS[1].z - 0.7;
-    if(TABLES_POS[1].meshGroup) TABLES_POS[1].meshGroup.position.set(TABLES_POS[1].x, 0.3, TABLES_POS[1].z);
+    if(TABLES_POS[1].meshGroup) TABLES_POS[1].meshGroup.position.set(TABLES_POS[1].x, isRest ? 0.05 : 0.02, TABLES_POS[1].z);
   }
 }
 diningTablesGroup.visible = false;
@@ -2997,7 +3001,7 @@ function renderStall(){
   restaurantFacade.visible = hasRestoran;
   if(typeof stallWheels !== 'undefined') stallWheels.forEach(w => { w.visible = !hasRestoran; });
   if(hasRestoran && !D.driving){
-    D.x = 12.6; D.z = -1; D.h = 0;
+    D.x = 17.8; D.z = -1; D.h = 0;
     stall.position.set(D.x, 0, D.z);
   }
   if(typeof syncRestaurantLayout === 'function') syncRestaurantLayout();
@@ -3057,11 +3061,11 @@ function setZone(){
 }
 
 /* ================= Oyuncu (birinci şahıs) ================= */
-const P = {x:6.3, z:0, yaw:-Math.PI/2, pitch:0};
+const P = {x:10.8, z:0, yaw:-Math.PI/2, pitch:0};
 const keys = {};
 const joy = {id:null, cx:0, cy:0, dx:0, dy:0};
 const joyEl = $('joy'), knob = $('knob');
-const COUNTER = {x:9.4 - 1.5 * TS, z:-1}, VENDOR_AT = {x:8.6, z:4.8};
+const COUNTER = {x:13.2 - 1.5 * TS, z:-1}, VENDOR_AT = {x:8.6, z:4.8};
 let nearC = false, nearV = false;
 const nearCounter = () => {
   if(D.driving || C.driving) return false;
@@ -3086,15 +3090,18 @@ function free(x, z){
     if(Math.abs(x + 20) < 0.35 && !(z > -64.1 && z < -59.9)) return false;
   }
   if(x > -7.5 && x < -6.1 && z > -62 && z < -42) return false; // benzin istasyonu (kaldırımda)
-  // ev ve bahçe veya Büyük Döner Restoranı:
-  if(x > 10.4){
-    const hasRest = !!(S.kar.restoran || S.mk.restoran);
-    const inRest = hasRest && x <= 14.9 && z > -6.6 && z < 3.6;
+  // sağ taraftaki çimli alan (dönerci ve restoran alanı), ev ve bahçe:
+  if(x > 10.4 && z <= -14.8 && z >= -29.2){
     const inHouse = x > 10.72 && x < 15.28 && z > -24.88 && z < -19.12;
     const doorway = x > 10.4 && x <= 10.75 && z > -22.54 && z < -21.46;
     const corridor = x > 10.4 && x <= 16.4 && z > -28.8 && z < -26;
     const garden = x > 16.4 && x < 21.5 && z > -28.8 && z < -15.2;
-    if(!(inRest || inHouse || doorway || corridor || garden)) return false;
+    if(!(inHouse || doorway || corridor || garden)) return false;
+  }
+  if((S.kar.restoran || S.mk.restoran) && x > 11.2 && x < 20.6 && z > -7.0 && z < 4.2){
+    const inRest = x >= 11.4 && x <= 20.1 && z > -6.6 && z < 3.6;
+    const atDoor = x <= 11.5 && z > -4.8 && z < 1.2;
+    if(!inRest && !atDoor) return false;
   }
   if(Math.abs(x) < 4.3 && !((z > -64 && z < -56) || (z > -2.5 && z < 0.5))) return false; // yaya geçitleri
   // karavan: içi (kapıdan girilir) dışında duvar; döner ocağı engel
@@ -3117,8 +3124,8 @@ const inside = () => {
 };
 let wasInside = false;
 
-// Karavan: sürülebilir. Park edilince tezgâh açılır.
-const D = {x:9.4, z:-1, h:0, v:0, driving:false};
+// Karavan: sürülebilir. Park edilince tezgâh açılır (kaldırımın arkasındaki çimli alanda başlar).
+const D = {x:13.2, z:-1, h:0, v:0, driving:false};
 // dünya koordinatı <-> karavan yerel koordinatı (birim: TS öncesi, yani karavan birimi)
 const truckLocal = (x, z) => {
   const c = Math.cos(D.h), s = Math.sin(D.h);
@@ -3132,7 +3139,7 @@ const localToWorld = (lx, lz) => {
 let crashCD = 0;
 let kick = null; // araba çarpınca oyuncunun fırlama animasyonu
 const truckFree = (x, z) => {
-  if(x < -8.5 || x > 9.8 || z < -89 || z > 6) return false;
+  if(x < -8.5 || x > 18.5 || z < -89 || z > 6) return false;
   if(Math.abs(x - 8.6) < 2.4 && Math.abs(z - 4.8) < 3.6) return false;
   return true;
 };
@@ -5582,8 +5589,8 @@ function startShift(){
     // borç birikir ama çalışan ayrılmaz; sadece maaş yazısı görünür
     flash(`Çalışanın maaşı birikti: ${S.wageDue}₺ (💵 ile öde)`, '#ffd54a');
   }
-  Object.assign(D, {x: (S.kar.restoran || S.mk.restoran) ? 12.6 : 9.4, z:-1, h:0, v:0, driving:false});
-  P.x = (S.kar.restoran || S.mk.restoran) ? 9.5 : 6.3; P.z = 0; P.yaw = -Math.PI/2;
+  Object.assign(D, {x: (S.kar.restoran || S.mk.restoran) ? 17.8 : 13.2, z:-1, h:0, v:0, driving:false});
+  P.x = (S.kar.restoran || S.mk.restoran) ? 14.5 : 10.8; P.z = 0; P.yaw = -Math.PI/2;
   can = MAX_LIVES; shiftEarned = 0; shiftT = SHIFT_LEN; shiftEnded = false; over = false;
   rushCD = RUSH_EVERY; rushLeft = 0; rushOn = false;
   hotCD = 90; hotLeft = 0;
@@ -7882,14 +7889,14 @@ comoWalkers = comoWalkers.filter(w => !w.dead);
     rainGeo.attributes.position.needsUpdate = true;
   }
 
-  // sıra hedefleri (restoran binası alındıysa müşteriler kapıdan içeri girip içeride kasa önünde sıraya dizilir)
+  // sıra hedefleri (dönerci çimlerde, restoran binası alındıysa müşteriler kapıdan içeri girip içeride kasa önünde sıraya dizilir)
   const hasRestQueue = !!(S.kar.restoran || S.mk.restoran);
   queue.forEach((c, i) => {
     if(hasRestQueue){
-      c.slotX = Math.max(6.4, 9.8 - i * 1.15);
+      c.slotX = Math.max(11.6, 15.0 - i * 1.1);
       c.slotZ = -1.2 - (i % 2) * 0.45;
     } else {
-      c.slotX = 5.0;
+      c.slotX = 10.8;
       c.slotZ = SLOT0 - i * SPACING;
     }
   });
@@ -7898,7 +7905,7 @@ comoWalkers = comoWalkers.filter(w => !w.dead);
   let changed = false;
   custs.forEach(c => {
     if(c.leaving){
-      if(hasRestQueue && c.x > 5.4){
+      if(c.x > 6.2){
         c.x -= WALK * dt;
         c.g.rotation.y = -Math.PI / 2;
       } else {
@@ -8032,20 +8039,22 @@ comoWalkers = comoWalkers.filter(w => !w.dead);
         waiterState.targetTb = needCust.tableSlot;
         waiterState.state = 'to_counter';
       } else {
-        const dx = 7.4 - waiterState.x, dz = -4.5 - waiterState.z;
-        const d = Math.hypot(dx, dz);
-        if(d > 0.1){
-          waiterState.x += (dx / d) * 3.2 * dt;
-          waiterState.z += (dz / d) * 3.2 * dt;
-          waiterMesh.rotation.y = Math.atan2(dx, dz);
-          wWalk = true;
-        } else {
-          waiterMesh.rotation.y = Math.PI;
-        }
+      const idleX = (S.kar.restoran || S.mk.restoran) ? 13.8 : 11.2;
+      const dx = idleX - waiterState.x, dz = -4.5 - waiterState.z;
+      const d = Math.hypot(dx, dz);
+      if(d > 0.1){
+        waiterState.x += (dx / d) * 3.2 * dt;
+        waiterState.z += (dz / d) * 3.2 * dt;
+        waiterMesh.rotation.y = Math.atan2(dx, dz);
+        wWalk = true;
+      } else {
+        waiterMesh.rotation.y = Math.PI;
       }
-    } else if(waiterState.state === 'to_counter' || waiterState.state === 'to_phone_counter'){
-      const isPhoneDelivery = waiterState.state === 'to_phone_counter';
-      const dx = 7.4 - waiterState.x, dz = -2.2 - waiterState.z;
+    }
+  } else if(waiterState.state === 'to_counter' || waiterState.state === 'to_phone_counter'){
+    const isPhoneDelivery = waiterState.state === 'to_phone_counter';
+    const cntX = (S.kar.restoran || S.mk.restoran) ? 15.2 : 11.2;
+    const dx = cntX - waiterState.x, dz = -2.2 - waiterState.z;
       const d = Math.hypot(dx, dz);
       if(d > 0.12){
         waiterState.x += (dx / d) * 3.6 * dt;
@@ -9408,7 +9417,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-26-200429';
+const APP_VERSION = '2026-10-26-203228';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
