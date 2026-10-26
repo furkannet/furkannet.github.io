@@ -2195,13 +2195,12 @@ const minerGroup = new THREE.Group();
 minerGroup.position.set(MINER_POS.x, 0, MINER_POS.z);
 scene.add(minerGroup);
 const rockCaveM = M(0x334155), darkRockM = M(0x1e293b), beamWoodM = M(0x78350f), railIronM = M(0x94a3b8);
-// Yerin altına doğru 14 katman (-17m derinliğe kadar!) inen derin maden kuyusu duvarları ve tabanı
+// Yerin altına doğru sonsuzluğa inen derin maden kuyusu duvarları (360m derinlik!)
 [
-  [B(10.0, 0.35, 6.6), darkRockM, 1.4, -17.3, 0],    // en dip yeraltı mağara tabanı (-17.3m)
-  [B(0.4, 17.6, 6.6), rockCaveM, 6.2, -8.6, 0],      // doğu yeraltı kaya duvarı
-  [B(10.0, 17.6, 0.4), rockCaveM, 1.4, -8.6, -3.1],  // kuzey yeraltı kaya duvarı
-  [B(10.0, 17.6, 0.4), rockCaveM, 1.4, -8.6, 3.1],   // güney yeraltı kaya duvarı
-  [B(0.4, 17.6, 6.6), rockCaveM, -3.4, -8.6, 0],     // batı giriş altı kaya duvarı
+  [B(0.4, 360, 6.6), rockCaveM, 6.2, -180, 0],      // doğu yeraltı kaya duvarı
+  [B(10.0, 360, 0.4), rockCaveM, 1.4, -180, -3.1],  // kuzey yeraltı kaya duvarı
+  [B(10.0, 360, 0.4), rockCaveM, 1.4, -180, 3.1],   // güney yeraltı kaya duvarı
+  [B(0.4, 360, 6.6), rockCaveM, -3.4, -180, 0],     // batı giriş altı kaya duvarı
   // Maden ocağı çevresinde ahşap korkuluk/çerçeve (yüzeyde)
   [B(9.6, 0.35, 0.25), beamWoodM, 1.4, 0.2, -3.15],
   [B(9.6, 0.35, 0.25), beamWoodM, 1.4, 0.2, 3.15],
@@ -2289,9 +2288,7 @@ const cubeBlockGeo = B(1.12, 1.12, 1.12);
 const MINE_NODES = [];
 const MINE_COLS_X = [0.8, 2.0, 3.2, 4.4];
 const MINE_COLS_Z = [-1.8, -0.6, 0.6, 1.8];
-// 14 Katman derinlik (y: -0.6m'den -16.2m'ye kadar çok aşağı iner!)
 const MINE_LAYERS_Y = [];
-for(let li = 0; li < 14; li++) MINE_LAYERS_Y.push(-0.6 - li * 1.2);
 
 function pickCubeBlockType(layerIdx){
   const r = Math.random();
@@ -2311,24 +2308,38 @@ function pickCubeBlockType(layerIdx){
     if(r < 0.68) return BLOCK_TYPES.iron;
     if(r < 0.88) return BLOCK_TYPES.gold;
     return BLOCK_TYPES.diamond;
-  } else if(layerIdx <= 10){
+  } else if(layerIdx <= 11){
     if(r < 0.45) return BLOCK_TYPES.stone;
     if(r < 0.65) return BLOCK_TYPES.gold;
     if(r < 0.85) return BLOCK_TYPES.diamond;
     return BLOCK_TYPES.emerald;
   } else {
-    if(r < 0.38) return BLOCK_TYPES.stone;
-    if(r < 0.56) return BLOCK_TYPES.diamond;
-    if(r < 0.76) return BLOCK_TYPES.emerald;
-    if(r < 0.92) return BLOCK_TYPES.ruby;
+    if(r < 0.35) return BLOCK_TYPES.stone;
+    if(r < 0.52) return BLOCK_TYPES.diamond;
+    if(r < 0.72) return BLOCK_TYPES.emerald;
+    if(r < 0.90) return BLOCK_TYPES.ruby;
     return BLOCK_TYPES.ancient;
   }
 }
 
-MINE_LAYERS_Y.forEach((ly, layerIdx) => {
+// Üst katta her blok 2 vuruşta kırılır; aşağı doğru indikçe canı artar ve kazmak zorlaşır!
+function calcMineBlockHp(layerIdx, bType){
+  const depthExtra = Math.floor(layerIdx / 2);
+  const oreExtra = (bType.id === 'dirt' || bType.id === 'stone') ? 0 : Math.floor((bType.hp - 1) / 2);
+  return 2 + depthExtra + oreExtra;
+}
+
+// Sonsuz maden katmanı üretici: oyuncu aşağı indikçe yeni katmanları otomatik ekler!
+function appendMineLayer(){
+  const layerIdx = MINE_LAYERS_Y.length;
+  const ly = -0.6 - layerIdx * 1.2;
+  MINE_LAYERS_Y.push(ly);
+  const depthValMult = 1 + Math.max(0, layerIdx - 8) * 0.12;
   MINE_COLS_X.forEach((lx, cxIdx) => {
     MINE_COLS_Z.forEach((lz, czIdx) => {
       const bType = pickCubeBlockType(layerIdx);
+      const maxHp = calcMineBlockHp(layerIdx, bType);
+      const val = Math.round(bType.val * depthValMult);
       const mesh = new THREE.Mesh(cubeBlockGeo, BLOCK_MATS[bType.id]);
       mesh.position.set(lx, ly, lz);
       minerGroup.add(mesh);
@@ -2340,24 +2351,37 @@ MINE_LAYERS_Y.forEach((ly, layerIdx) => {
         wz: MINER_POS.z + lz,
         bType,
         name: bType.name,
-        val: bType.val,
-        maxHp: bType.hp,
-        hp: bType.hp,
+        val,
+        maxHp,
+        hp: maxHp,
         mesh
       });
     });
   });
-});
+}
+for(let li = 0; li < 12; li++) appendMineLayer();
+
+function ensureInfiniteMineDepth(playerY){
+  const curBottomY = MINE_LAYERS_Y.length ? MINE_LAYERS_Y[MINE_LAYERS_Y.length - 1] : -0.6;
+  // Oyuncu en alt katmana 6 metre yaklaştıkça altına yeni katmanlar ekle (sonsuz derinlik!)
+  let guard = 0;
+  while((playerY || 0) - 6.5 < (MINE_LAYERS_Y[MINE_LAYERS_Y.length - 1] || 0) && guard++ < 6){
+    appendMineLayer();
+  }
+}
 
 function resetMineForNewShift(){
   for(let i = 0; i < MINE_NODES.length; i++){
     const nd = MINE_NODES[i];
-    const bType = pickCubeBlockType(nd.layerIdx || 0);
+    const layerIdx = nd.layerIdx || 0;
+    const bType = pickCubeBlockType(layerIdx);
+    const maxHp = calcMineBlockHp(layerIdx, bType);
+    const depthValMult = 1 + Math.max(0, layerIdx - 8) * 0.12;
     nd.bType = bType;
     nd.name = bType.name;
-    nd.val = bType.val;
-    nd.maxHp = bType.hp;
-    nd.hp = bType.hp;
+    nd.val = Math.round(bType.val * depthValMult);
+    nd.maxHp = maxHp;
+    nd.hp = maxHp;
     nd.mesh.material = BLOCK_MATS[bType.id];
     nd.mesh.scale.set(1, 1, 1);
     nd.mesh.visible = true;
@@ -6288,16 +6312,18 @@ canvas.addEventListener('pointerup', e => {
     } else flash('Antikacıya biraz yaklaş', '#f87171');
     return;
   }
-  // madenci yerine dokunmak = küp bloğa dokunduysa anında kır, şefe/vagona dokunduysa maden dükkânını aç
+  // madenci yerine dokunmak = küp bloğa dokunduysa vur/kır; boşluğa basınca dükkân açılmasın, yalnızca şefe/vagona/tabelaya basınca açılsın!
   if(ray.intersectObject(minerGroup, true).length){
     const hitNode = MINE_NODES.find(nd => nd.hp > 0 && nd.mesh && ray.intersectObject(nd.mesh, true).length > 0);
     if(hitNode && Math.hypot(P.x - hitNode.wx, P.z - hitNode.wz) < 6.8){
       hitMineRock(hitNode);
       return;
     }
-    if(Math.hypot(P.x - MINER_POS.x, P.z - MINER_POS.z) < 9.5){
-      openMinerModal();
-    } else flash('Yeraltı madenine biraz yaklaş', '#f87171');
+    const clickedShopObj = ray.intersectObject(minerBoss, true).length > 0 || ray.intersectObject(mineCartMesh, true).length > 0 || ray.intersectObject(minerSign, true).length > 0;
+    if(clickedShopObj){
+      if(Math.hypot(P.x - MINER_POS.x, P.z - MINER_POS.z) < 9.5) openMinerModal();
+      else flash('Yeraltı madenine biraz yaklaş', '#f87171');
+    }
     return;
   }
   // arabacıya dokunmak = taksi
@@ -7556,7 +7582,8 @@ function getMineFloorY(px, pz){
       return nd.ly + 0.56; // bloğun tam üst yüzeyi
     }
   }
-  return -16.8; // tüm 14 katman kırıldıysa en dip yeraltı tabanı
+  const bottomY = MINE_LAYERS_Y.length ? MINE_LAYERS_Y[MINE_LAYERS_Y.length - 1] : -16.8;
+  return bottomY - 0.6;
 }
 
 function ensureMinerRigs(){
@@ -7711,20 +7738,28 @@ function hitMineRock(targetNode){
     flash('Yakınında kırılacak blok yok, maden çukurundaki küp bloklara yaklaş veya üstüne tıkla!', '#fbbf24');
     return;
   }
-  // Tıklayınca tek seferde kırılsın; yalnızca yeni vardiyada sıfırlanır!
-  nd.hp = 0;
-  nd.mesh.visible = false;
-  spawnSmoke(nd.wx, nd.wz);
   const pk = PICK_TIERS[Math.max(1, S.rigs.pickLv)] || PICK_TIERS[1];
-  const earnedVal = Math.round(nd.val * pk.mult);
-  S.rigs.bagVal += earnedVal;
-  S.rigs.bagCnt += 1;
-  S.xp = (S.xp || 0) + 25;
-  checkLevelUp();
+  const dmg = S.rigs.pickLv > 0 ? pk.dmg : 1; // başlangıçta 1 hasar (üst bloklar 2 vuruşta kırılır!), güçlü kazmayla daha hızlı kırılır
+  nd.hp = Math.max(0, nd.hp - dmg);
+  spawnSmoke(nd.wx, nd.wz);
   const depthM = Math.round(Math.abs(nd.ly));
-  beep(680 + Math.min(500, (nd.layerIdx || 0) * 35), 0.13, 'sine', 0.13);
-  flash(`${nd.name} kırıldı! (-${depthM}m Derinlik · +${earnedVal}₺) · Çanta: ${S.rigs.bagVal}₺`, '#4ade80');
-  save(); renderAll();
+  if(nd.hp > 0){
+    const sc = 0.78 + 0.22 * (nd.hp / nd.maxHp);
+    nd.mesh.scale.set(sc, sc, sc);
+    beep(360 + (S.rigs.pickLv || 1) * 55, 0.06, 'triangle', 0.1);
+    flash(`⛏️ ${nd.name} kazılıyor... (Can: ${nd.hp}/${nd.maxHp} · -${depthM}m)`, '#fde047');
+  } else {
+    nd.mesh.visible = false;
+    ensureInfiniteMineDepth(nd.ly);
+    const earnedVal = Math.round(nd.val * pk.mult);
+    S.rigs.bagVal += earnedVal;
+    S.rigs.bagCnt += 1;
+    S.xp = (S.xp || 0) + 25;
+    checkLevelUp();
+    beep(680 + Math.min(500, (nd.layerIdx || 0) * 35), 0.13, 'sine', 0.13);
+    flash(`${nd.name} kırıldı! (-${depthM}m Derinlik · +${earnedVal}₺) · Çanta: ${S.rigs.bagVal}₺`, '#4ade80');
+    save(); renderAll();
+  }
 }
 if($('mineHitBtn')) $('mineHitBtn').onclick = () => hitMineRock(null);
 if($('mineSurfaceBtn')) $('mineSurfaceBtn').onclick = () => {
@@ -7771,6 +7806,9 @@ if($('mineTntBtn')) $('mineTntBtn').onclick = detonateMineTNT;
 
 function updateMinerPlace(dt){
   ensureMinerRigs();
+  const distMine = Math.hypot(P.x - MINER_POS.x, P.z - MINER_POS.z);
+  const inOrNearMine = !C.driving && !D.driving && !CM.driving && distMine < 9.5;
+  if(inOrNearMine) ensureInfiniteMineDepth(P.y || 0);
   // Kırılan bloklar kendi kendine çıkmaz, her yeni vardiyada (startShift) sıfırlanır!
   mineCartGoldPile.visible = S.rigs.bagVal > 0;
   if(mineCartAnimT > 0){
@@ -7780,8 +7818,6 @@ function updateMinerPlace(dt){
   } else {
     mineCartMesh.position.x = -3.8;
   }
-  const distMine = Math.hypot(P.x - MINER_POS.x, P.z - MINER_POS.z);
-  const inOrNearMine = !C.driving && !D.driving && !CM.driving && distMine < 9.5;
   const nearNode = inOrNearMine ? findNearestMineNode() : null;
   const deepInMine = inOrNearMine && (P.y || 0) < -1.5;
   disp('minerBtn', inOrNearMine ? 'block' : 'none');
@@ -7791,7 +7827,7 @@ function updateMinerPlace(dt){
   }
   disp('mineHitBtn', nearNode ? 'block' : 'none');
   if(nearNode){
-    txt('mineHitBtn', `⛏️ ${nearNode.name} Kır!`);
+    txt('mineHitBtn', `⛏️ ${nearNode.name} Kır (${nearNode.hp}/${nearNode.maxHp})`);
   }
   disp('mineSurfaceBtn', deepInMine ? 'block' : 'none');
   if(deepInMine){
@@ -9941,7 +9977,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-26-215454';
+const APP_VERSION = '2026-10-26-220222';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
