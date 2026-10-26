@@ -6188,9 +6188,13 @@ canvas.addEventListener('pointerup', e => {
   if(e.pointerId !== look.id) return;
   look.id = null;
   if(look.moved > 10 || !active()) return;
+  handleCanvasTapAt(e.clientX, e.clientY);
+});
+function handleCanvasTapAt(clientX, clientY){
+  if(!active()) return;
   const r = canvas.getBoundingClientRect();
-  ptr.x = ((e.clientX - r.left) / r.width) * 2 - 1;
-  ptr.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+  ptr.x = ((clientX - r.left) / r.width) * 2 - 1;
+  ptr.y = -((clientY - r.top) / r.height) * 2 + 1;
   ray.setFromCamera(ptr, camera);
   // saate dokunmak = saati söyle
   if(ray.intersectObject(clockMesh, false).length){ sayTime(); return; }
@@ -7770,8 +7774,22 @@ function hitMineRock(targetNode, isSilentAuto){
 }
 if($('mineHitBtn')) $('mineHitBtn').onclick = () => hitMineRock(null, false);
 
-// ⚡ 0.0 Saniye Ultra Hızlı Auto Clicker Sistemi
+// ⚡ 0.0 Saniye Ultra Hızlı Genel Auto Clicker Sistemi (madenle ilgisi yok, imlecin/parmağın olduğu yere 0.0sn'de gerçek tıklama yapar!)
 let autoClickerOn = false;
+let acCursorX = window.innerWidth / 2, acCursorY = window.innerHeight / 2;
+window.addEventListener('pointermove', e => {
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  if(el && el.id === 'autoClickBtn') return;
+  acCursorX = e.clientX;
+  acCursorY = e.clientY;
+}, {passive: true});
+window.addEventListener('pointerdown', e => {
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  if(el && (el.id === 'autoClickBtn' || (el.closest && el.closest('#autoClickBtn')))) return;
+  acCursorX = e.clientX;
+  acCursorY = e.clientY;
+}, {passive: true});
+
 function toggleAutoClicker(){
   autoClickerOn = !autoClickerOn;
   const b = $('autoClickBtn');
@@ -7783,9 +7801,27 @@ function toggleAutoClicker(){
       : '⚡<span class="t"> Auto Clicker: Kapalı</span>';
   }
   beep(autoClickerOn ? 880 : 340, 0.12, 'sine', 0.12);
-  flash(autoClickerOn ? '⚡ Auto Clicker AÇILDI! (0.0 saniye hızında otomatik tıklıyor!)' : '⚡ Auto Clicker kapatıldı.', autoClickerOn ? '#4ade80' : '#cbd5e1');
+  flash(autoClickerOn ? '⚡ Auto Clicker AÇILDI! (İmlecin/dokunduğun yere 0.0sn hızında tıklıyor!)' : '⚡ Auto Clicker kapatıldı.', autoClickerOn ? '#4ade80' : '#cbd5e1');
 }
 if($('autoClickBtn')) $('autoClickBtn').onclick = toggleAutoClicker;
+
+function runGlobalAutoClicker(){
+  if(!autoClickerOn) return;
+  const el = document.elementFromPoint(acCursorX, acCursorY);
+  if(!el) return;
+  // Auto Clicker düğmesinin kendisine basıp yanlışlıkla kapatmasın
+  if(el.id === 'autoClickBtn' || (el.closest && el.closest('#autoClickBtn'))) return;
+  if(el === canvas){
+    if(!escPaused && !setOpen) handleCanvasTapAt(acCursorX, acCursorY);
+  } else {
+    const btn = (el.closest && el.closest('button')) || el;
+    if(btn && !btn.disabled && typeof btn.click === 'function'){
+      btn.click();
+    }
+    el.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true, clientX: acCursorX, clientY: acCursorY}));
+    el.dispatchEvent(new PointerEvent('pointerup', {bubbles: true, clientX: acCursorX, clientY: acCursorY}));
+  }
+}
 if($('mineSurfaceBtn')) $('mineSurfaceBtn').onclick = () => {
   P.x = MINER_POS.x - 4.0;
   P.z = MINER_POS.z;
@@ -7843,18 +7879,6 @@ function updateMinerPlace(dt){
     mineCartMesh.position.x = -3.8;
   }
   const nearNode = inOrNearMine ? findNearestMineNode() : null;
-  if(autoClickerOn && !escPaused && !setOpen){
-    // 0.0 saniye bekleme süresiyle (her karede anında çoklu tıklama!) en yakın bloğu veya hazine noktasını kazar
-    if(inOrNearMine){
-      for(let ac = 0; ac < 3; ac++){
-        const targetNd = findNearestMineNode();
-        if(!targetNd) break;
-        hitMineRock(targetNd, true);
-      }
-    } else if($('digBtn') && $('digBtn').style.display !== 'none'){
-      $('digBtn').click();
-    }
-  }
   const deepInMine = inOrNearMine && (P.y || 0) < -1.5;
   disp('minerBtn', inOrNearMine ? 'block' : 'none');
   if(inOrNearMine){
@@ -8946,6 +8970,7 @@ function frame(now){
   updatePondFishes(dt);
   updateDetectorZone(dt);
   updateMinerPlace(dt);
+  runGlobalAutoClicker();
   const nearPeerCarKey = (!C.driving && !D.driving && !CM.driving) ? findNearbyPeerCar() : null;
   disp('passBtn', (passengerOf || nearPeerCarKey) ? 'block' : 'none');
   if(passengerOf || nearPeerCarKey){
@@ -10013,7 +10038,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-26-221312';
+const APP_VERSION = '2026-10-26-221939';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
