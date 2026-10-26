@@ -197,7 +197,6 @@ button small{font-size:9px;margin-top:0}
   <button id="leadBtn" title="Liderlik Tablosu">🏆<span class="t"> Liderlik</span></button>
   <button id="nightBtn" title="Gece">🌙<span class="t"> Gece</span></button>
   <button id="codeBtn" title="Kod">🎟<span class="t"> Kod</span></button>
-  <button id="autoClickBtn" title="0.0sn Otomatik Tıklayıcı" style="background:#4c1d95;border-color:#c084fc;font-weight:700">⚡<span class="t"> Auto Clicker: Kapalı</span></button>
   <button id="invBtn" title="Envanter">🎒<span class="t"> Envanter</span></button>
   <button id="tablet" style="display:none" title="Tablet">📱<span class="t"> Tablet</span></button>
   <button id="drive">🚚 Sür</button>
@@ -2262,17 +2261,17 @@ function makeOreBlockMat(baseCol, veinCol, veinBorder){
   return new THREE.MeshLambertMaterial({map: t});
 }
 
-// Kare Küp Blok Türleri: Normal Taş + Taşın İçinde Kömür, Demir, Altın, Elmas, Zümrüt, Yakut ve Antik Efsanevi Cevher!
+// Kare Küp Blok Türleri: Normal Taş + Taşın İçinde Kömür, Demir, Altın, Elmas, Zümrüt, Yakut ve Antik Efsanevi Cevher! (Dengeli/azaltılmış fiyatlar)
 const BLOCK_TYPES = {
-  dirt:    {id: 'dirt',    name: '🟫 Toprak Bloğu',               val: 10,   hp: 1},
-  stone:   {id: 'stone',   name: '🪨 Normal Taş Bloğu',           val: 20,   hp: 1},
-  coal:    {id: 'coal',    name: '⬛ Taş İçinde Siyah Kömür',     val: 65,   hp: 2},
-  iron:    {id: 'iron',    name: '⬜ Taş İçinde Beyaz Demir',     val: 130,  hp: 3},
-  gold:    {id: 'gold',    name: '🟨 Taş İçinde Sarı Altın',      val: 260,  hp: 4},
-  diamond: {id: 'diamond', name: '🟦 Taş İçinde Mavi Elmas',      val: 520,  hp: 5},
-  emerald: {id: 'emerald', name: '🟩 Derin Yeşil Zümrüt Cevheri', val: 850,  hp: 6},
-  ruby:    {id: 'ruby',    name: '🟥 Çok Derin Kırmızı Yakut',    val: 1350, hp: 7},
-  ancient: {id: 'ancient', name: '🟪 Efsanevi Antik Cevher',      val: 2200, hp: 8}
+  dirt:    {id: 'dirt',    name: '🟫 Toprak Bloğu',               val: 2,   hp: 1},
+  stone:   {id: 'stone',   name: '🪨 Normal Taş Bloğu',           val: 4,   hp: 1},
+  coal:    {id: 'coal',    name: '⬛ Taş İçinde Siyah Kömür',     val: 12,  hp: 2},
+  iron:    {id: 'iron',    name: '⬜ Taş İçinde Beyaz Demir',     val: 25,  hp: 3},
+  gold:    {id: 'gold',    name: '🟨 Taş İçinde Sarı Altın',      val: 50,  hp: 4},
+  diamond: {id: 'diamond', name: '🟦 Taş İçinde Mavi Elmas',      val: 95,  hp: 5},
+  emerald: {id: 'emerald', name: '🟩 Derin Yeşil Zümrüt Cevheri', val: 150, hp: 6},
+  ruby:    {id: 'ruby',    name: '🟥 Çok Derin Kırmızı Yakut',    val: 240, hp: 7},
+  ancient: {id: 'ancient', name: '🟪 Efsanevi Antik Cevher',      val: 380, hp: 8}
 };
 const BLOCK_MATS = {
   dirt:    makeOreBlockMat('#78350f', '#5c280b', null),
@@ -2335,7 +2334,7 @@ function appendMineLayer(){
   const layerIdx = MINE_LAYERS_Y.length;
   const ly = -0.6 - layerIdx * 1.2;
   MINE_LAYERS_Y.push(ly);
-  const depthValMult = 1 + Math.max(0, layerIdx - 8) * 0.12;
+  const depthValMult = 1 + Math.max(0, layerIdx - 8) * 0.05;
   MINE_COLS_X.forEach((lx, cxIdx) => {
     MINE_COLS_Z.forEach((lz, czIdx) => {
       const bType = pickCubeBlockType(layerIdx);
@@ -2377,7 +2376,7 @@ function resetMineForNewShift(){
     const layerIdx = nd.layerIdx || 0;
     const bType = pickCubeBlockType(layerIdx);
     const maxHp = calcMineBlockHp(layerIdx, bType);
-    const depthValMult = 1 + Math.max(0, layerIdx - 8) * 0.12;
+    const depthValMult = 1 + Math.max(0, layerIdx - 8) * 0.05;
     nd.bType = bType;
     nd.name = bType.name;
     nd.val = Math.round(bType.val * depthValMult);
@@ -7736,92 +7735,37 @@ function findNearestMineNode(){
   return bestD < 3.5 ? best : null;
 }
 
-function hitMineRock(targetNode, isSilentAuto){
+function hitMineRock(targetNode){
   ensureMinerRigs();
   const nd = targetNode || findNearestMineNode();
   if(!nd || nd.hp <= 0){
-    if(!isSilentAuto) flash('Yakınında kırılacak blok yok, maden çukurundaki küp bloklara yaklaş veya üstüne tıkla!', '#fbbf24');
+    flash('Yakınında kırılacak blok yok, maden çukurundaki küp bloklara yaklaş veya üstüne tıkla!', '#fbbf24');
     return;
   }
   const pk = PICK_TIERS[Math.max(1, S.rigs.pickLv)] || PICK_TIERS[1];
   const dmg = S.rigs.pickLv > 0 ? pk.dmg : 1; // başlangıçta 1 hasar (üst bloklar 2 vuruşta kırılır!), güçlü kazmayla daha hızlı kırılır
   nd.hp = Math.max(0, nd.hp - dmg);
-  if(!isSilentAuto) spawnSmoke(nd.wx, nd.wz);
+  spawnSmoke(nd.wx, nd.wz);
   const depthM = Math.round(Math.abs(nd.ly));
   if(nd.hp > 0){
     const sc = 0.78 + 0.22 * (nd.hp / nd.maxHp);
     nd.mesh.scale.set(sc, sc, sc);
-    if(!isSilentAuto){
-      beep(360 + (S.rigs.pickLv || 1) * 55, 0.06, 'triangle', 0.1);
-      flash(`⛏️ ${nd.name} kazılıyor... (Can: ${nd.hp}/${nd.maxHp} · -${depthM}m)`, '#fde047');
-    }
+    beep(360 + (S.rigs.pickLv || 1) * 55, 0.06, 'triangle', 0.1);
+    flash(`⛏️ ${nd.name} kazılıyor... (Can: ${nd.hp}/${nd.maxHp} · -${depthM}m)`, '#fde047');
   } else {
     nd.mesh.visible = false;
     ensureInfiniteMineDepth(nd.ly);
     const earnedVal = Math.round(nd.val * pk.mult);
     S.rigs.bagVal += earnedVal;
     S.rigs.bagCnt += 1;
-    S.xp = (S.xp || 0) + 25;
+    S.xp = (S.xp || 0) + 10;
     checkLevelUp();
-    const nowMs = performance.now();
-    if(!isSilentAuto || nowMs - (window._lastAutoBeep || 0) > 120){
-      window._lastAutoBeep = nowMs;
-      beep(680 + Math.min(500, (nd.layerIdx || 0) * 35), 0.09, 'sine', 0.11);
-      flash(`⚡ ${nd.name} kırıldı! (-${depthM}m · +${earnedVal}₺) · Çanta: ${S.rigs.bagVal}₺`, '#4ade80');
-      save(); renderAll();
-    }
+    beep(680 + Math.min(500, (nd.layerIdx || 0) * 35), 0.11, 'sine', 0.12);
+    flash(`${nd.name} kırıldı! (-${depthM}m · +${earnedVal}₺) · Çanta: ${S.rigs.bagVal}₺`, '#4ade80');
+    save(); renderAll();
   }
 }
-if($('mineHitBtn')) $('mineHitBtn').onclick = () => hitMineRock(null, false);
-
-// ⚡ 0.0 Saniye Ultra Hızlı Genel Auto Clicker Sistemi (madenle ilgisi yok, imlecin/parmağın olduğu yere 0.0sn'de gerçek tıklama yapar!)
-let autoClickerOn = false;
-let acCursorX = window.innerWidth / 2, acCursorY = window.innerHeight / 2;
-window.addEventListener('pointermove', e => {
-  const el = document.elementFromPoint(e.clientX, e.clientY);
-  if(el && el.id === 'autoClickBtn') return;
-  acCursorX = e.clientX;
-  acCursorY = e.clientY;
-}, {passive: true});
-window.addEventListener('pointerdown', e => {
-  const el = document.elementFromPoint(e.clientX, e.clientY);
-  if(el && (el.id === 'autoClickBtn' || (el.closest && el.closest('#autoClickBtn')))) return;
-  acCursorX = e.clientX;
-  acCursorY = e.clientY;
-}, {passive: true});
-
-function toggleAutoClicker(){
-  autoClickerOn = !autoClickerOn;
-  const b = $('autoClickBtn');
-  if(b){
-    b.style.background = autoClickerOn ? '#15803d' : '#4c1d95';
-    b.style.borderColor = autoClickerOn ? '#4ade80' : '#c084fc';
-    b.innerHTML = autoClickerOn
-      ? '⚡<span class="t"> Auto Clicker: 0.0s AÇIK</span>'
-      : '⚡<span class="t"> Auto Clicker: Kapalı</span>';
-  }
-  beep(autoClickerOn ? 880 : 340, 0.12, 'sine', 0.12);
-  flash(autoClickerOn ? '⚡ Auto Clicker AÇILDI! (İmlecin/dokunduğun yere 0.0sn hızında tıklıyor!)' : '⚡ Auto Clicker kapatıldı.', autoClickerOn ? '#4ade80' : '#cbd5e1');
-}
-if($('autoClickBtn')) $('autoClickBtn').onclick = toggleAutoClicker;
-
-function runGlobalAutoClicker(){
-  if(!autoClickerOn) return;
-  const el = document.elementFromPoint(acCursorX, acCursorY);
-  if(!el) return;
-  // Auto Clicker düğmesinin kendisine basıp yanlışlıkla kapatmasın
-  if(el.id === 'autoClickBtn' || (el.closest && el.closest('#autoClickBtn'))) return;
-  if(el === canvas){
-    if(!escPaused && !setOpen) handleCanvasTapAt(acCursorX, acCursorY);
-  } else {
-    const btn = (el.closest && el.closest('button')) || el;
-    if(btn && !btn.disabled && typeof btn.click === 'function'){
-      btn.click();
-    }
-    el.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true, clientX: acCursorX, clientY: acCursorY}));
-    el.dispatchEvent(new PointerEvent('pointerup', {bubbles: true, clientX: acCursorX, clientY: acCursorY}));
-  }
-}
+if($('mineHitBtn')) $('mineHitBtn').onclick = () => hitMineRock(null);
 if($('mineSurfaceBtn')) $('mineSurfaceBtn').onclick = () => {
   P.x = MINER_POS.x - 4.0;
   P.z = MINER_POS.z;
@@ -8970,7 +8914,6 @@ function frame(now){
   updatePondFishes(dt);
   updateDetectorZone(dt);
   updateMinerPlace(dt);
-  runGlobalAutoClicker();
   const nearPeerCarKey = (!C.driving && !D.driving && !CM.driving) ? findNearbyPeerCar() : null;
   disp('passBtn', (passengerOf || nearPeerCarKey) ? 'block' : 'none');
   if(passengerOf || nearPeerCarKey){
@@ -10038,7 +9981,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-26-221939';
+const APP_VERSION = '2026-10-26-223250';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
