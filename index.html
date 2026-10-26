@@ -609,7 +609,8 @@ const KAR = [
   {id:'staff', name:'Çalışan', desc:'Sıradaki siparişi hazırlar ve servis eder. Vardiya başı 20₺ maaş', price:400},
   {id:'masa', name:'🪑 Masa & Sandalye Takımı', desc:'Dükkanın önüne masalar kurulur, oturan müşteriler +40₺ bahşiş bırakır', price:450},
   {id:'garson', name:'🤵 Garson (Servis Elemanı)', desc:'Hazırlanan yemekleri masadaki müşterilere götürür (+25₺ ekstra bahşiş)', price:500},
-  {id:'kurye', name:'🛵 Kurye & Telefon Siparişi', desc:'Telefonla paket sipariş gelir, kuryeye teslim edince 2 katı ücret alırsın', price:600}
+  {id:'kurye', name:'🛵 Kurye & Telefon Siparişi', desc:'Telefonla paket sipariş gelir, kuryeye teslim edince 2 katı ücret alırsın', price:600},
+  {id:'restoran', name:'🏪 Büyük Döner Restoranı Binası', desc:'Karavandan 2 katlı lüks restorana geç! Kapasite +60 artar, tüm kazançlar +%35 yükselir!', price:15000}
 ];
 
 const MAX_MEAT = 60, MAX_PLATE = 8, MAX_QUEUE = 6, MAX_LIVES = 3;
@@ -631,7 +632,7 @@ function checkLevelUp(){
   }
 }
 const goalFor = day => 250 + 120 * (day - 1);
-const maxMeat = () => S.kar.ocak ? 90 : MAX_MEAT;
+const maxMeat = () => (S.kar.ocak ? 90 : MAX_MEAT) + ((S.kar.restoran || S.mk.restoran) ? 60 : 0);
 
 /* ================= Kayıt ================= */
 const DEF = {
@@ -639,9 +640,9 @@ const DEF = {
   stock:{tavuk:20, cigkofte:0, nar:0, salgam:0, misir:0, biber:0, kofteSos:0, lavas:30, pilav:30, sogan:30, marul:30, domates:30, tursu:30, aci:30, yogurt:30, ayran:30, kola:30, patates:30},
   up:{kesici:0, reklam:0, sabir:0, kasa:0},
   unlock:{porsiyon:false, buzdolabi:false, fritoz:false},
-  kar:{motor:false, tampon:false, ocak:false, led:false, staff:false, masa:false, garson:false, kurye:false},
+  kar:{motor:false, tampon:false, ocak:false, led:false, staff:false, masa:false, garson:false, kurye:false, restoran:false},
   settings:{sens:1, invY:false, left:false, carMusic:true},
-  mk:{kahve:false, hali:false, robot:false, pc:false, toys:false, guard:false, cam:false, klima:false, comogene:false, comoStaff:false, masa:false, garson:false, kurye:false},
+  mk:{kahve:false, hali:false, robot:false, pc:false, toys:false, guard:false, cam:false, klima:false, comogene:false, comoStaff:false, masa:false, garson:false, kurye:false, restoran:false, villa:false, garaj:false},
   wageDue:0,
   fuel:100,
   look:{shirt:'#3a6ea5', pants:'#2a2a2a', skin:'#f1c27d', hair:'#1b1b1b'},
@@ -1301,6 +1302,45 @@ home.add(pool);
   home.add(m);
 });
 
+// 🏡 GARAJLI LÜKS VİLLA (2 Katlı Malikâne + Teras + Büyük Havuz + Altın Sütunlar)
+const villaLuxuryGroup = new THREE.Group();
+villaLuxuryGroup.visible = false;
+home.add(villaLuxuryGroup);
+[[B(4.2, 2.5, 5.2), 0xf8fafc, 0, 4.55, 0],        // 2. kat lüks beyaz gövde
+ [B(4.8, 0.25, 5.8), 0x1e293b, 0, 5.88, 0],       // modern koyu antrasit çatı
+ [B(1.3, 0.14, 5.4), 0xe2e8f0, -2.55, 3.32, 0],   // ön balkon/teras zemini
+ [B(0.08, 0.75, 5.4), 0x38bdf8, -3.15, 3.72, 0],  // cam balkon korkuluğu (ön)
+ [B(1.3, 0.75, 0.08), 0x38bdf8, -2.55, 3.72, -2.66], // balkon yan cam
+ [B(1.3, 0.75, 0.08), 0x38bdf8, -2.55, 3.72, 2.66],  // balkon yan cam
+ [B(4.6, 0.1, 3.4), 0x0ea5e9, 0, 0.07, 4.1],      // dev lüks yüzme havuzu
+ [B(5.0, 0.06, 3.8), 0xf1f5f9, 0, 0.03, 4.1]      // havuz kenarı mermer taş
+].forEach(([geo, col, x, y, z]) => {
+  const m = new THREE.Mesh(geo, M(col));
+  m.position.set(x, y, z);
+  villaLuxuryGroup.add(m);
+});
+[-1.4, 0, 1.4].forEach(z => {
+  const w = new THREE.Mesh(B(0.06, 1.3, 1.1), homeWinMat);
+  w.position.set(-2.12, 4.55, z);
+  villaLuxuryGroup.add(w);
+});
+[-2.2, 2.2].forEach(z => {
+  const colM = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 3.3, 8), M(0xfbbf24));
+  colM.position.set(-2.95, 1.65, z);
+  villaLuxuryGroup.add(colM);
+});
+const villaLuxSignTex = tex(256, 96, (g, w, h) => {
+  g.fillStyle = '#0f172a'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#fbbf24'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#fde047'; g.font = 'bold 34px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('👑 LÜKS VİLLA', w / 2, h / 2 + 2);
+});
+const villaLuxSign = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.8), new THREE.MeshBasicMaterial({map: villaLuxSignTex}));
+villaLuxSign.position.set(-2.15, 5.4, 0);
+villaLuxSign.rotation.y = -Math.PI / 2;
+villaLuxuryGroup.add(villaLuxSign);
+
 // şehir: yolun iki yanında daha uzak ve yüksek binalar (ev, bahçe, market, galeri alanı boş)
 for(let z = -70; z < 10; z += 12){
   [-32, -24, 24, 32].forEach(x => {
@@ -1664,6 +1704,32 @@ const clockMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.35), new THREE.M
 clockMesh.position.set(0.2, 2.2, -2.62);
 clockMesh.rotation.y = Math.PI;
 stall.add(clockMesh);
+
+// 🏪 BÜYÜK DÖNER RESTORANI BİNASI (Karavandan 2 Katlı Lüks Restorana Geçiş)
+const restaurantFacade = new THREE.Group();
+restaurantFacade.visible = false;
+stall.add(restaurantFacade);
+[[B(3.2, 0.18, 6.4), 0x7f1d1d, 0.2, 2.95, 0],     // 1. kat genişletilmiş bordo saçak
+ [B(3.0, 2.3, 6.0), 0xfef3c7, 0.25, 4.15, 0],     // 2. kat krem restoran gövdesi
+ [B(3.4, 0.28, 6.5), 0x991b1b, 0.2, 5.42, 0],     // 2. kat çatı
+ [B(1.1, 0.14, 6.2), 0xb91c1c, -1.55, 2.75, 0],   // ön müşteri tentesi (kırmızı)
+ [B(0.14, 2.8, 0.18), 0xfbbf24, -1.22, 1.4, -2.85], // sol altın giriş sütunu
+ [B(0.14, 2.8, 0.18), 0xfbbf24, -1.22, 1.4, 2.85]   // sağ altın giriş sütunu
+].forEach(([geo, col, x, y, z]) => addTo(restaurantFacade, geo, M(col), x, y, z));
+[-1.8, 0, 1.8].forEach(z => {
+  addTo(restaurantFacade, B(0.08, 1.1, 1.2), new THREE.MeshBasicMaterial({color: 0xffe08a}), -1.27, 4.15, z);
+});
+const restSignTex = tex(512, 160, (g, w, h) => {
+  g.fillStyle = '#7f1d1d'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#fbbf24'; g.lineWidth = 10; g.strokeRect(5, 5, w - 10, h - 10);
+  g.fillStyle = '#fde047'; g.font = 'bold 64px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🏪 DÖNER SARAYI', w / 2, h / 2 + 4);
+});
+const restSign = new THREE.Mesh(new THREE.PlaneGeometry(5.4, 1.15), new THREE.MeshBasicMaterial({map: restSignTex}));
+restSign.position.set(-1.32, 5.05, 0);
+restSign.rotation.y = -Math.PI / 2;
+restaurantFacade.add(restSign);
 
 /* ================= Esya satıcısı ================= */
 const vendor = new THREE.Group();
@@ -2903,7 +2969,11 @@ function renderStall(){
   worker.visible = !!(k.staff || S.kar.staff);
   pcGroup.visible = !!(m.pc || S.mk.pc);
   toysGroup.visible = false; // bahçedeki oyuncaklar kaldırıldı
-  garajGroup.visible = !!(m.garaj || S.mk.garaj);
+  const hasVilla = !!(m.villa || S.mk.villa);
+  villaLuxuryGroup.visible = hasVilla;
+  garajGroup.visible = !!(m.garaj || S.mk.garaj || hasVilla);
+  const hasRestoran = !!(k.restoran || m.restoran || S.kar.restoran || S.mk.restoran);
+  restaurantFacade.visible = hasRestoran;
   guardMesh.visible = !!(m.guard || S.mk.guard);
   dogMesh.visible = !!(m.guard || S.mk.guard);
   klimaUnit.visible = !!(m.klima || S.mk.klima);
@@ -5343,7 +5413,8 @@ function serve(auto = false){
     const base = c.order.reduce((a, id) => a + PRICE[id], 0);
     const tip = Math.round((pat * 25 + q * 20 + c.T.tip) * (1 + 0.15 * S.up.kasa) * (hotLeft > 0 ? 2 : 1) * (S.kar.led ? 1.1 : 1) * (S.mk.kahve ? 1.05 : 1));
     const vipBonus = c.type === 'vip' ? 250 : 0;
-    const total = Math.round((Math.round(base * c.T.pay) + tip) * 1.15) + vipBonus; // döner ve COMOGENE satışları %15 fazla + VIP ödülü
+    const restMult = (S.kar.restoran || S.mk.restoran) ? 1.35 : 1;
+    const total = Math.round((Math.round(base * c.T.pay) + tip) * 1.15 * restMult) + vipBonus; // döner ve COMOGENE satışları %15 fazla + Restoran +%35 + VIP ödülü
     S.money += total; shiftEarned += total;
     S.xp = (S.xp || 0) + total; checkLevelUp();
     if(auto && S.money >= 5){
@@ -5642,13 +5713,15 @@ const MKT = [
   {id:'comoStaff', name:'COMOGENE Çalışanı', desc:'Dükkânda yemek hazırlayıp servis eder', price:500},
   {id:'masa', name:'🪑 Masa & Sandalye Takımı', desc:'Dükkanın önüne masalar kurulur, oturan müşteriler +40₺ bahşiş bırakır', price:450},
   {id:'garson', name:'🤵 Garson (Servis Elemanı)', desc:'Hazırlanan yemekleri masadaki müşterilere götürür (+25₺ ekstra bahşiş)', price:500},
-  {id:'kurye', name:'🛵 Kurye & Telefon Siparişi', desc:'Telefonla paket sipariş gelir, kuryeye teslim edince 2 katı ücret alırsın', price:600}
+  {id:'kurye', name:'🛵 Kurye & Telefon Siparişi', desc:'Telefonla paket sipariş gelir, kuryeye teslim edince 2 katı ücret alırsın', price:600},
+  {id:'restoran', name:'🏪 Büyük Döner Restoranı Binası', desc:'Karavandan 2 katlı lüks restorana geç! Kapasite +60 artar, tüm kazançlar +%35 yükselir!', price:15000},
+  {id:'villa', name:'🏡 Garajlı Lüks Villa (2 Katlı Malikâne)', desc:'Evin 2 katlı, teraslı, büyük havuzlu ve otomatik garajlı lüks villaya dönüşür!', price:20000}
 ];
 function renderMarket(){
   const box = $('mktBody');
   box.innerHTML = '';
   MKT.forEach(k => {
-    const owned = !!S.mk[k.id];
+    const owned = !!(S.mk[k.id] || (k.id === 'restoran' && S.kar.restoran) || (k.id === 'garaj' && S.mk.villa));
     const d = document.createElement('div');
     d.className = 'row';
     d.innerHTML = `<span>${k.name}<small>${k.desc}</small></span>`;
@@ -5658,6 +5731,8 @@ function renderMarket(){
     b.onclick = () => {
       if(owned || S.money < k.price) return;
       S.money -= k.price; S.mk[k.id] = true;
+      if(k.id === 'restoran') S.kar.restoran = true;
+      if(k.id === 'villa') S.mk.garaj = true;
       beep(700, 0.1);
       flash(`${k.name} alındı`, '#4ade80');
       renderMarket(); renderAll();
@@ -5782,12 +5857,14 @@ function renderShop(){
     });
   }
 
-  const ownedKar = KAR.filter(k => !S.kar[k.id]);
+  const ownedKar = KAR.filter(k => !S.kar[k.id] && !(k.id === 'restoran' && S.mk.restoran));
   if(ownedKar.length){
     head('Karavan Özellikleri');
     ownedKar.forEach(k => row(k.name, k.desc, `${k.price}₺`, S.money < k.price, () => {
       if(S.money < k.price) return;
-      S.money -= k.price; S.kar[k.id] = true; beep(700, 0.12);
+      S.money -= k.price; S.kar[k.id] = true;
+      if(k.id === 'restoran') S.mk.restoran = true;
+      beep(700, 0.12);
       flash(`${k.name} takıldı`, '#4ade80');
       renderShop(); renderAll();
     }));
@@ -9273,7 +9350,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-25-232122';
+const APP_VERSION = '2026-10-26-195031';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
