@@ -1042,17 +1042,8 @@ backMouth.position.set(0,6,9);
 backMouth.rotation.y = Math.PI;
 scene.add(backMouth);
 
-// binalar
+// binalar (sağ ve sol kaldırımın arkasındaki dekor evler/binalar tamamen kaldırıldı)
 const bColors = [0x9c8474,0x8a5a44,0x5d6d7e,0xa08d6d,0x6c7a89,0x7b6f63];
-for(let z = -86; z < 12; z += 14){
-  [-15, 15].forEach(x => {
-    if(x < 0 || (x > 0 && z === -30)) return; // sol taraf park oldu; evin yanındaki bina kaldırıldı
-    const h = 6 + Math.random()*10;
-    const mat = new THREE.MeshLambertMaterial({color:pick(bColors), map:winTex});
-    const b = new THREE.Mesh(B(8,h,12), mat);
-    b.position.set(x + (x<0?-2:2), h/2, z + 6); scene.add(b);
-  });
-}
 
 // araçla çarpınca kırılıp dağılabilen objeler
 const smashables = [];
@@ -1341,18 +1332,7 @@ villaLuxSign.position.set(-2.15, 5.4, 0);
 villaLuxSign.rotation.y = -Math.PI / 2;
 villaLuxuryGroup.add(villaLuxSign);
 
-// şehir: yolun iki yanında daha uzak ve yüksek binalar (ev, bahçe, market, galeri alanı boş)
-for(let z = -70; z < 10; z += 12){
-  [-32, -24, 24, 32].forEach(x => {
-    const zz = z + 6;
-    if(x > 0 && zz > -36 && zz < -8) return; // ev ve bahçe
-    if(x < 0) return; // sol taraf park oldu
-    const h = 8 + Math.random() * 14;
-    const b = new THREE.Mesh(B(7, h, 10), new THREE.MeshLambertMaterial({color: pick(bColors), map: winTex}));
-    b.position.set(x, h / 2, zz);
-    scene.add(b);
-  });
-}
+// şehir: sağ ve sol taraftaki dekor binalar kaldırıldı
 
 
 // yolun karşısında kocaman park alanı: çimen ve ağaçlar (görsel)
@@ -1646,9 +1626,9 @@ addTo(stall, B(0.1,1.0,0.6), CREAM, -1.15, 1.6, 2.3);
 addTo(stall, B(0.8,0.1,4.0), STEEL, -0.75, 1.1, 0);         // servis tezgâhı
 addTo(stall, B(0.4,2.2,1.3), M(0xff6a2a), 0.9, 1.3, 1.5);   // ocak (sağ arkada)
 const cone = addTo(stall, new THREE.CylinderGeometry(0.22,0.42,1.5,14), meatMat, 0.5, 1.5, 1.5);
-// tekerlekler (karavanın iki yanında)
-[[-1.2,-1.8],[-1.2,1.8],[1.2,-1.8],[1.2,1.8]].forEach(([x,z]) => {
-  addTo(stall, GEO.wheel, TIRE, x, 0.36, z);
+// tekerlekler (karavanın iki yanında; restoran binasına geçince gizlenir)
+const stallWheels = [[-1.2,-1.8],[-1.2,1.8],[1.2,-1.8],[1.2,1.8]].map(([x,z]) => {
+  return addTo(stall, GEO.wheel, TIRE, x, 0.36, z);
 });
 const signTex = tex(512, 160, (g,w,h) => {
   g.fillStyle = '#b71c1c'; g.fillRect(0,0,w,h);
@@ -1705,29 +1685,51 @@ clockMesh.position.set(0.2, 2.2, -2.62);
 clockMesh.rotation.y = Math.PI;
 stall.add(clockMesh);
 
-// 🏪 BÜYÜK DÖNER RESTORANI BİNASI (Karavandan 2 Katlı Lüks Restorana Geçiş)
+// 🏪 BÜYÜK DÖNER RESTORANI BİNASI (İçine girilen geniş salonlu gerçek restoran binası!)
 const restaurantFacade = new THREE.Group();
 restaurantFacade.visible = false;
 stall.add(restaurantFacade);
-[[B(3.2, 0.18, 6.4), 0x7f1d1d, 0.2, 2.95, 0],     // 1. kat genişletilmiş bordo saçak
- [B(3.0, 2.3, 6.0), 0xfef3c7, 0.25, 4.15, 0],     // 2. kat krem restoran gövdesi
- [B(3.4, 0.28, 6.5), 0x991b1b, 0.2, 5.42, 0],     // 2. kat çatı
- [B(1.1, 0.14, 6.2), 0xb91c1c, -1.55, 2.75, 0],   // ön müşteri tentesi (kırmızı)
- [B(0.14, 2.8, 0.18), 0xfbbf24, -1.22, 1.4, -2.85], // sol altın giriş sütunu
- [B(0.14, 2.8, 0.18), 0xfbbf24, -1.22, 1.4, 2.85]   // sağ altın giriş sütunu
-].forEach(([geo, col, x, y, z]) => addTo(restaurantFacade, geo, M(col), x, y, z));
-[-1.8, 0, 1.8].forEach(z => {
-  addTo(restaurantFacade, B(0.08, 1.1, 1.2), new THREE.MeshBasicMaterial({color: 0xffe08a}), -1.27, 4.15, z);
+const restWallM = M(0xfdf6e2), restRoofM = M(0x8b1e1e), restTrimM = M(0xd97706), restFloorM = M(0xe5dec9);
+const restGlassM = new THREE.MeshLambertMaterial({color: 0xaee6ff, transparent: true, opacity: 0.24, side: THREE.DoubleSide});
+[
+  // Geniş restoran iç zemini (müşteri bekleme & yemek salonu dahil)
+  [B(8.0, 0.14, 9.6), restFloorM, -1.7, 0.05, -0.4],
+  // Arka duvar ve sağ/sol yan duvarlar
+  [B(0.22, 4.2, 9.6), restWallM, 2.2, 2.1, -0.4],
+  [B(8.0, 4.2, 0.22), restWallM, -1.7, 2.1, -5.1],
+  [B(8.0, 4.2, 0.22), restWallM, -1.7, 2.1, 4.3],
+  // Ön cephe: ortada geniş giriş kapısı açıklığı (z = -3.8 .. 1.8 arası açık, üstü alınlık)
+  [B(0.22, 4.2, 1.3), restWallM, -5.6, 2.1, -4.45],
+  [B(0.22, 4.2, 2.5), restWallM, -5.6, 2.1, 3.05],
+  [B(0.22, 1.2, 5.6), restRoofM, -5.6, 3.6, -1.0],
+  // Giriş altın kemer sütunları
+  [B(0.28, 3.1, 0.28), restTrimM, -5.6, 1.55, -3.75],
+  [B(0.28, 3.1, 0.28), restTrimM, -5.6, 1.55, 1.75],
+  // 1. kat geniş çatı ve 2. kat lüks kat gövdesi
+  [B(8.5, 0.3, 10.0), restRoofM, -1.7, 4.3, -0.4],
+  [B(7.4, 2.4, 8.8), restWallM, -1.5, 5.65, -0.4],
+  [B(8.2, 0.32, 9.4), restRoofM, -1.5, 6.95, -0.4],
+  [B(8.3, 0.14, 9.5), restTrimM, -1.5, 4.48, -0.4]
+].forEach(([geo, mat, x, y, z]) => addTo(restaurantFacade, geo, mat, x, y, z));
+// Ön vitrin camı ve 2. kat pencereleri
+const restFrontGlass = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 2.2), restGlassM);
+restFrontGlass.position.set(-5.72, 1.6, 3.05);
+restFrontGlass.rotation.y = -Math.PI / 2;
+restaurantFacade.add(restFrontGlass);
+[-3.2, -0.4, 2.4].forEach(z => {
+  addTo(restaurantFacade, B(0.08, 1.3, 1.8), new THREE.MeshBasicMaterial({color: 0xffe08a}), -5.24, 5.65, z);
 });
+// İçeride kırmızı halı yürüyüş yolu (kapıdan tezgâha kadar)
+addTo(restaurantFacade, B(4.2, 0.03, 1.8), M(0x991b1b), -3.3, 0.13, -1.2);
 const restSignTex = tex(512, 160, (g, w, h) => {
   g.fillStyle = '#7f1d1d'; g.fillRect(0, 0, w, h);
   g.strokeStyle = '#fbbf24'; g.lineWidth = 10; g.strokeRect(5, 5, w - 10, h - 10);
-  g.fillStyle = '#fde047'; g.font = 'bold 64px sans-serif';
+  g.fillStyle = '#fde047'; g.font = 'bold 58px sans-serif';
   g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText('🏪 DÖNER SARAYI', w / 2, h / 2 + 4);
+  g.fillText('🏪 DÖNER RESTORANI', w / 2, h / 2 + 4);
 });
-const restSign = new THREE.Mesh(new THREE.PlaneGeometry(5.4, 1.15), new THREE.MeshBasicMaterial({map: restSignTex}));
-restSign.position.set(-1.32, 5.05, 0);
+const restSign = new THREE.Mesh(new THREE.PlaneGeometry(6.8, 1.35), new THREE.MeshBasicMaterial({map: restSignTex}));
+restSign.position.set(-5.75, 4.9, -0.4);
 restSign.rotation.y = -Math.PI / 2;
 restaurantFacade.add(restSign);
 
@@ -2181,9 +2183,9 @@ dogMesh.rotation.y = Math.PI; // başı yola (-x yönüne) bakar
 dogMesh.visible = false;
 scene.add(dogMesh);
 
-// Dükkan önü Masa & Sandalye Takımı, Garson (Servis Elemanı) ve Paket Servis Kurye Motoru
+// Dükkan önü veya Restoran içi Masa & Sandalye Takımı, Garson ve Paket Servis Kurye Motoru
 const TABLES_POS = [
-  {x: 6.4, z: -6.8, seatX: 6.4, seatZ: -7.5,ry: 0, occupiedBy: null},
+  {x: 6.4, z: -6.8, seatX: 6.4, seatZ: -7.5, ry: 0, occupiedBy: null},
   {x: 6.4, z: -9.6, seatX: 6.4, seatZ: -10.3, ry: 0, occupiedBy: null}
 ];
 const diningTablesGroup = new THREE.Group();
@@ -2215,8 +2217,26 @@ TABLES_POS.forEach(tb => {
   foodPlate.visible = false;
   tg.add(foodPlate);
   tb.foodPlate = foodPlate;
+  tb.meshGroup = tg;
   diningTablesGroup.add(tg);
 });
+function syncRestaurantLayout(){
+  const isRest = !!(S.kar.restoran || S.mk.restoran);
+  if(TABLES_POS[0]){
+    TABLES_POS[0].x = isRest ? 5.6 : 6.4;
+    TABLES_POS[0].z = isRest ? -4.2 : -6.8;
+    TABLES_POS[0].seatX = TABLES_POS[0].x;
+    TABLES_POS[0].seatZ = TABLES_POS[0].z - 0.7;
+    if(TABLES_POS[0].meshGroup) TABLES_POS[0].meshGroup.position.set(TABLES_POS[0].x, 0.3, TABLES_POS[0].z);
+  }
+  if(TABLES_POS[1]){
+    TABLES_POS[1].x = isRest ? 5.6 : 6.4;
+    TABLES_POS[1].z = isRest ? 1.8 : -9.6;
+    TABLES_POS[1].seatX = TABLES_POS[1].x;
+    TABLES_POS[1].seatZ = TABLES_POS[1].z - 0.7;
+    if(TABLES_POS[1].meshGroup) TABLES_POS[1].meshGroup.position.set(TABLES_POS[1].x, 0.3, TABLES_POS[1].z);
+  }
+}
 diningTablesGroup.visible = false;
 scene.add(diningTablesGroup);
 
@@ -2946,7 +2966,8 @@ function renderButtons(){
   wl.style.color = (S.wageDue || 0) > 0 ? '#f87171' : '#4ade80';
   wl.textContent = `Çalışan maaşı: ${S.wageDue || 0}₺`;
   $('drive').innerHTML = D.driving ? '🅿 Park' : '🚚 Sür';
-  $('drive').disabled = !active();
+  $('drive').disabled = !active() || !!(S.kar.restoran || S.mk.restoran);
+  $('drive').style.display = (S.kar.restoran || S.mk.restoran) ? 'none' : '';
   $('shutter').innerHTML = shutterOpen ? '🪟 Kapat' : '🪟 Aç';
   $('shutter').disabled = !active() || D.driving;
   $('cut').innerHTML = meter.on ? 'Kes!' : `Et Kes<small>${S.meat} porsiyon</small>`;
@@ -2974,6 +2995,12 @@ function renderStall(){
   garajGroup.visible = !!(m.garaj || S.mk.garaj || hasVilla);
   const hasRestoran = !!(k.restoran || m.restoran || S.kar.restoran || S.mk.restoran);
   restaurantFacade.visible = hasRestoran;
+  if(typeof stallWheels !== 'undefined') stallWheels.forEach(w => { w.visible = !hasRestoran; });
+  if(hasRestoran && !D.driving){
+    D.x = 12.6; D.z = -1; D.h = 0;
+    stall.position.set(D.x, 0, D.z);
+  }
+  if(typeof syncRestaurantLayout === 'function') syncRestaurantLayout();
   guardMesh.visible = !!(m.guard || S.mk.guard);
   dogMesh.visible = !!(m.guard || S.mk.guard);
   klimaUnit.visible = !!(m.klima || S.mk.klima);
@@ -3059,13 +3086,15 @@ function free(x, z){
     if(Math.abs(x + 20) < 0.35 && !(z > -64.1 && z < -59.9)) return false;
   }
   if(x > -7.5 && x < -6.1 && z > -62 && z < -42) return false; // benzin istasyonu (kaldırımda)
-  // ev ve bahçe: ev yalnızca kapıdan girilir; bahçeye evin yanındaki koridordan geçilir
+  // ev ve bahçe veya Büyük Döner Restoranı:
   if(x > 10.4){
+    const hasRest = !!(S.kar.restoran || S.mk.restoran);
+    const inRest = hasRest && x <= 14.9 && z > -6.6 && z < 3.6;
     const inHouse = x > 10.72 && x < 15.28 && z > -24.88 && z < -19.12;
     const doorway = x > 10.4 && x <= 10.75 && z > -22.54 && z < -21.46;
     const corridor = x > 10.4 && x <= 16.4 && z > -28.8 && z < -26;
     const garden = x > 16.4 && x < 21.5 && z > -28.8 && z < -15.2;
-    return inHouse || doorway || corridor || garden;
+    if(!(inRest || inHouse || doorway || corridor || garden)) return false;
   }
   if(Math.abs(x) < 4.3 && !((z > -64 && z < -56) || (z > -2.5 && z < 0.5))) return false; // yaya geçitleri
   // karavan: içi (kapıdan girilir) dışında duvar; döner ocağı engel
@@ -5553,8 +5582,8 @@ function startShift(){
     // borç birikir ama çalışan ayrılmaz; sadece maaş yazısı görünür
     flash(`Çalışanın maaşı birikti: ${S.wageDue}₺ (💵 ile öde)`, '#ffd54a');
   }
-  Object.assign(D, {x:9.4, z:-1, h:0, v:0, driving:false});
-  P.x = 6.3; P.z = 0; P.yaw = -Math.PI/2;
+  Object.assign(D, {x: (S.kar.restoran || S.mk.restoran) ? 12.6 : 9.4, z:-1, h:0, v:0, driving:false});
+  P.x = (S.kar.restoran || S.mk.restoran) ? 9.5 : 6.3; P.z = 0; P.yaw = -Math.PI/2;
   can = MAX_LIVES; shiftEarned = 0; shiftT = SHIFT_LEN; shiftEnded = false; over = false;
   rushCD = RUSH_EVERY; rushLeft = 0; rushOn = false;
   hotCD = 90; hotLeft = 0;
@@ -7853,14 +7882,29 @@ comoWalkers = comoWalkers.filter(w => !w.dead);
     rainGeo.attributes.position.needsUpdate = true;
   }
 
-  // sıra hedefleri
-  queue.forEach((c, i) => c.slotZ = SLOT0 - i * SPACING);
+  // sıra hedefleri (restoran binası alındıysa müşteriler kapıdan içeri girip içeride kasa önünde sıraya dizilir)
+  const hasRestQueue = !!(S.kar.restoran || S.mk.restoran);
+  queue.forEach((c, i) => {
+    if(hasRestQueue){
+      c.slotX = Math.max(6.4, 9.8 - i * 1.15);
+      c.slotZ = -1.2 - (i % 2) * 0.45;
+    } else {
+      c.slotX = 5.0;
+      c.slotZ = SLOT0 - i * SPACING;
+    }
+  });
 
   // müşteriler
   let changed = false;
   custs.forEach(c => {
     if(c.leaving){
-      c.x += c.vx * dt; c.z += c.vz * dt;
+      if(hasRestQueue && c.x > 5.4){
+        c.x -= WALK * dt;
+        c.g.rotation.y = -Math.PI / 2;
+      } else {
+        c.x += c.vx * dt; c.z += c.vz * dt;
+        c.g.rotation.y = Math.atan2(c.vx, c.vz);
+      }
     } else if(c.diningState){
       const tb = c.tableSlot;
       if(c.diningState === 'to_table' && tb){
@@ -7912,13 +7956,27 @@ comoWalkers = comoWalkers.filter(w => !w.dead);
         }
       }
     } else {
-      const d = c.slotZ - c.z;
-      if(d > 0.05){
-        c.z += Math.min(d, WALK * dt);
+      const tx = c.slotX !== undefined ? c.slotX : 5.0;
+      const tz = c.slotZ;
+      if(hasRestQueue && c.z < -3.6 && Math.abs(c.x - 5.0) < 0.8){
+        // önce kaldırımdan restoran kapısı hizasına kadar yürü
+        c.z += WALK * dt;
+        c.g.rotation.y = 0;
         c.walk = true; c.waiting = false;
       } else {
-        c.z = c.slotZ; c.walk = false;
-        if(!c.waiting){ c.waiting = true; changed = true; }
+        const dx = tx - c.x, dz = tz - c.z;
+        const dist = Math.hypot(dx, dz);
+        if(dist > 0.08){
+          const stepD = Math.min(dist, WALK * dt);
+          c.x += (dx / dist) * stepD;
+          c.z += (dz / dist) * stepD;
+          c.g.rotation.y = Math.atan2(dx, dz);
+          c.walk = true; c.waiting = false;
+        } else {
+          c.x = tx; c.z = tz; c.walk = false;
+          c.g.rotation.y = hasRestQueue ? Math.PI / 2 : 0; // restoranda kasaya doğru bakar
+          if(!c.waiting){ c.waiting = true; changed = true; }
+        }
       }
       if(play && !D.driving && c.waiting){
         c.patience -= dt;
@@ -9350,7 +9408,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-26-195031';
+const APP_VERSION = '2026-10-26-200429';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
