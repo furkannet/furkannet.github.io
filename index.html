@@ -8016,11 +8016,11 @@ function spawnHeistCashBags(cx, cz, count, valEach, isVaultLoot){
   }
 }
 
-// ================= 🎰 3D Kolu Çekilen Slot Makinesi (#6) =================
-const SLOT3D_POS = {x: 8.6, z: -3.2};
+// ================= 🎰 3D Kolu Çekilen Slot Makinesi (#6 - Kumarcının / Kumarhanenin Önünde) =================
+const SLOT3D_POS = {x: -7.9, z: -66.1};
 const slot3dGroup = new THREE.Group();
-slot3dGroup.position.set(SLOT3D_POS.x, 0, SLOT3D_POS.z);
-slot3dGroup.rotation.y = -Math.PI / 2;
+slot3dGroup.position.set(SLOT3D_POS.x, 0.3, SLOT3D_POS.z);
+slot3dGroup.rotation.y = Math.PI / 2;
 scene.add(slot3dGroup);
 addTo(slot3dGroup, B(0.95, 1.85, 0.85), M(0x7e22ce), 0, 0.92, 0); // mor casino gövde
 addTo(slot3dGroup, B(1.02, 0.24, 0.92), M(0xfacc15), 0, 1.92, 0); // altın taç
@@ -8067,8 +8067,30 @@ function pull3DSlotMachine(){
 }
 if($('slot3dBtn')) $('slot3dBtn').onclick = pull3DSlotMachine;
 
-// ================= 🚓 Polis Karakolu, Hapishane Hücresi & 10 Sn Polis Kovalamacası (#21) =================
-const PRISON_POS = {x: -29, z: -40, cellX: -29, cellZ: -40};
+// Gerçekçi Polis Sireni Sesi (vii-uuu / wail-yelp frekans kaymalı)
+function playPoliceSirenWail(vol = 0.08){
+  try{
+    const ac = audioCtx();
+    const t = ac.currentTime;
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(560, t);
+    o.frequency.linearRampToValueAtTime(1180, t + 0.34);
+    o.frequency.linearRampToValueAtTime(580, t + 0.68);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.04);
+    g.gain.setValueAtTime(vol, t + 0.60);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.70);
+    o.connect(g);
+    g.connect(ac.destination);
+    o.start(t);
+    o.stop(t + 0.71);
+  }catch(e){}
+}
+
+// ================= 🚓 Polis Karakolu, Hapishane Hücresi & Arabalı Polis Kovalamacası (#21) =================
+const PRISON_POS = {x: -29, z: -40, cellX: -29, cellZ: -40, frontX: -29, frontZ: -34.5};
 const prisonGroup = new THREE.Group();
 prisonGroup.position.set(PRISON_POS.x, 0, PRISON_POS.z);
 scene.add(prisonGroup);
@@ -8096,49 +8118,49 @@ const prisonSign = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 0.85), new THREE.
 prisonSign.position.set(0, 3.85, 2.75);
 prisonGroup.add(prisonSign);
 
-// Kovalayan 2 Polis Memuru
-const policeOfficers = [0, 1].map(idx => {
-  const g = human(0x1d4ed8, 0x0f172a, pick(SKINS), pick(HAIRS));
-  addTo(g, new THREE.CylinderGeometry(0.23, 0.23, 0.10, 8), M(0x1e3a8a), 0, 2.12, 0); // polis şapkası
-  addTo(g, B(0.12, 0.06, 0.06), new THREE.MeshBasicMaterial({color: idx === 0 ? 0xef4444 : 0x3b82f6}), 0, 2.19, 0.12);
-  addTo(g, B(0.08, 0.42, 0.08), M(0x111827), 0, -0.45, 0.18); // cop
-  if(typeof makeNameSprite === 'function') g.add(makeNameSprite('👮 POLİS'));
-  g.visible = false;
-  scene.add(g);
-  return {
-    g, x: -7.5, z: -14.5, ph: idx * 2,
-    legL: g.getObjectByName('legL'), legR: g.getObjectByName('legR'),
-    armL: g.getObjectByName('armL'), armR: g.getObjectByName('armR')
-  };
-});
+// Kovalayan Polis Ekip Arabası (10 sn geri sayım bitince hapishane kafesinin önünde spawn olur ve 30 sn arabayla kovalar!)
+const policeChaserCarMesh = car('#111827', 'sedan');
+addTo(policeChaserCarMesh, B(1.94, 0.42, 1.85), M(0xf8fafc), 0, 0.55, 0);
+const chaserLightBar = new THREE.Group();
+chaserLightBar.position.set(0, 1.34, -0.1);
+addTo(chaserLightBar, B(1.15, 0.10, 0.28), M(0x1f2937), 0, 0, 0);
+const chaserBulbRed = addTo(chaserLightBar, B(0.45, 0.14, 0.24), new THREE.MeshBasicMaterial({color: 0xef4444}), -0.32, 0.04, 0);
+const chaserBulbBlue = addTo(chaserLightBar, B(0.45, 0.14, 0.24), new THREE.MeshBasicMaterial({color: 0x3b82f6}), 0.32, 0.04, 0);
+policeChaserCarMesh.add(chaserLightBar);
+if(typeof makeNameSprite === 'function'){
+  const cSp = makeNameSprite('🚓 POLİS EKİBİ');
+  cSp.position.y = 2.15;
+  policeChaserCarMesh.add(cSp);
+}
+policeChaserCarMesh.visible = false;
+scene.add(policeChaserCarMesh);
 
 const policeChase = {
   active: false,
+  phase: 'none', // 'countdown' (10 sn) -> 'chasing' (30 sn)
   timer: 0,
   sirenT: 0,
+  carX: -29,
+  carZ: -34.5,
+  carH: 0,
   inPrison: false,
   bailCost: 500
 };
 
 function startPoliceChase(bailAmount){
   policeChase.active = true;
-  policeChase.timer = 10.0; // 10'dan geri sayım!
+  policeChase.phase = 'countdown';
+  policeChase.timer = 10.0; // Önce 10'dan geri sayım başlar, bitince hapishane önünde polis arabası spawn olur!
   policeChase.bailCost = bailAmount || 500;
-  policeOfficers[0].x = BANK_POS.atmX - 1.2;
-  policeOfficers[0].z = BANK_POS.atmZ - 2.6;
-  policeOfficers[1].x = BANK_POS.atmX + 1.2;
-  policeOfficers[1].z = BANK_POS.atmZ + 2.6;
-  policeOfficers.forEach(cop => {
-    cop.g.position.set(cop.x, 0, cop.z);
-    cop.g.visible = true;
-  });
-  beep(880, 0.2, 'sawtooth', 0.18);
+  policeChaserCarMesh.visible = false;
+  playPoliceSirenWail(0.09);
 }
 
 function sendPlayerToPrison(){
   policeChase.active = false;
+  policeChase.phase = 'none';
   policeChase.inPrison = true;
-  policeOfficers.forEach(cop => { cop.g.visible = false; });
+  policeChaserCarMesh.visible = false;
   disp('policeChaseHud', 'none');
   if(C.driving){
     C.driving = false; C.v = 0;
@@ -8151,7 +8173,7 @@ function sendPlayerToPrison(){
   beep(190, 0.45, 'sawtooth', 0.22);
   flash(`🚓 YAKALANDIN! Hapishaneye ışınlandın! Çıkmak için ${policeChase.bailCost}₺ borcu öde!`, '#ef4444');
   if($('prisonBailDesc')){
-    $('prisonBailDesc').innerHTML = `Polisler seni yakaladı ve hapishane hücresine kapattı!<br><b style="color:#fde047">Kefalet Borcu: ${policeChase.bailCost}₺</b> (Cüzdanın yetmezse banka kredisiyle ödenir)`;
+    $('prisonBailDesc').innerHTML = `Polisler seni polis arabasıyla yakaladı ve hapishane kafesine kapattı!<br><b style="color:#fde047">Kefalet Borcu: ${policeChase.bailCost}₺</b> (Cüzdanın yetmezse banka kredisiyle ödenir)`;
   }
   if($('payPrisonBailBtn')){
     $('payPrisonBailBtn').textContent = `💸 ${policeChase.bailCost}₺ Kefalet Borcunu Öde ve Çık!`;
@@ -8172,15 +8194,15 @@ function payPrisonBailAndExit(){
   }
   policeChase.inPrison = false;
   disp('prisonBox', 'none');
-  P.x = 6.2; P.z = -1.0; P.y = 0; P.yaw = -Math.PI / 2;
+  P.x = PRISON_POS.frontX + 3.0; P.z = PRISON_POS.frontZ; P.y = 0; P.yaw = Math.PI / 2;
   beep(780, 0.2, 'sine', 0.16);
   flash(`🔓 ${cost}₺ kefalet borcunu ödedin ve hapishaneden çıktın!`, '#4ade80');
   save(); renderAll();
 }
 if($('payPrisonBailBtn')) $('payPrisonBailBtn').onclick = payPrisonBailAndExit;
 
-// ================= 🚔 Çalınabilir 3D Polis Arabası & Siren (#27) =================
-const POLICE_CAR_STATE = {x: -6.5, z: -11.2, h: 0, sirenOn: true, sirenBlinkT: 0};
+// ================= 🚔 Çalınabilir 3D Polis Arabası & Siren (#27 - Hapishanenin Önünde) =================
+const POLICE_CAR_STATE = {x: -24.5, z: -34.8, h: Math.PI / 2, sirenOn: true, sirenBlinkT: 0};
 const policeCarMesh = car('#111827', 'sedan');
 // Beyaz kapılar ve polis şeridi
 addTo(policeCarMesh, B(1.94, 0.42, 1.85), M(0xf8fafc), 0, 0.55, 0);
@@ -8210,14 +8232,15 @@ function enterPoliceCar(){
   POLICE_CAR_STATE.sirenOn = true;
   startEngine();
   broadcastCoopPos(true);
-  beep(820, 0.15, 'sawtooth', 0.14);
-  flash('🚔 Polis Arabasını çaldın! Sirenler açık, trafikteki arabalar kenara çekiliyor!', '#60a5fa');
+  playPoliceSirenWail(0.09);
+  flash('🚔 Hapishanenin önündeki Polis Arabasını çaldın! Sirenler çalıyor!', '#60a5fa');
   renderAll();
 }
 if($('policeCarBtn')) $('policeCarBtn').onclick = enterPoliceCar;
 if($('sirenBtn')) $('sirenBtn').onclick = () => {
   POLICE_CAR_STATE.sirenOn = !POLICE_CAR_STATE.sirenOn;
   txt('sirenBtn', POLICE_CAR_STATE.sirenOn ? '🚨 Siren: Açık' : '🚨 Siren: Kapalı');
+  if(POLICE_CAR_STATE.sirenOn) playPoliceSirenWail(0.09);
   flash(POLICE_CAR_STATE.sirenOn ? '🚨 Polis sireni açıldı!' : '🚨 Polis sireni kapatıldı', '#60a5fa');
 };
 
@@ -8411,9 +8434,9 @@ function updateHeistAndC4(dt){
     policeBulbBlue.material.color.setHex((sirActive && !blink) ? 0x38bdf8 : 0x0c2e59);
     if(C.driving && C.activeVeh === 'police' && POLICE_CAR_STATE.sirenOn){
       POLICE_CAR_STATE.sirenBlinkT += dt;
-      if(POLICE_CAR_STATE.sirenBlinkT >= 0.42){
+      if(POLICE_CAR_STATE.sirenBlinkT >= 0.72){
         POLICE_CAR_STATE.sirenBlinkT = 0;
-        beep(blink ? 780 : 580, 0.14, 'sine', 0.05);
+        playPoliceSirenWail(0.06);
       }
       // Siren açıkken trafikteki araçlar sağa/sola kenara çekilir!
       cars.forEach(tc => {
@@ -8424,11 +8447,11 @@ function updateHeistAndC4(dt){
       });
     }
   }
-  const nearPoliceCar = !C.driving && !D.driving && !CM.driving && !policeChase.inPrison && Math.hypot(P.x - POLICE_CAR_STATE.x, P.z - POLICE_CAR_STATE.z) < 4.2;
+  const nearPoliceCar = !C.driving && !D.driving && !CM.driving && !policeChase.inPrison && Math.hypot(P.x - POLICE_CAR_STATE.x, P.z - POLICE_CAR_STATE.z) < 4.5;
   disp('policeCarBtn', nearPoliceCar ? 'block' : 'none');
   disp('sirenBtn', (C.driving && C.activeVeh === 'police') ? 'block' : 'none');
 
-  // Polis Kovalamacası (10'dan geri sayım) & Hapishane kontrolü (#21)
+  // Polis Kovalamacası (Önce 10 sn geri sayım -> Hapishane önünde polis arabası spawn olur -> 30 sn arabayla kovalar -> 30 sn sonra gider) & Hapishane kontrolü (#21)
   if(policeChase.inPrison){
     // Hücredeyken demir parmaklıklardan dışarı çıkamasın, borcu ödeyince çıksın!
     P.x = Math.max(PRISON_POS.x - 2.1, Math.min(PRISON_POS.x + 2.1, P.x));
@@ -8437,43 +8460,55 @@ function updateHeistAndC4(dt){
   } else if(policeChase.active){
     policeChase.timer -= dt;
     policeChase.sirenT += dt;
-    if(policeChase.sirenT >= 0.45){
+    if(policeChase.sirenT >= 0.72){
       policeChase.sirenT = 0;
-      const hi = Math.floor(performance.now() / 450) % 2 === 0;
-      beep(hi ? 860 : 620, 0.14, 'sawtooth', 0.08);
+      playPoliceSirenWail(policeChase.phase === 'chasing' ? 0.09 : 0.05);
     }
-    const targetX = C.driving ? C.x : P.x;
-    const targetZ = C.driving ? C.z : P.z;
-    let caught = false;
-    policeOfficers.forEach((cop, idx) => {
-      const dx = targetX - cop.x;
-      const dz = targetZ - cop.z;
-      const d = Math.hypot(dx, dz);
-      const copSpd = idx === 0 ? 5.65 : 5.25;
-      if(d > 0.2){
-        cop.x += (dx / d) * copSpd * dt;
-        cop.z += (dz / d) * copSpd * dt;
-        cop.g.position.set(cop.x, 0, cop.z);
-        cop.g.rotation.y = Math.atan2(dx, dz);
+    if(policeChase.phase === 'countdown'){
+      disp('policeChaseHud', 'block');
+      txt('policeChaseHud', `🚨 SOYGUN ALARMI! Polis Arabası ${Math.max(0, Math.ceil(policeChase.timer))} sn sonra Hapishane önünden çıkıyor!`);
+      if(policeChase.timer <= 0){
+        policeChase.phase = 'chasing';
+        policeChase.timer = 30.0; // 30 saniye boyunca arabayla kovalar, sonra gider!
+        policeChase.carX = PRISON_POS.frontX;
+        policeChase.carZ = PRISON_POS.frontZ;
+        policeChase.carH = Math.PI / 2;
+        policeChaserCarMesh.position.set(policeChase.carX, 0, policeChase.carZ);
+        policeChaserCarMesh.rotation.y = policeChase.carH + Math.PI;
+        policeChaserCarMesh.visible = true;
+        playPoliceSirenWail(0.11);
+        flash('🚓🚨 Polisler Hapishanenin önünde Polis Arabasıyla spawn oldu! 30 sn yakalanmadan kaç!', '#ef4444');
       }
-      cop.ph += dt * 10;
-      const sw = Math.sin(cop.ph) * 0.7;
-      if(cop.legL) legPose(cop.legL, sw);
-      if(cop.legR) legPose(cop.legR, -sw);
-      if(cop.armL) cop.armL.rotation.x = -sw * 0.7;
-      if(cop.armR) cop.armR.rotation.x = -0.9 + sw * 0.5;
-      if(d < (C.driving ? 2.1 : 1.45)) caught = true;
-    });
-    disp('policeChaseHud', 'block');
-    txt('policeChaseHud', `🚨 POLİS KOVALIYOR! Yakalanmadan Kaç: ${Math.max(0, Math.ceil(policeChase.timer))} sn`);
-    if(caught){
-      sendPlayerToPrison();
-    } else if(policeChase.timer <= 0){
-      policeChase.active = false;
-      policeOfficers.forEach(cop => { cop.g.visible = false; });
-      disp('policeChaseHud', 'none');
-      beep(880, 0.22, 'sine', 0.15);
-      flash('😎 10 saniye boyunca polisleri atlattın! Soygun parası tamamen senin!', '#4ade80');
+    } else if(policeChase.phase === 'chasing'){
+      const blink = Math.floor(performance.now() / 160) % 2 === 0;
+      chaserBulbRed.material.color.setHex(blink ? 0xff1111 : 0x450a0a);
+      chaserBulbBlue.material.color.setHex(!blink ? 0x38bdf8 : 0x0c2e59);
+      const targetX = C.driving ? C.x : P.x;
+      const targetZ = C.driving ? C.z : P.z;
+      const dx = targetX - policeChase.carX;
+      const dz = targetZ - policeChase.carZ;
+      const d = Math.hypot(dx, dz);
+      const chaserSpd = C.driving ? 8.2 : 6.1;
+      if(d > 0.25){
+        policeChase.carX += (dx / d) * chaserSpd * dt;
+        policeChase.carZ += (dz / d) * chaserSpd * dt;
+        policeChase.carH = Math.atan2(dx, dz);
+        policeChaserCarMesh.position.set(policeChase.carX, 0, policeChase.carZ);
+        policeChaserCarMesh.rotation.y = policeChase.carH + Math.PI;
+        policeChaserCarMesh.children.forEach(ch => { if(ch.name === 'wheel') ch.rotation.x -= chaserSpd * dt * 2.6; });
+      }
+      disp('policeChaseHud', 'block');
+      txt('policeChaseHud', `🚓🚨 POLİS ARABASI KOVALIYOR! Dayan: ${Math.max(0, Math.ceil(policeChase.timer))} sn`);
+      if(d < (C.driving ? 2.6 : 2.1)){
+        sendPlayerToPrison();
+      } else if(policeChase.timer <= 0){
+        policeChase.active = false;
+        policeChase.phase = 'none';
+        policeChaserCarMesh.visible = false;
+        disp('policeChaseHud', 'none');
+        beep(880, 0.22, 'sine', 0.15);
+        flash('😎 30 saniye doldu, polis arabası peşini bırakıp gitti! Soygun parası tamamen senin!', '#4ade80');
+      }
     }
   } else {
     disp('policeChaseHud', 'none');
@@ -10726,7 +10761,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-27-185927';
+const APP_VERSION = '2026-10-27-191325';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
