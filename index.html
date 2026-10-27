@@ -247,6 +247,14 @@ button small{font-size:9px;margin-top:0}
 <button id="mineSurfaceBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:900">⬆️ Yüzeye Çık</button>
 <button id="mineTntBtn" style="display:none;background:#dc2626;border-color:#fca5a5;font-weight:900">🧨 TNT Patlat!</button>
 <button id="mineCartBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:900">🛒 Vagonla Sat!</button>
+<button id="c4PlantBtn" style="display:none;background:#991b1b;border-color:#f87171;font-weight:900">💣 C4 Yerleştir!</button>
+<button id="c4DetBtn" style="display:none;background:#dc2626;border-color:#fde047;font-weight:900">💥 C4 Patlat (Kumanda)!</button>
+</div>
+<div id="pirateChestBox" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:25;width:min(350px,90vw);background:rgba(24,16,8,.97);border:2px solid #fbbf24;border-radius:14px;padding:14px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.85)">
+  <div style="font-size:28px;margin-bottom:4px">🏴‍☠️🎁</div>
+  <div style="font-weight:900;font-size:16px;color:#fde047;margin-bottom:6px">BATIK KORSAN HAZİNE SANDIĞI!</div>
+  <div id="pirateChestDesc" style="font-size:12px;color:#fef08a;margin-bottom:10px;line-height:1.4">Göletin dibinden kilitli bir korsan sandığı çıkardın! İçinden altın dublonlar, elmas kadeh ve C4 çıkabilir!</div>
+  <button id="openPirateChestBtn" style="width:100%;padding:11px;font-size:15px;font-weight:900;background:#ca8a04;border-color:#fde047;border-radius:10px">🗝️ Kilidi Kır ve Sandığı Aç!</button>
 </div>
 <div id="fishFightBox" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:22;width:min(360px,90vw);background:rgba(12,18,28,.96);border:2px solid #38bdf8;border-radius:14px;padding:12px;text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.75)">
   <div id="fishFightTitle" style="font-weight:900;font-size:15px;color:#7dd3fc;margin-bottom:6px">🎣 BALIK OLTAYA TAKILDI!</div>
@@ -488,6 +496,7 @@ button small{font-size:9px;margin-top:0}
       <div class="row"><span>👑 <b>Altın Kürek</b><small>Kazı Gücü: 3 · +%60 daha çok altın ve elmas bulur</small></span><button id="buyPick3Btn" style="background:#ca8a04;border-color:#fde047">1.800₺</button></div>
       <div class="row"><span>💎 <b>Elmas Kürek</b><small>Kazı Gücü: 5 · Toprağı anında kazar, 2x kazanç!</small></span><button id="buyPick4Btn" style="background:#7e22ce;border-color:#e879f9">4.500₺</button></div>
       <div class="row"><span>🧨 <b>TNT Dinamit Paketi (3 Adet)</b><small>Tüm toprak bloklarını tek seferde patlatıp hazineleri çıkarır!</small></span><button id="buyTntBtn" style="background:#dc2626;border-color:#fca5a5">450₺ Al</button></div>
+      <div class="row"><span>💣 <b>C4 Uzaktan Kumandalı Bomba (2 Adet)</b><small>ATM'yi, Zırhlı Para Kamyonunu veya madeni uzaktan patlatıp soy!</small></span><button id="buyC4Btn" style="background:#991b1b;border-color:#f87171">650₺ Al</button></div>
       <div class="row"><span>🛒 <b>Raylı Maden Vagonu</b><small>Bulduğun madenleri vagonla taşıyıp +%35 ekstra fiyata satar!</small></span><button id="buyCartBtn" style="background:#b45309;border-color:#fbbf24">1.200₺ Al</button></div>
     </div>
     <div id="minerMsg" style="min-height:18px;font-size:12px;margin-top:6px;font-weight:700;color:#4ade80"></div>
@@ -7331,18 +7340,48 @@ const FISH_LOOT = [
   {name: '🐠 Somon Balığı', val: 95, xp: 25, col: '#4ade80', spd: 1.15},
   {name: '🐡 Levrek Balığı', val: 130, xp: 30, col: '#a78bfa', spd: 1.3},
   {name: '🦈 Efsanevi Altın Balık', val: 280, xp: 60, col: '#ffd54a', spd: 1.65},
-  {name: '👑 Batık Hazine Sandığı', val: 600, xp: 100, col: '#fbbf24', spd: 1.8},
+  {name: '🏴‍☠️🎁 Batık Korsan Hazine Sandığı', val: 450, xp: 100, col: '#fbbf24', spd: 1.5, isChest: true},
   {name: '👢 Eski Çizme', val: 10, xp: 5, col: '#9ca3af', spd: 0.65}
 ];
+const PIRATE_CHEST_REWARDS = [
+  {name: '🪙 Korsan Altın Dublon Kesesi', cash: 320, c4: 0},
+  {name: '👑 Zümrüt İşlemeli Kraliyet Kadehi', cash: 540, c4: 0},
+  {name: '💎 Denizlerin Mavi Elması + 💣 1 Adet C4 Bomba!', cash: 420, c4: 1},
+  {name: '🏴‍☠️ Kaptan Karasakal\'ın Büyük Hazinesi + 💣 2 Adet C4!', cash: 750, c4: 2}
+];
+// İskele yanında balıkla çekilen 3B Korsan Sandığı modeli
+const dockChestMesh = new THREE.Group();
+dockChestMesh.position.set(POND_POS.dockX + 0.6, 0.22, POND_POS.dockZ - 0.55);
+addTo(dockChestMesh, B(0.72, 0.44, 0.52), M(0x78350f), 0, 0.22, 0);
+addTo(dockChestMesh, B(0.76, 0.14, 0.56), M(0x92400e), 0, 0.48, 0);
+addTo(dockChestMesh, B(0.78, 0.08, 0.58), M(0xfbbf24), 0, 0.38, 0);
+addTo(dockChestMesh, B(0.14, 0.16, 0.08), M(0xfacc15), 0, 0.36, 0.28);
+dockChestMesh.visible = false;
+scene.add(dockChestMesh);
+
+if($('openPirateChestBtn')) $('openPirateChestBtn').onclick = () => {
+  ensureMinerRigs();
+  disp('pirateChestBox', 'none');
+  dockChestMesh.visible = false;
+  const rw = PIRATE_CHEST_REWARDS[(Math.random() * PIRATE_CHEST_REWARDS.length) | 0];
+  S.money = (S.money || 0) + rw.cash;
+  S.xp = (S.xp || 0) + 110;
+  if(rw.c4 > 0) S.rigs.c4 = (S.rigs.c4 || 0) + rw.c4;
+  checkLevelUp();
+  if(typeof spawnFirework === 'function') spawnFirework(POND_POS.dockX, POND_POS.dockZ);
+  beep(920, 0.22, 'sine', 0.15);
+  flash(`🏴‍☠️ Sandık Açıldı: ${rw.name} (+${rw.cash}₺)!`, '#fde047');
+  save(); renderAll();
+};
 function castFishingLine(){
   if(fishBusy || fishFight.active) return;
   fishBusy = true;
   beep(520, 0.1, 'sine', 0.08);
-  flash('🎣 Olta suya atıldı, balık bekleniyor...', '#38bdf8');
+  flash('🎣 Olta suya atıldı, balık veya batık sandık bekleniyor...', '#38bdf8');
   setTimeout(() => {
     fishBusy = false;
     const r = Math.random();
-    const pick = r < 0.30 ? FISH_LOOT[0] : r < 0.56 ? FISH_LOOT[1] : r < 0.75 ? FISH_LOOT[2] : r < 0.88 ? FISH_LOOT[3] : r < 0.95 ? FISH_LOOT[4] : FISH_LOOT[5];
+    const pick = r < 0.25 ? FISH_LOOT[0] : r < 0.48 ? FISH_LOOT[1] : r < 0.65 ? FISH_LOOT[2] : r < 0.78 ? FISH_LOOT[3] : r < 0.94 ? FISH_LOOT[4] : FISH_LOOT[5];
     fishFight.active = true;
     fishFight.fishPos = 0.5;
     fishFight.fishVel = (Math.random() < 0.5 ? -1 : 1) * 0.4;
@@ -7399,12 +7438,19 @@ function updatePondFishes(dt){
       fishFight.active = false;
       fishFight.pulling = false;
       disp('fishFightBox', 'none');
-      S.money = (S.money || 0) + pick.val;
-      S.xp = (S.xp || 0) + pick.xp;
-      checkLevelUp();
-      beep(880, 0.2, 'sine', 0.14);
-      flash(`🎣 Mücadeleyi kazandın! Yakaladın: ${pick.name} (+${pick.val}₺)`, pick.col);
-      renderAll();
+      if(pick.isChest){
+        dockChestMesh.visible = true;
+        beep(820, 0.22, 'triangle', 0.14);
+        disp('pirateChestBox', 'block');
+        flash('🏴‍☠️ Oltaya Kilitli Batık Korsan Sandığı takıldı! Kilidi kırıp aç!', '#fde047');
+      } else {
+        S.money = (S.money || 0) + pick.val;
+        S.xp = (S.xp || 0) + pick.xp;
+        checkLevelUp();
+        beep(880, 0.2, 'sine', 0.14);
+        flash(`🎣 Mücadeleyi kazandın! Yakaladın: ${pick.name} (+${pick.val}₺)`, pick.col);
+        renderAll();
+      }
     } else if(fishFight.prog <= 0){
       fishFight.active = false;
       fishFight.pulling = false;
@@ -7587,10 +7633,11 @@ function getMineFloorY(px, pz){
 }
 
 function ensureMinerRigs(){
-  if(!S.rigs || typeof S.rigs !== 'object') S.rigs = {pickLv: 0, tnt: 0, cart: false, bagVal: 0, bagCnt: 0};
+  if(!S.rigs || typeof S.rigs !== 'object') S.rigs = {pickLv: 0, tnt: 0, c4: 0, cart: false, bagVal: 0, bagCnt: 0};
   if(S.mk && S.mk.kazma && !S.rigs.pickLv) S.rigs.pickLv = 1;
   S.rigs.pickLv = Math.max(0, Math.min(4, Math.floor(S.rigs.pickLv || 0)));
   S.rigs.tnt = Math.max(0, Math.floor(S.rigs.tnt || 0));
+  S.rigs.c4 = Math.max(0, Math.floor(S.rigs.c4 || 0));
   S.rigs.cart = !!S.rigs.cart;
   S.rigs.bagVal = Math.max(0, Math.floor(S.rigs.bagVal || 0));
   S.rigs.bagCnt = Math.max(0, Math.floor(S.rigs.bagCnt || 0));
@@ -7605,7 +7652,7 @@ function renderMinerModal(){
     $('minerInfoBox').innerHTML =
       `💵 Cüzdanındaki Nakit: <b style="color:#4ade80">${(S.money || 0).toLocaleString('tr-TR')}₺</b><br>` +
       `⛏️ Elindeki Alet: <b style="color:#fde047">${pk.name}</b> <small>(Güç: ${pk.dmg}, Değer: x${pk.mult})</small><br>` +
-      `🧨 TNT Dinamit: <b style="color:#f87171">${S.rigs.tnt} Adet</b> · 🛒 Vagon: <b style="color:${S.rigs.cart ? '#4ade80' : '#9ca3af'}">${S.rigs.cart ? 'Aktif (+%35 Satış)' : 'Yok'}</b><br>` +
+      `🧨 TNT: <b style="color:#f87171">${S.rigs.tnt}</b> · 💣 C4 Bomba: <b style="color:#fb923c">${S.rigs.c4} Adet</b> · 🛒 Vagon: <b style="color:${S.rigs.cart ? '#4ade80' : '#9ca3af'}">${S.rigs.cart ? 'Aktif' : 'Yok'}</b><br>` +
       `🟦🟨⬛⬜ Kırılan Blok: <b>${S.rigs.bagCnt} Adet</b> (<b style="color:#fbbf24">${sellTotal.toLocaleString('tr-TR')}₺</b>)`;
   }
   if($('minerCollectBtn')){
@@ -7700,6 +7747,21 @@ if($('buyTntBtn')) $('buyTntBtn').onclick = () => {
   beep(740, 0.14, 'sawtooth', 0.1);
   if(msg){ msg.style.color = '#4ade80'; msg.textContent = `🧨 +3 TNT Dinamit alındı! (Toplam: ${S.rigs.tnt} adet)`; }
   flash(`🧨 3 Adet TNT Dinamit aldın! Madendeki blokları patlatabilirsin.`, '#f87171');
+  save(); renderMinerModal(); renderAll();
+};
+
+if($('buyC4Btn')) $('buyC4Btn').onclick = () => {
+  ensureMinerRigs();
+  const msg = $('minerMsg');
+  if((S.money || 0) < 650){
+    if(msg){ msg.style.color = '#f87171'; msg.textContent = '2\'li C4 Bomba paketi için 650₺ gerekli!'; }
+    return;
+  }
+  S.money -= 650;
+  S.rigs.c4 += 2;
+  beep(780, 0.16, 'sawtooth', 0.12);
+  if(msg){ msg.style.color = '#4ade80'; msg.textContent = `💣 +2 C4 Uzaktan Kumandalı Bomba alındı! (Toplam: ${S.rigs.c4} adet)`; }
+  flash(`💣 2 Adet C4 Bomba aldın! ATM'ye veya Zırhlı Kamyona yerleştirip patlatabilirsin!`, '#fb923c');
   save(); renderMinerModal(); renderAll();
 };
 
@@ -7843,6 +7905,264 @@ function updateMinerPlace(dt){
     const sellTotal = Math.round(S.rigs.bagVal * bonusMult);
     txt('mineCartBtn', `🛒 Vagonla Sat (+${sellTotal}₺)`);
   }
+  updateHeistAndC4(dt);
+}
+
+// ================= 💣 C4 Uzaktan Kumandalı Bomba, 🏦 ATM Soygunu & 🚚 Zırhlı Para Kamyonu (#9 ve #3) =================
+// 1) Yoldan geçen siyah Zırhlı Banka Para Kamyonu
+const armoredTruckMesh = new THREE.Group();
+addTo(armoredTruckMesh, B(2.2, 2.1, 4.8), M(0x111827), 0, 1.35, 0);        // siyah zırhlı kasa
+addTo(armoredTruckMesh, B(2.24, 0.22, 4.84), M(0xfbbf24), 0, 1.25, 0);     // sarı banka güvenlik şeridi
+addTo(armoredTruckMesh, B(2.0, 1.3, 1.4), M(0x1e293b), 0, 1.15, -2.6);     // zırhlı ön kabin
+addTo(armoredTruckMesh, B(1.75, 0.55, 0.08), M(0x38bdf8), 0, 1.45, -3.31); // kurşun geçirmez ön cam
+addTo(armoredTruckMesh, B(0.35, 0.18, 0.35), new THREE.MeshBasicMaterial({color: 0xef4444}), -0.55, 2.48, -1.8); // tepe lambası sol
+addTo(armoredTruckMesh, B(0.35, 0.18, 0.35), new THREE.MeshBasicMaterial({color: 0x3b82f6}), 0.55, 2.48, -1.8);  // tepe lambası sağ
+const truckBackDoor = addTo(armoredTruckMesh, B(1.85, 1.75, 0.12), M(0x374151), 0, 1.35, 2.42); // patlatılabilir arka çelik kapı
+[[-1.05, -2.1], [1.05, -2.1], [-1.05, 1.6], [1.05, 1.6]].forEach(([wx, wz]) => {
+  addTo(armoredTruckMesh, GEO.wheel, TIRE, wx, 0.38, wz);
+});
+// Kamyonun üstünde kırmızı can çubuğu
+const truckHpBg = addTo(armoredTruckMesh, B(1.8, 0.14, 0.06), M(0x220808), 0, 2.95, 0);
+const truckHpBar = addTo(armoredTruckMesh, B(1.74, 0.10, 0.08), new THREE.MeshBasicMaterial({color: 0x4ade80}), 0, 2.95, 0);
+armoredTruckMesh.visible = false;
+scene.add(armoredTruckMesh);
+
+const armoredTruck = {
+  active: false,
+  robbed: false,
+  x: -2.0,
+  z: 10,
+  hp: 6,
+  maxHp: 6,
+  spawnCD: 22
+};
+
+// 2) Yerleştirilen C4 Bomba 3B modeli (yanıp sönen kırmızı LED ışıklı)
+const plantedC4Mesh = new THREE.Group();
+addTo(plantedC4Mesh, B(0.38, 0.18, 0.26), M(0x3f6212), 0, 0.09, 0);
+addTo(plantedC4Mesh, B(0.16, 0.20, 0.14), M(0x111827), 0, 0.10, 0);
+const c4LedMesh = addTo(plantedC4Mesh, B(0.08, 0.08, 0.08), new THREE.MeshBasicMaterial({color: 0xff0000}), 0, 0.21, 0);
+plantedC4Mesh.visible = false;
+scene.add(plantedC4Mesh);
+
+let activeC4 = null; // { targetType: 'atm' | 'truck' | 'ground', x, y, z, beepT }
+let atmRobCD = 0;
+
+// 3) Patlamadan sonra yere saçılan 💵 Para Çuvalları
+const cashBagGeo = B(0.48, 0.38, 0.42);
+const cashBagMat = M(0x16a34a);
+const cashBandMat = M(0xfacc15);
+const heistCashBags = [];
+
+function spawnHeistCashBags(cx, cz, count, valEach){
+  for(let i = 0; i < count; i++){
+    const ang = (i / count) * Math.PI * 2 + Math.random() * 0.5;
+    const dist = 1.1 + Math.random() * 1.9;
+    const bx = Math.max(-18, Math.min(18, cx + Math.cos(ang) * dist));
+    const bz = Math.max(-86, Math.min(6, cz + Math.sin(ang) * dist));
+    const g = new THREE.Group();
+    g.position.set(bx, 0.2, bz);
+    addTo(g, cashBagGeo, cashBagMat, 0, 0, 0);
+    addTo(g, B(0.50, 0.10, 0.44), cashBandMat, 0, 0.05, 0);
+    scene.add(g);
+    heistCashBags.push({mesh: g, x: bx, z: bz, val: valEach, life: 45});
+  }
+}
+
+function triggerArmoredTruckLoot(){
+  if(armoredTruck.robbed) return;
+  armoredTruck.robbed = true;
+  truckBackDoor.rotation.x = 1.35;
+  truckBackDoor.position.y = 0.65;
+  spawnSmoke(armoredTruck.x, armoredTruck.z + 2.2);
+  if(typeof spawnFirework === 'function') spawnFirework(armoredTruck.x, armoredTruck.z);
+  beep(130, 0.4, 'sawtooth', 0.22);
+  spawnHeistCashBags(armoredTruck.x, armoredTruck.z + 2.6, 6, 160);
+  flash('💥 ZIRHLI PARA KAMYONU PATLATILDI! Yere saçılan 6 Para Çuvalını (toplam 960₺) topla!', '#4ade80');
+}
+
+function damageArmoredTruck(dmg){
+  if(!armoredTruck.active || armoredTruck.robbed) return;
+  armoredTruck.hp = Math.max(0, armoredTruck.hp - dmg);
+  const ratio = armoredTruck.hp / armoredTruck.maxHp;
+  truckHpBar.scale.x = Math.max(0.01, ratio);
+  truckHpBar.position.x = -(1 - ratio) * 0.87;
+  spawnSmoke(armoredTruck.x, armoredTruck.z);
+  if(armoredTruck.hp <= 0){
+    triggerArmoredTruckLoot();
+  } else {
+    beep(320, 0.08, 'sawtooth', 0.12);
+    flash(`🚚 Zırhlı Kamyon vuruldu! (Kalan Zırh: ${armoredTruck.hp}/${armoredTruck.maxHp})`, '#fde047');
+  }
+}
+
+function plantC4Bomb(){
+  ensureMinerRigs();
+  if((S.rigs.c4 || 0) <= 0){
+    flash('💣 Elinde C4 Bomba yok! Silahçıdan veya Maden Dükkânından C4 alabilirsin.', '#f87171');
+    return;
+  }
+  if(activeC4){
+    flash('💣 Zaten kurulu bir C4 var! Önce kumandayla onu patlat!', '#fde047');
+    return;
+  }
+  const dAtm = Math.hypot(P.x - BANK_POS.atmX, P.z - BANK_POS.atmZ);
+  const dTruck = (armoredTruck.active && !armoredTruck.robbed) ? Math.hypot(P.x - armoredTruck.x, P.z - armoredTruck.z) : 999;
+  if(dAtm < 4.5 && atmRobCD > 0){
+    flash(`🏦 ATM şu an tamir ediliyor (${Math.ceil(atmRobCD)} sn sonra tekrar soyabilirsin)!`, '#f87171');
+    return;
+  }
+  S.rigs.c4 -= 1;
+  let targetType = 'ground', tx = P.x, ty = Math.max(0.05, P.y || 0), tz = P.z;
+  if(dAtm < 4.8){
+    targetType = 'atm';
+    tx = BANK_POS.atmX + 0.25; ty = 0.95; tz = BANK_POS.atmZ - 1.1;
+    flash('💣 C4 ATM cihazına yapıştırıldı! Biraz uzaklaş ve "💥 C4 Patlat!" düğmesine bas!', '#fde047');
+  } else if(dTruck < 5.8){
+    targetType = 'truck';
+    tx = armoredTruck.x; ty = 1.25; tz = armoredTruck.z + 2.45;
+    flash('💣 C4 Zırhlı Para Kamyonunun arka kapısına yapıştırıldı! Hemen "💥 C4 Patlat!"a bas!', '#fde047');
+  } else {
+    flash('💣 C4 yere yerleştirildi! İstediğin an uzaktan kumandayla patlatabilirsin!', '#fde047');
+  }
+  activeC4 = {targetType, x: tx, y: ty, z: tz, beepT: 0};
+  plantedC4Mesh.position.set(tx, ty, tz);
+  plantedC4Mesh.visible = true;
+  beep(880, 0.12, 'square', 0.12);
+  save(); renderAll();
+}
+
+function detonateC4Bomb(){
+  if(!activeC4) return;
+  const c4 = activeC4;
+  activeC4 = null;
+  plantedC4Mesh.visible = false;
+  const ex = c4.targetType === 'truck' ? armoredTruck.x : c4.x;
+  const ez = c4.targetType === 'truck' ? (armoredTruck.z + 2.4) : c4.z;
+  spawnSmoke(ex, ez);
+  if(typeof spawnFirework === 'function') spawnFirework(ex, ez);
+  beep(115, 0.42, 'sawtooth', 0.24);
+  if(c4.targetType === 'atm' || Math.hypot(ex - BANK_POS.atmX, ez - BANK_POS.atmZ) < 5.0){
+    atmRobCD = 60;
+    atmMachine.rotation.z = 0.28;
+    spawnHeistCashBags(BANK_POS.atmX + 1.2, BANK_POS.atmZ - 0.8, 5, 130);
+    flash('💥🏦 ATM C4 İLE HAVAYA UÇURULDU! Etrafa saçılan 5 Para Çuvalını (650₺) hemen topla!', '#4ade80');
+  } else if(c4.targetType === 'truck' || (armoredTruck.active && !armoredTruck.robbed && Math.hypot(ex - armoredTruck.x, ez - armoredTruck.z) < 6.5)){
+    armoredTruck.hp = 0;
+    triggerArmoredTruckLoot();
+  } else {
+    // Madende veya teröristlerin yanında patlatıldıysa
+    let hitAny = false;
+    terrorists.forEach(t => {
+      if(!t.dead && Math.hypot(t.g.position.x - ex, t.g.position.z - ez) < 7.5){
+        hitTerrorist(t, true, '💥 C4 patlamasıyla terörist uçtu! +200₺');
+        hitAny = true;
+      }
+    });
+    if(Math.hypot(ex - MINER_POS.x, ez - MINER_POS.z) < 9.0){
+      const nearBlocks = MINE_NODES.filter(nd => nd.hp > 0 && Math.hypot(nd.wx - ex, nd.wz - ez, nd.wy - c4.y) < 3.6);
+      let gained = 0;
+      nearBlocks.forEach(nd => {
+        nd.hp = 0; nd.mesh.visible = false;
+        gained += nd.val;
+        S.rigs.bagVal += nd.val;
+        S.rigs.bagCnt += 1;
+      });
+      if(nearBlocks.length){
+        ensureInfiniteMineDepth(c4.y);
+        flash(`💥 C4 madende ${nearBlocks.length} bloğu parçaladı (+${gained}₺)!`, '#4ade80');
+        hitAny = true;
+      }
+    }
+    if(!hitAny) flash('💥 C4 büyük bir gürültüyle patladı!', '#fb923c');
+  }
+  save(); renderAll();
+}
+if($('c4PlantBtn')) $('c4PlantBtn').onclick = plantC4Bomb;
+if($('c4DetBtn')) $('c4DetBtn').onclick = detonateC4Bomb;
+
+function updateHeistAndC4(dt){
+  if(atmRobCD > 0){
+    atmRobCD = Math.max(0, atmRobCD - dt);
+    if(atmRobCD === 0) atmMachine.rotation.z = 0;
+  }
+  // C4 yanıp sönen kırmızı ışık ve bip sesi
+  if(activeC4){
+    if(activeC4.targetType === 'truck' && armoredTruck.active){
+      activeC4.x = armoredTruck.x;
+      activeC4.z = armoredTruck.z + 2.45;
+      plantedC4Mesh.position.set(activeC4.x, activeC4.y, activeC4.z);
+    }
+    activeC4.beepT += dt;
+    c4LedMesh.visible = Math.floor(performance.now() / 220) % 2 === 0;
+    if(activeC4.beepT >= 0.75){
+      activeC4.beepT = 0;
+      beep(1250, 0.04, 'sine', 0.05);
+    }
+  }
+  // Zırhlı Banka Kamyonu hareketi (yolda yavaşça ilerler, C4 veya silahla soyulabilir)
+  if(!armoredTruck.active){
+    armoredTruck.spawnCD -= dt;
+    if(armoredTruck.spawnCD <= 0){
+      armoredTruck.active = true;
+      armoredTruck.robbed = false;
+      armoredTruck.x = -2.0;
+      armoredTruck.z = 8.0;
+      armoredTruck.hp = armoredTruck.maxHp;
+      truckBackDoor.rotation.x = 0;
+      truckBackDoor.position.y = 1.35;
+      truckHpBar.scale.x = 1;
+      truckHpBar.position.x = 0;
+      armoredTruckMesh.position.set(armoredTruck.x, 0, armoredTruck.z);
+      armoredTruckMesh.visible = true;
+      flash('🚚🏦 Zırhlı Banka Para Kamyonu yola çıktı! C4 yapıştırarak veya silahla kapısını vurarak soyabilirsin!', '#fde047');
+    }
+  } else {
+    const spd = armoredTruck.robbed ? 6.5 : 3.2;
+    armoredTruck.z -= spd * dt;
+    armoredTruckMesh.position.set(armoredTruck.x, 0, armoredTruck.z);
+    if(armoredTruck.z < -92){
+      armoredTruck.active = false;
+      armoredTruckMesh.visible = false;
+      armoredTruck.spawnCD = 45 + Math.random() * 25;
+      if(activeC4 && activeC4.targetType === 'truck'){
+        activeC4 = null;
+        plantedC4Mesh.visible = false;
+      }
+    }
+  }
+  // Yerdeki para çuvallarını üstünden geçerek toplama
+  const myX = C.driving ? C.x : P.x;
+  const myZ = C.driving ? C.z : P.z;
+  for(let i = heistCashBags.length - 1; i >= 0; i--){
+    const b = heistCashBags[i];
+    b.life -= dt;
+    b.mesh.rotation.y += dt * 2.4;
+    if(Math.hypot(myX - b.x, myZ - b.z) < 2.2){
+      S.money = (S.money || 0) + b.val;
+      S.xp = (S.xp || 0) + 35;
+      checkLevelUp();
+      beep(940, 0.12, 'sine', 0.14);
+      flash(`💵 Para Çuvalı Toplandı: +${b.val}₺!`, '#4ade80');
+      scene.remove(b.mesh);
+      heistCashBags.splice(i, 1);
+      save(); renderAll();
+    } else if(b.life <= 0){
+      scene.remove(b.mesh);
+      heistCashBags.splice(i, 1);
+    }
+  }
+  // C4 Yerleştir ve C4 Patlat düğmeleri görünürlüğü
+  const hasC4 = (S.rigs && S.rigs.c4 > 0);
+  const nearAtm = !C.driving && Math.hypot(P.x - BANK_POS.atmX, P.z - BANK_POS.atmZ) < 4.8;
+  const nearTruck = !C.driving && armoredTruck.active && !armoredTruck.robbed && Math.hypot(P.x - armoredTruck.x, P.z - armoredTruck.z) < 5.8;
+  const showPlant = hasC4 && !activeC4 && (nearAtm || nearTruck || Math.hypot(P.x - MINER_POS.x, P.z - MINER_POS.z) < 8.5);
+  disp('c4PlantBtn', showPlant ? 'block' : 'none');
+  if(showPlant){
+    const lbl = nearAtm ? `💣 ATM'ye C4 Kur (${S.rigs.c4})` : nearTruck ? `💣 Kamyona C4 Kur (${S.rigs.c4})` : `💣 C4 Yerleştir (${S.rigs.c4})`;
+    txt('c4PlantBtn', lbl);
+  }
+  disp('c4DetBtn', activeC4 ? 'block' : 'none');
 }
 function renderGallery(){
   const box = $('galBody');
@@ -9358,7 +9678,8 @@ const ARMS = {
   uzi:     {name: 'Uzi (taramalı)', price: 3000, mag: 30},
   tabanca: {name: 'Tabanca', price: 800, mag: 12},
   pompali: {name: 'Pompalı', price: 1800, mag: 8},
-  sarjor:  {name: 'Şarjör (silahı doldurur)', price: 300}
+  sarjor:  {name: 'Şarjör (silahı doldurur)', price: 300},
+  c4:      {name: '💣 C4 Uzaktan Kumandalı Bomba (2 Adet · ATM & Kamyon Soygunu!)', price: 650}
 };
 const INV_SIZE = 10;
 if(!Array.isArray(S.inv) || S.inv.length !== INV_SIZE) S.inv = Array(INV_SIZE).fill(null);
@@ -9493,6 +9814,18 @@ function openArmShop(){
 }
 function buyArm(id){
   const a = ARMS[id];
+  if(id === 'c4'){
+    ensureMinerRigs();
+    if(S.money < a.price){ flash('Paran yetmiyor (650₺)', '#f87171'); return; }
+    S.money -= a.price;
+    S.rigs.c4 = (S.rigs.c4 || 0) + 2;
+    save();
+    beep(780, 0.15, 'sawtooth', 0.12);
+    flash(`💣 +2 Adet C4 Bomba alındı! (Toplam C4: ${S.rigs.c4}) · ATM veya Zırhlı Kamyonu soyabilirsin!`, '#4ade80');
+    renderAll();
+    openArmShop();
+    return;
+  }
   const empty = S.inv.indexOf(null);
   if(empty < 0){ flash('Envanter dolu', '#f87171'); return; }
   if(S.money < a.price){ flash('Paran yetmiyor', '#f87171'); return; }
@@ -9725,19 +10058,25 @@ function fireRay(){
   const spread = w.id === 'pompali' ? PELLET_SPREAD : 0;
   const hitCounts = new Map();
   let anyMiss = false;
+  let truckHitCount = 0;
   let firstEnd = null;
   for(let k = 0; k < count; k++){
     const dir = ray.ray.direction.clone().add(new THREE.Vector3(
       (Math.random() - 0.5) * spread, (Math.random() - 0.5) * spread, (Math.random() - 0.5) * spread)).normalize();
     const r2 = new THREE.Raycaster(ray.ray.origin.clone(), dir);
     let end = r2.ray.at(80, new THREE.Vector3());
-    let target = null, wallHit = null;
+    let target = null, hitTruck = false, wallHit = null;
     for(const h of r2.intersectObjects(scene.children, true)){
       if(!h.object.isMesh || !isVisibleInHierarchy(h.object) || isHeld(h.object)) continue;
       if(h.object.material && h.object.material.transparent && h.object.material.opacity === 0) continue;
       end = h.point.clone();
       target = terrorists.find(t => !t.dead && (() => { for(let x = h.object; x; x = x.parent) if(x === t.g) return true; return false; })()) || null;
-      if(!target && h.face){
+      if(!target && armoredTruck.active && !armoredTruck.robbed){
+        for(let x = h.object; x; x = x.parent){
+          if(x === armoredTruckMesh){ hitTruck = true; break; }
+        }
+      }
+      if(!target && !hitTruck && h.face){
         const n = h.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(h.object.matrixWorld)).normalize();
         if(n.dot(dir) > 0) n.negate();
         wallHit = {point: end, normal: n};
@@ -9748,6 +10087,8 @@ function fireRay(){
     bulletTrail(end);
     if(target){
       hitCounts.set(target, (hitCounts.get(target) || 0) + 1);
+    } else if(hitTruck){
+      truckHitCount++;
     } else {
       anyMiss = true;
       if(wallHit) bulletHole(wallHit.point, wallHit.normal);
@@ -9760,8 +10101,11 @@ function fireRay(){
       hitTerrorist(target);
     }
   });
+  if(truckHitCount > 0){
+    damageArmoredTruck(w.id === 'pompali' ? 2 : 1);
+  }
   if(firstEnd) broadcastGunShot(w.id, firstEnd);
-  if(anyMiss && hitCounts.size === 0) flash('Iskaladın', '#ffd54a');
+  if(anyMiss && hitCounts.size === 0 && truckHitCount === 0) flash('Iskaladın', '#ffd54a');
   save();
   renderAll();
 }
@@ -9977,7 +10321,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-26-223610';
+const APP_VERSION = '2026-10-27-183525';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
