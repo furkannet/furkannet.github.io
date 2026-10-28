@@ -5751,6 +5751,10 @@ function rebuildPlayer(){
   scene.add(playerMesh);
   pLegL = playerMesh.getObjectByName('legL'); pLegR = playerMesh.getObjectByName('legR');
   pArmL = playerMesh.getObjectByName('armL'); pArmR = playerMesh.getObjectByName('armR');
+  if(pArmR && typeof heldThird !== 'undefined'){
+    Object.values(heldThird).forEach(m => pArmR.add(m));
+    if(typeof heldDetectorThird !== 'undefined' && heldDetectorThird) pArmR.add(heldDetectorThird);
+  }
 }
 function renderChar(){
   const box = $('charBody');
@@ -7925,7 +7929,10 @@ function updateDetectorZone(dt){
       const scanSc = 0.6 + scanT * 3.8;
       playerScanRing.scale.set(scanSc, scanSc, 1);
       playerScanRingMat.opacity = (1 - scanT) * 0.78;
-      playerScanRingMat.color.setHex(dist < 3.0 ? 0xfacc15 : dist < 6.5 ? 0x4ade80 : 0x38bdf8);
+      const sigColorHex = dist < 3.0 ? 0xfacc15 : dist < 6.5 ? 0x4ade80 : 0x38bdf8;
+      playerScanRingMat.color.setHex(sigColorHex);
+      if(typeof detScreenMat !== 'undefined') detScreenMat.color.setHex(sigColorHex);
+      if(typeof updateHeldGun === 'function') updateHeldGun();
 
       // Hazine noktasına yaklaşınca yerde 3B Kırmızı-Altın "X" İşareti ve Radar Halkaları parlar
       if(dist < 5.5){
@@ -7953,6 +7960,7 @@ function updateDetectorZone(dt){
     disp('digBtn', 'none');
     digSpotRing.visible = false;
     playerScanRing.visible = false;
+    if(typeof updateHeldGun === 'function') updateHeldGun();
   }
   const showSell = dugFinds.length > 0 && (nearBuyer || inZone);
   disp('sellFindsBtn', showSell ? 'block' : 'none');
@@ -10959,8 +10967,20 @@ function frame(now){
     if(inPondWater){
       pArmL.rotation.x = -1.35 + Math.sin(pPh * 1.3) * 0.95;
       pArmR.rotation.x = -1.35 - Math.sin(pPh * 1.3) * 0.95;
+      pArmR.rotation.z = 0;
+    } else if(typeof isHoldingDetectorNow === 'function' && isHoldingDetectorNow()){
+      // Elde dedektör varken sağ kol önde tutar ve sağa-sola tarama hareketi yapar
+      const sweep = Math.sin(performance.now() * 0.0035) * 0.32;
+      pArmL.rotation.x = -pSw * 0.7;
+      pArmR.rotation.x = -0.65;
+      pArmR.rotation.z = sweep;
+      if(typeof heldDetectorFirst !== 'undefined' && heldDetectorFirst.visible){
+        heldDetectorFirst.rotation.y = sweep * 0.75;
+        heldDetectorFirst.position.x = 0.28 + sweep * 0.18;
+      }
     } else {
       pArmL.rotation.x = -pSw * 0.7; pArmR.rotation.x = pSw * 0.7;
+      pArmR.rotation.z = 0;
     }
     if(myEmoteT > 0){
       myEmoteT -= dt;
@@ -11478,15 +11498,61 @@ HELD_KINDS.forEach(kind => {
   heldFirst[kind].position.set(0.28, -0.26, -0.6);
   camera.add(heldFirst[kind]);
 });
+
+// 📡 Elde Tutulan 3B Metal Dedektörü (Hem 3. şahısta karakterin elinde hem 1. şahısta kamerada görünür!)
+const detScreenMat = new THREE.MeshBasicMaterial({color: 0x38bdf8, fog: false});
+function makeHeldDetector(){
+  const g = new THREE.Group();
+  // Üst tutamak ve kol desteği
+  addTo(g, B(0.11, 0.12, 0.22), M(0x1e293b), 0, 0.08, 0.06);
+  addTo(g, B(0.06, 0.18, 0.06), M(0x334155), 0, -0.02, 0.0);
+  // Dijital dedektör ekran kutusu ve sinyal lambası
+  addTo(g, B(0.16, 0.12, 0.14), M(0xfacc15), 0, 0.14, -0.10);
+  addTo(g, B(0.12, 0.08, 0.02), detScreenMat, 0, 0.15, -0.025);
+  // Yere doğru uzanan teleskopik metal çubuk (şaft)
+  const shaft = addTo(g, new THREE.CylinderGeometry(0.024, 0.022, 1.08, 6), M(0x94a3b8), 0, -0.22, -0.46);
+  shaft.rotation.x = 0.72;
+  // Ucundaki yuvarlak 3B dedektör tarama başlığı (bobin halkası + merkez göbek + sinyal ışığı)
+  const coilGroup = new THREE.Group();
+  coilGroup.position.set(0, -0.62, -0.82);
+  g.add(coilGroup);
+  const coilOuter = new THREE.Mesh(new THREE.RingGeometry(0.15, 0.24, 12).rotateX(-Math.PI / 2), M(0x111827));
+  coilGroup.add(coilOuter);
+  const coilRingGlow = new THREE.Mesh(new THREE.RingGeometry(0.17, 0.21, 12).rotateX(-Math.PI / 2), detScreenMat);
+  coilRingGlow.position.y = 0.008;
+  coilGroup.add(coilRingGlow);
+  addTo(coilGroup, new THREE.CylinderGeometry(0.06, 0.06, 0.04, 8), M(0xfacc15), 0, 0.01, 0);
+  return g;
+}
+const heldDetectorThird = makeHeldDetector();
+heldDetectorThird.position.set(0, -0.58, 0.14);
+heldDetectorThird.rotation.x = -Math.PI / 2 + 0.35;
+heldDetectorThird.visible = false;
+pArmR.add(heldDetectorThird);
+
+const heldDetectorFirst = makeHeldDetector();
+heldDetectorFirst.position.set(0.32, -0.34, -0.52);
+heldDetectorFirst.visible = false;
+camera.add(heldDetectorFirst);
+
 scene.add(camera);
+function isHoldingDetectorNow(){
+  if(C.driving || D.driving || CM.driving) return false;
+  if(!(S.mk && S.mk.detektor)) return false;
+  // Hazine arama alanında veya yakınındayken otomatik elinde dedektör tutar
+  return (P.x >= DIG_ZONE.minX - 4 && P.x <= DIG_ZONE.maxX + 5 && P.z >= DIG_ZONE.minZ - 4 && P.z <= DIG_ZONE.maxZ + 4);
+}
 function updateHeldGun(){
+  const detOn = isHoldingDetectorNow();
   const w = S.hand;
-  const held = !!w && w.id !== 'sarjor' && !C.driving && !D.driving && !CM.driving;
+  const held = !detOn && !!w && w.id !== 'sarjor' && !C.driving && !D.driving && !CM.driving;
   HELD_KINDS.forEach(kind => {
     const on = held && w.id === kind;
     heldThird[kind].visible = on && thirdPerson;
     heldFirst[kind].visible = on && !thirdPerson;
   });
+  heldDetectorThird.visible = detOn && thirdPerson;
+  heldDetectorFirst.visible = detOn && !thirdPerson;
 }
 
 /* ================= Silahcı, envanter, teröristler ================= */
@@ -12137,7 +12203,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-28-161131';
+const APP_VERSION = '2026-10-28-161911';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
