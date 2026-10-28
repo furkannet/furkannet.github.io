@@ -2490,10 +2490,38 @@ const relicBuyer = human(0xca8a04, 0x422006, pick(SKINS), pick(HAIRS));
 relicBuyer.position.set(-18.8, 0, -58.5);
 relicBuyer.rotation.y = Math.PI / 2;
 scene.add(relicBuyer);
-const digSpotRing = new THREE.Mesh(new THREE.CircleGeometry(0.85, 12), new THREE.MeshBasicMaterial({color: 0xfde047, transparent: true, opacity: 0.75, depthWrite: false}));
-digSpotRing.rotation.x = -Math.PI / 2;
-digSpotRing.position.set(-28, 0.06, -62);
+// #27: Hazine Arama Alanında 3B "X" İşareti ve Genişleyen Radar Dedektör Halkaları
+const digSpotRing = new THREE.Group();
+digSpotRing.position.set(-28, 0.04, -62);
+digSpotRing.visible = false;
 scene.add(digSpotRing);
+const xMarkMat = new THREE.MeshBasicMaterial({color: 0xef4444, fog: false});
+const xGlowMat = new THREE.MeshBasicMaterial({color: 0xfacc15, fog: false});
+const xBarGeo = B(1.35, 0.035, 0.24);
+const xGlowGeo = B(1.48, 0.02, 0.34);
+const xGlow1 = addTo(digSpotRing, xGlowGeo, xGlowMat, 0, 0.005, 0);
+xGlow1.rotation.y = Math.PI / 4;
+const xGlow2 = addTo(digSpotRing, xGlowGeo, xGlowMat, 0, 0.005, 0);
+xGlow2.rotation.y = -Math.PI / 4;
+const xBar1 = addTo(digSpotRing, xBarGeo, xMarkMat, 0, 0.02, 0);
+xBar1.rotation.y = Math.PI / 4;
+const xBar2 = addTo(digSpotRing, xBarGeo, xMarkMat, 0, 0.02, 0);
+xBar2.rotation.y = -Math.PI / 4;
+const detRadarGeo = new THREE.RingGeometry(0.32, 0.42, 16).rotateX(-Math.PI / 2);
+const detRadarRings = [];
+[0xfacc15, 0xef4444, 0x38bdf8].forEach((col, i) => {
+  const rMat = new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false, fog: false});
+  const rm = new THREE.Mesh(detRadarGeo, rMat);
+  rm.position.set(0, 0.015 + i * 0.002, 0);
+  digSpotRing.add(rm);
+  detRadarRings.push({m: rm, mat: rMat, ph: i * 0.33});
+});
+// Oyuncunun ayaklarının etrafında sinyal gücüne göre yayılan dedektör tarama halkası
+const playerScanRingMat = new THREE.MeshBasicMaterial({color: 0x38bdf8, transparent: true, opacity: 0.75, side: THREE.DoubleSide, depthWrite: false, fog: false});
+const playerScanRing = new THREE.Mesh(detRadarGeo, playerScanRingMat);
+playerScanRing.position.set(-28, 0.05, -62);
+playerScanRing.visible = false;
+scene.add(playerScanRing);
 
 // 5) ⛏️ YERALTI 14 KATLI DERİN KÜP BLOK MADENİ (sağ çimli alanda: x=15.5, z=-45)
 const MINER_POS = {x: 15.5, z: -45, doorX: 11.4, doorZ: -45};
@@ -7876,8 +7904,10 @@ function updateDetectorZone(dt){
     if(!hasDet){
       txt('detHud', `📡 Hazine aramak için önce Dedektör (${DETECTOR_PRICE}₺) ve Kazma (${PICKAXE_PRICE}₺) al!`);
       digSpotRing.visible = false;
+      playerScanRing.visible = false;
       disp('digBtn', 'none');
     } else {
+      const nowS = performance.now() * 0.001;
       const dist = Math.hypot(P.x - digTarget.x, P.z - digTarget.z);
       const sigPct = Math.max(5, Math.min(100, Math.round((1 - Math.min(dist, 16) / 16) * 100)));
       const statusTxt = dist < 2.6 ? (hasPick ? '🔥 ÇOK YAKIN! KAZMAYLA KAZ!' : '⚠️ KAZMA ALMALISIN!') : dist < 6 ? '⚡ Yaklaşıyorsun' : '📡 Aranıyor...';
@@ -7888,11 +7918,31 @@ function updateDetectorZone(dt){
         detBeepTimer = interval;
         beep(Math.round(520 + sigPct * 4.5), 0.045, 'sine', 0.05);
       }
-      if(dist < 3.5){
+      // Oyuncunun ayaklarında dedektör tarama halkası (yaklaştıkça hızlanır ve yeşile/altına döner)
+      playerScanRing.visible = true;
+      playerScanRing.position.set(P.x, 0.045, P.z);
+      const scanT = (nowS * (1.2 + sigPct * 0.025)) % 1.0;
+      const scanSc = 0.6 + scanT * 3.8;
+      playerScanRing.scale.set(scanSc, scanSc, 1);
+      playerScanRingMat.opacity = (1 - scanT) * 0.78;
+      playerScanRingMat.color.setHex(dist < 3.0 ? 0xfacc15 : dist < 6.5 ? 0x4ade80 : 0x38bdf8);
+
+      // Hazine noktasına yaklaşınca yerde 3B Kırmızı-Altın "X" İşareti ve Radar Halkaları parlar
+      if(dist < 5.5){
         digSpotRing.visible = true;
         digSpotRing.position.set(digTarget.x, 0.04, digTarget.z);
-        const sc = 0.85 + Math.abs(Math.sin(performance.now() * 0.008)) * 0.35;
-        digSpotRing.scale.set(sc, sc, 1);
+        const pulse = 0.92 + Math.abs(Math.sin(nowS * 6.5)) * 0.22;
+        xBar1.scale.set(pulse, 1, pulse);
+        xBar2.scale.set(pulse, 1, pulse);
+        xGlow1.scale.set(pulse * 1.06, 1, pulse * 1.06);
+        xGlow2.scale.set(pulse * 1.06, 1, pulse * 1.06);
+        for(let i = 0; i < detRadarRings.length; i++){
+          const rr = detRadarRings[i];
+          const rt = (nowS * 1.65 + rr.ph) % 1.0;
+          const rsc = 0.7 + rt * 4.2;
+          rr.m.scale.set(rsc, rsc, 1);
+          rr.mat.opacity = (1 - rt) * 0.85;
+        }
       } else {
         digSpotRing.visible = false;
       }
@@ -7902,6 +7952,7 @@ function updateDetectorZone(dt){
     disp('detHud', 'none');
     disp('digBtn', 'none');
     digSpotRing.visible = false;
+    playerScanRing.visible = false;
   }
   const showSell = dugFinds.length > 0 && (nearBuyer || inZone);
   disp('sellFindsBtn', showSell ? 'block' : 'none');
@@ -12086,7 +12137,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-28-152759';
+const APP_VERSION = '2026-10-28-161131';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
