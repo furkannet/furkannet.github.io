@@ -9229,29 +9229,60 @@ for(let i = 0; i < 14; i++){
   fallingLeaves.push({m: lm, tx: tr.x, tz: tr.z, ph: i * 0.9, spd: 0.45 + (i % 4) * 0.12});
 }
 
-// #8: Yağmurda Yerde Parlayan Su Birikintileri & Damla Halkaları
+// #8: Yağmurda Yerde Parlayan Su Birikintileri, Gölet ve Birikintilerde Sıçrayan 3B Damlalar & Su Halkaları
 const rainPuddlesGroup = new THREE.Group();
 rainPuddlesGroup.visible = false;
 scene.add(rainPuddlesGroup);
-const puddleMat = new THREE.MeshBasicMaterial({color: 0x60a5fa, transparent: true, opacity: 0.42, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3});
-const puddleRippleMat = new THREE.MeshBasicMaterial({color: 0xdbeafe, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false});
-const puddleRippleGeo = new THREE.RingGeometry(0.12, 0.17, 12).rotateX(-Math.PI / 2);
+const puddleMat = new THREE.MeshBasicMaterial({color: 0x60a5fa, transparent: true, opacity: 0.44, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3});
+const puddleRippleGeo = new THREE.RingGeometry(0.11, 0.165, 12).rotateX(-Math.PI / 2);
+const splashDropGeo = new THREE.OctahedronGeometry(0.048, 0);
+const splashDropMat = new THREE.MeshBasicMaterial({color: 0xe0f2fe, transparent: true, opacity: 0.92, fog: false});
 const puddleRipples = [];
-[
+const waterSplashDrops = [];
+const PUDDLE_SPOTS = [
   [-1.8, 0.025, -12, 1.5, 2.2], [2.1, 0.025, -28, 1.8, 2.6], [-2.0, 0.025, -48, 1.6, 2.1],
   [1.7, 0.025, -68, 1.7, 2.5], [-1.9, 0.025, -84, 1.6, 2.3], [6.2, 0.315, -8, 1.2, 1.6],
   [-6.2, 0.315, -22, 1.3, 1.7], [6.4, 0.315, -36, 1.2, 1.8], [-15.0, 0.035, -12, 1.9, 2.4],
   [-21.0, 0.035, -28, 2.1, 2.5], [14.5, 0.025, -14, 1.6, 2.0], [16.0, 0.025, -34, 1.7, 2.2]
-].forEach(([px, py, pz, sx, sz], idx) => {
+];
+PUDDLE_SPOTS.forEach(([px, py, pz, sx, sz], idx) => {
   const pm = new THREE.Mesh(BLOB_GEO, puddleMat);
   pm.position.set(px, py, pz);
   pm.scale.set(sx, 1, sz);
   rainPuddlesGroup.add(pm);
-  const rp = new THREE.Mesh(puddleRippleGeo, puddleRippleMat);
-  rp.position.set(px, py + 0.005, pz);
-  rainPuddlesGroup.add(rp);
-  puddleRipples.push({m: rp, t: (idx * 0.27) % 1.0});
+  // Her su birikintisinde 2 damla halkası + 2 sıçrayan 3B su damlacığı
+  for(let k = 0; k < 2; k++){
+    const ox = px + (k === 0 ? -0.22 : 0.24) * sx;
+    const oz = pz + (k === 0 ? 0.18 : -0.20) * sz;
+    const rMat = new THREE.MeshBasicMaterial({color: 0xe0f2fe, transparent: true, opacity: 0.75, side: THREE.DoubleSide, depthWrite: false});
+    const rp = new THREE.Mesh(puddleRippleGeo, rMat);
+    rp.position.set(ox, py + 0.006, oz);
+    rainPuddlesGroup.add(rp);
+    const dm = new THREE.Mesh(splashDropGeo, splashDropMat);
+    dm.scale.set(0.75, 1.7, 0.75);
+    dm.position.set(ox, py + 0.05, oz);
+    rainPuddlesGroup.add(dm);
+    const t0 = ((idx * 0.23) + k * 0.48) % 1.0;
+    puddleRipples.push({m: rp, mat: rMat, drop: dm, baseX: ox, baseY: py + 0.006, baseZ: oz, radX: sx * 0.35, radZ: sz * 0.35, t: t0});
+  }
 });
+// Göletin (balık gölü) su yüzeyinde yağmur yağarken oluşan yoğun damla halkaları ve sıçrayan 3B su damlacıkları
+for(let i = 0; i < 16; i++){
+  const ang = (i / 16) * Math.PI * 2 + (i % 3) * 0.25;
+  const dist = 0.65 + (i % 5) * 0.92;
+  const gx = POND_POS.x + Math.cos(ang) * dist;
+  const gz = POND_POS.z + Math.sin(ang) * dist;
+  const gy = 0.082;
+  const rMat = new THREE.MeshBasicMaterial({color: 0xe0f2fe, transparent: true, opacity: 0.78, side: THREE.DoubleSide, depthWrite: false});
+  const rp = new THREE.Mesh(puddleRippleGeo, rMat);
+  rp.position.set(gx, gy, gz);
+  rainPuddlesGroup.add(rp);
+  const dm = new THREE.Mesh(splashDropGeo, splashDropMat);
+  dm.scale.set(0.85, 1.9, 0.85);
+  dm.position.set(gx, gy + 0.06, gz);
+  rainPuddlesGroup.add(dm);
+  puddleRipples.push({m: rp, mat: rMat, drop: dm, baseX: gx, baseY: gy, baseZ: gz, radX: 0.45, radZ: 0.45, t: (i * 0.19) % 1.0});
+}
 
 // #9: Gökyüzünde Dev Renkli 3B Gökkuşağı Kemeri (SADECE Yağmur dindikten sonra & gündüz görünür!)
 const rainbowGroup = new THREE.Group();
@@ -9681,16 +9712,33 @@ function updateAtmosphericVisuals(dt){
     }
   }
 
-  // #8 Yağmur su birikintileri ve damla halkaları
+  // #8 Yağmurda su birikintileri & gölet yüzeyinde sıçrayan 3B damlalar ve yayılan damla halkaları
   const isRain = weather === 'rain';
   rainPuddlesGroup.visible = isRain;
   if(isRain){
     for(let i = 0; i < puddleRipples.length; i++){
       const pr = puddleRipples[i];
-      pr.t = (pr.t + dt * 1.6) % 1.0;
-      const sc = 0.5 + pr.t * 4.2;
+      pr.t += dt * 1.95;
+      if(pr.t >= 1.0){
+        pr.t -= 1.0;
+        // Her yeni damla düştüğünde birikinti/gölet içinde hafifçe farklı bir noktaya çarpsın
+        const nx = pr.baseX + (Math.random() - 0.5) * pr.radX;
+        const nz = pr.baseZ + (Math.random() - 0.5) * pr.radZ;
+        pr.m.position.set(nx, pr.baseY, nz);
+        pr.drop.position.x = nx;
+        pr.drop.position.z = nz;
+      }
+      const sc = 0.45 + pr.t * 3.8;
       pr.m.scale.set(sc, sc, 1);
-      pr.m.material.opacity = (1 - pr.t) * 0.65;
+      pr.mat.opacity = (1 - pr.t) * 0.82;
+      // Damla suya çarptığı ilk anda (t < 0.48) yukarı doğru minik 3B su damlacığı sıçrar
+      if(pr.t < 0.48){
+        const dp = pr.t / 0.48;
+        pr.drop.visible = true;
+        pr.drop.position.y = pr.baseY + Math.sin(dp * Math.PI) * 0.24;
+      } else {
+        pr.drop.visible = false;
+      }
     }
   }
 
@@ -12038,7 +12086,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-28-152151';
+const APP_VERSION = '2026-10-28-152759';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
