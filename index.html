@@ -1236,34 +1236,38 @@ function makeNaturalTree(x, z, variant = 0){
   return tg;
 }
 
+const swayFlowerClusters = [];
 function makeNaturalFlowerCluster(x, z, colHex = 0xe74c3c){
   const fg = new THREE.Group();
   fg.position.set(x, 0, z);
   scene.add(fg);
   addBlob(fg, 0.48, 0.48, 0.032);
+  const swayPivot = new THREE.Group();
+  fg.add(swayPivot);
   // Alt doğal yaprak kümesi (kare kutu yerine organik dodecahedron)
   [[-0.08, 0.11, -0.06, 1.0], [0.09, 0.10, 0.07, 0.85], [0.02, 0.12, -0.09, 0.78]].forEach(([bx, by, bz, s]) => {
     const b = new THREE.Mesh(bushClumpGeo, leafMidMat);
     b.position.set(bx, by, bz);
     b.scale.set(s, s * 0.65, s);
     b.rotation.y = bx * 4;
-    fg.add(b);
+    swayPivot.add(b);
   });
   // Çiçek sapları ve taç yaprakları
   const pMat = M(colHex), centerMat = M(0xfacc15);
   [[-0.09, -0.05, 0.26], [0.09, 0.06, 0.29], [0.01, -0.08, 0.24]].forEach(([fx, fz, fy]) => {
     const st = new THREE.Mesh(flowerStemGeo, leafMat);
     st.position.set(fx, fy * 0.5, fz);
-    fg.add(st);
+    swayPivot.add(st);
     const pet = new THREE.Mesh(petalGeo, pMat);
     pet.position.set(fx, fy, fz);
     pet.scale.set(1.25, 0.65, 1.25);
-    fg.add(pet);
+    swayPivot.add(pet);
     const cen = new THREE.Mesh(petalGeo, centerMat);
     cen.position.set(fx, fy + 0.03, fz);
     cen.scale.set(0.55, 0.55, 0.55);
-    fg.add(cen);
+    swayPivot.add(cen);
   });
+  swayFlowerClusters.push({pivot: swayPivot, phase: x * 0.45 + z * 0.35, x, z});
   return fg;
 }
 // sokak lambalarının altındaki ışık havuzları (geceleri görünür)
@@ -1564,14 +1568,20 @@ scene.add(parkLawn);
   addSmashable(fl, fx, fz, 0.7, col, 0x2f8f46);
 });
 
-// 🌿 TEK ÇİZİMDE (1 DRAW CALL) 3B DOĞAL ÇİM YAPRAKLARI (FBS DÜŞÜRMEZ!)
+// 🌿 TEK ÇİZİMDE (1 DRAW CALL) 3B DOĞAL ÇİM YAPRAKLARI (RÜZGÂRDA SAVRULUR & ÜSTÜNDEN GEÇİNCE YATAR - FPS DÜŞÜRMEZ!)
+let grassPosAttr = null;
+const GRASS_TIP_COUNT = 820 * 2;
+const grassTipBaseX = new Float32Array(GRASS_TIP_COUNT);
+const grassTipBaseY = new Float32Array(GRASS_TIP_COUNT);
+const grassTipBaseZ = new Float32Array(GRASS_TIP_COUNT);
+const grassTipPhase = new Float32Array(GRASS_TIP_COUNT);
 (function build3DGrassBlades(){
   const bladeCount = 820;
   // Her çim tutamı 2 çapraz sivrilen yapraktan (6 köşe = 2 üçgen) oluşur; hepsi tek BufferGeometry içinde birleşir
   const positions = new Float32Array(bladeCount * 2 * 3 * 3);
   const normals = new Float32Array(bladeCount * 2 * 3 * 3);
   const colors = new Float32Array(bladeCount * 2 * 3 * 3);
-  let ptr = 0, cPtr = 0, nPtr = 0;
+  let ptr = 0, cPtr = 0, nPtr = 0, tipIdx = 0;
 
   function isExcludedGrassSpot(x, z){
     // Sağ çimde ev, restoran, maden çukuru üstünü boş bırak
@@ -1625,10 +1635,17 @@ scene.add(parkLawn);
       const x1 = gx - ca * hw, z1 = gz - sa * hw;
       const x2 = gx + ca * hw, z2 = gz + sa * hw;
       const x3 = gx + leanX,   z3 = gz + leanZ;
+      const y3 = 0.02 + h;
 
       positions[ptr++] = x1; positions[ptr++] = 0.02; positions[ptr++] = z1;
       positions[ptr++] = x2; positions[ptr++] = 0.02; positions[ptr++] = z2;
-      positions[ptr++] = x3; positions[ptr++] = 0.02 + h; positions[ptr++] = z3;
+      positions[ptr++] = x3; positions[ptr++] = y3;   positions[ptr++] = z3;
+
+      grassTipBaseX[tipIdx] = x3;
+      grassTipBaseY[tipIdx] = y3;
+      grassTipBaseZ[tipIdx] = z3;
+      grassTipPhase[tipIdx] = gx * 0.22 + gz * 0.16 + b * 1.1;
+      tipIdx++;
 
       normals[nPtr++] = 0; normals[nPtr++] = 1; normals[nPtr++] = 0;
       normals[nPtr++] = 0; normals[nPtr++] = 1; normals[nPtr++] = 0;
@@ -1641,7 +1658,8 @@ scene.add(parkLawn);
     }
   }
   const grassGeo = new THREE.BufferGeometry();
-  grassGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  grassPosAttr = new THREE.BufferAttribute(positions, 3);
+  grassGeo.setAttribute('position', grassPosAttr);
   grassGeo.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
   grassGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   const grassBladeMat = new THREE.MeshLambertMaterial({vertexColors: true, side: THREE.DoubleSide});
@@ -6129,8 +6147,14 @@ function startShift(){
   can = MAX_LIVES; shiftEarned = 0; shiftT = SHIFT_LEN; shiftEnded = false; over = false;
   rushCD = RUSH_EVERY; rushLeft = 0; rushOn = false;
   hotCD = 90; hotLeft = 0;
-  weather = Math.random() < 0.3 ? 'rain' : 'clear';
+  const prevWeather = weather;
+  weather = Math.random() < 0.35 ? 'rain' : 'clear';
   rain.visible = weather === 'rain';
+  if(prevWeather === 'rain' && weather === 'clear'){
+    postRainRainbowTimer = 95;
+  }
+  wasRainingState = (weather === 'rain');
+  weatherChangeCD = 45 + Math.random() * 35;
   skyPeriod = '';
   updateSky();
   spawnT = 0.5;
@@ -9223,18 +9247,41 @@ const puddleRipples = [];
   puddleRipples.push({m: rp, t: idx * 0.35});
 });
 
-// #9: Gökyüzünde Dev Renkli 3B Gökkuşağı Kemeri (Yağmur sonrası & gündüz görünür)
+// #9: Gökyüzünde Dev Renkli 3B Gökkuşağı Kemeri (SADECE Yağmur dindikten sonra & gündüz görünür!)
 const rainbowGroup = new THREE.Group();
 rainbowGroup.position.set(-6, 0, -96);
+rainbowGroup.visible = false;
 scene.add(rainbowGroup);
+const rainbowArcs = [];
 [0xef4444, 0xf97316, 0xfacc15, 0x22c55e, 0x38bdf8, 0xa855f7].forEach((col, i) => {
   const rIn = 34 + i * 1.15;
+  const arcMat = new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.42, side: THREE.DoubleSide, fog: false, depthWrite: false});
   const arc = new THREE.Mesh(
     new THREE.RingGeometry(rIn, rIn + 1.05, 24, 1, 0, Math.PI),
-    new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.38, side: THREE.DoubleSide, fog: false, depthWrite: false})
+    arcMat
   );
   rainbowGroup.add(arc);
+  rainbowArcs.push(arcMat);
 });
+
+// #6: Yolda / Kaldırım Kenarında Duran & Arabayla Hızlı Geçince Havaya Savrulan Yapraklar
+const roadWhirlLeaves = [];
+for(let i = 0; i < 24; i++){
+  const rm = new THREE.Mesh(fallLeafGeo, fallLeafMats[i % 3]);
+  rm.scale.set(1.25, 0.35, 0.85);
+  const side = i % 2 === 0 ? -1 : 1;
+  const hx = side * (3.2 + (i % 3) * 0.85);
+  const hz = -88 + i * 3.8;
+  rm.position.set(hx, 0.04, hz);
+  rm.rotation.y = i * 1.1;
+  scene.add(rm);
+  roadWhirlLeaves.push({m: rm, hx, hz, vx: 0, vy: 0, vz: 0, air: false, ph: i * 0.7});
+}
+
+let postRainRainbowTimer = 0;
+let wasRainingState = false;
+let weatherChangeCD = 55;
+let currentWindStrength = 1.0;
 
 // #10: Gökyüzünde V Şeklinde Uçan Kuş Sürüleri & Kaldırımda Kaçışan Güvercinler
 const birdWingGeo = B(0.28, 0.03, 0.12);
@@ -9394,55 +9441,179 @@ const pondCrabs = [];
 
 function updateAtmosphericVisuals(dt){
   const nowS = performance.now() * 0.001;
+  const myX = C.driving ? C.x : P.x, myZ = C.driving ? C.z : P.z;
+  const crushRadius = C.driving ? 2.15 : 1.05;
+  const crushRadiusSq = crushRadius * crushRadius;
 
-  // #1 Bulutların süzülmesi & Güneş Halesi görünürlüğü
+  // 🌬️ #4 Dinamik Rüzgâr Şiddeti (zaman zaman rüzgâr sağanağı eser, yağmurda daha kuvvetli olur)
+  const gustWave = Math.max(0, Math.sin(nowS * 0.42) * 0.6 + Math.sin(nowS * 1.15) * 0.4);
+  currentWindStrength = (weather === 'rain' ? 1.55 : 0.75) + gustWave * 1.35;
+
+  // 🌦️ Vardiya içinde dinamik hava geçişi & Yağmur dindikten sonra Gökkuşağı çıkması
+  if(!shiftEnded && !over){
+    weatherChangeCD -= dt;
+    if(weatherChangeCD <= 0){
+      weatherChangeCD = 55 + Math.random() * 40;
+      if(weather === 'rain'){
+        weather = 'clear';
+        rain.visible = false;
+        updateSky();
+      } else if(Math.random() < 0.35){
+        weather = 'rain';
+        rain.visible = true;
+        updateSky();
+        flash('🌧️ Rüzgârlı yağmur başladı!', '#60a5fa');
+      }
+    }
+  }
+  if(wasRainingState && weather !== 'rain'){
+    postRainRainbowTimer = 95; // Yağmur dindikten sonra 95 saniye boyunca gökkuşağı görünür
+    flash('🌈 Yağmur dindi, gökyüzünde Gökkuşağı çıktı!', '#38bdf8');
+  }
+  wasRainingState = (weather === 'rain');
+
+  // #9 Gökkuşağı: SADECE yağmur sonrasında (postRainRainbowTimer > 0) ve gündüz/alacakaranlıkta görünür
   const isDayOrDusk = skyPeriod === 'day' || skyPeriod === 'dusk';
-  sunHaloSprite.visible = isDayOrDusk;
+  if(postRainRainbowTimer > 0){
+    postRainRainbowTimer = Math.max(0, postRainRainbowTimer - dt);
+    rainbowGroup.visible = isDayOrDusk;
+    if(isDayOrDusk){
+      const fade = Math.min(1, postRainRainbowTimer / 12) * 0.44;
+      for(let i = 0; i < rainbowArcs.length; i++) rainbowArcs[i].opacity = fade;
+    }
+  } else {
+    rainbowGroup.visible = false;
+  }
+
+  // #1 Bulutların rüzgâr hızıyla süzülmesi & Güneş Halesi görünürlüğü
+  sunHaloSprite.visible = isDayOrDusk && weather !== 'rain';
   for(let i = 0; i < skyClouds.length; i++){
     const cl = skyClouds[i];
-    cl.g.position.z += cl.spd * dt;
+    cl.g.position.z += cl.spd * currentWindStrength * dt;
     if(cl.g.position.z > 25) cl.g.position.z = -98;
   }
 
-  // #9 Gökkuşağı (gündüz ve alacakaranlıkta görünür)
-  rainbowGroup.visible = isDayOrDusk;
+  // 🌿 Rüzgâr gelince dalga dalga savrulan & #1 Üstünden yürüyünce/arabayla geçince iki yana yatan 3B Çimler
+  if(grassPosAttr){
+    const arr = grassPosAttr.array;
+    const windBase = 0.085 * currentWindStrength;
+    for(let i = 0; i < GRASS_TIP_COUNT; i++){
+      const bx = grassTipBaseX[i];
+      const by = grassTipBaseY[i];
+      const bz = grassTipBaseZ[i];
+      const ph = grassTipPhase[i];
+      const wWave = Math.sin(nowS * 2.8 + ph) * windBase + (currentWindStrength - 0.65) * 0.055;
+      let tx = bx + wWave;
+      let ty = by;
+      let tz = bz + wWave * 0.45;
+      const dx = bx - myX, dz = bz - myZ;
+      const dSq = dx * dx + dz * dz;
+      if(dSq < crushRadiusSq){
+        const d = Math.sqrt(dSq) || 0.01;
+        const push = (1 - d / crushRadius) * 0.28;
+        tx += (dx / d) * push;
+        tz += (dz / d) * push;
+        ty = Math.max(0.04, by - push * 0.72);
+      }
+      const idx = (i * 3 + 2) * 3;
+      arr[idx] = tx;
+      arr[idx + 1] = ty;
+      arr[idx + 2] = tz;
+    }
+    grassPosAttr.needsUpdate = true;
+  }
 
-  // #7 Rüzgârda hafifçe sallanan ağaç tepeleri ve süzülen yapraklar
+  // #3 Çiçeklerin rüzgârla birlikte eğilip sallanması & üstünden geçince eğilmesi
+  for(let i = 0; i < swayFlowerClusters.length; i++){
+    const fl = swayFlowerClusters[i];
+    let rotZ = Math.sin(nowS * 2.6 + fl.phase) * 0.09 * currentWindStrength + (currentWindStrength - 0.7) * 0.06;
+    let rotX = Math.cos(nowS * 2.1 + fl.phase) * 0.06 * currentWindStrength;
+    const dx = fl.x - myX, dz = fl.z - myZ;
+    if(dx * dx + dz * dz < crushRadiusSq){
+      rotZ += (dx >= 0 ? -0.45 : 0.45);
+      rotX += (dz >= 0 ? 0.45 : -0.45);
+    }
+    fl.pivot.rotation.z = rotZ;
+    fl.pivot.rotation.x = rotX;
+  }
+
+  // #4 & #7 Rüzgâr şiddetlenince daha çok eğilen ağaç tepeleri ve rüzgârla savrulan yapraklar
   for(let i = 0; i < swayTreeCrowns.length; i++){
     const sw = swayTreeCrowns[i];
-    sw.pivot.rotation.z = Math.sin(nowS * 1.8 + sw.phase) * 0.045;
-    sw.pivot.rotation.x = Math.cos(nowS * 1.4 + sw.phase) * 0.035;
+    sw.pivot.rotation.z = Math.sin(nowS * 2.0 + sw.phase) * 0.055 * currentWindStrength + (currentWindStrength - 0.75) * 0.045;
+    sw.pivot.rotation.x = Math.cos(nowS * 1.5 + sw.phase) * 0.042 * currentWindStrength;
   }
   for(let i = 0; i < fallingLeaves.length; i++){
     const lf = fallingLeaves[i];
     lf.m.position.y -= lf.spd * dt;
-    lf.m.position.x = lf.tx + Math.sin(nowS * 2.2 + lf.ph) * 0.85;
-    lf.m.position.z = lf.tz + Math.cos(nowS * 1.7 + lf.ph) * 0.85;
-    lf.m.rotation.x += dt * 2.5;
-    lf.m.rotation.z += dt * 1.8;
+    lf.m.position.x = lf.tx + Math.sin(nowS * 2.2 + lf.ph) * 0.85 * currentWindStrength + (currentWindStrength - 0.7) * 0.55;
+    lf.m.position.z = lf.tz + Math.cos(nowS * 1.7 + lf.ph) * 0.85 * currentWindStrength;
+    lf.m.rotation.x += dt * 2.5 * currentWindStrength;
+    lf.m.rotation.z += dt * 1.8 * currentWindStrength;
     if(lf.m.position.y < 0.06){
       lf.m.position.y = 2.6 + (i % 3) * 0.3;
     }
   }
 
-  // #2 ve #20 Gölet su halkaları, nilüferlerin salınımı ve sudan sıçrayan balık
+  // 🚗🍂 #6 Arabayla hızlı geçince yoldaki yaprakların döne döne havaya savrulması
+  const carFast = C.driving && Math.abs(C.v) > 2.4;
+  const carSpd = Math.abs(C.v || 0);
+  for(let i = 0; i < roadWhirlLeaves.length; i++){
+    const rl = roadWhirlLeaves[i];
+    if(carFast){
+      const dx = rl.m.position.x - C.x;
+      const dz = rl.m.position.z - C.z;
+      if(dx * dx + dz * dz < 10.5){
+        rl.air = true;
+        const spread = (Math.random() - 0.5) * 4.5;
+        rl.vx = (dx * 1.4 + spread) * Math.min(2.2, carSpd * 0.16);
+        rl.vy = 2.4 + Math.random() * 2.6 + Math.min(2.5, carSpd * 0.18);
+        rl.vz = (dz * 1.2 + (Math.random() - 0.5) * 3.5);
+      }
+    }
+    if(rl.air){
+      rl.m.position.x += (rl.vx + currentWindStrength * 0.7) * dt;
+      rl.m.position.y += rl.vy * dt;
+      rl.m.position.z += rl.vz * dt;
+      rl.vy -= 4.8 * dt; // yerçekimi ile süzülerek iniş
+      rl.m.rotation.x += dt * 9.0;
+      rl.m.rotation.y += dt * 7.5;
+      rl.m.rotation.z += dt * 8.2;
+      if(rl.m.position.y <= 0.04){
+        rl.m.position.y = 0.04;
+        rl.air = false;
+        rl.m.rotation.set(0, rl.ph, 0);
+        // Çok uzağa uçtuysa yol kenarına geri yerleşsin
+        if(Math.abs(rl.m.position.x) > 10.5){
+          rl.m.position.x = rl.hx;
+          rl.m.position.z = rl.hz;
+        }
+      }
+    } else {
+      // Yerdeyken de rüzgâr şiddetlenince hafifçe titreyip sürüklensin
+      rl.m.position.x = rl.hx + Math.sin(nowS * 1.8 + rl.ph) * 0.18 * currentWindStrength;
+      rl.m.rotation.y = rl.ph + Math.sin(nowS * 2.2 + rl.ph) * 0.25 * currentWindStrength;
+    }
+  }
+
+  // #2, #4 ve #20 Gölet su halkaları (rüzgâr şiddetlenince daha hızlı dalgalanır), nilüferler ve sıçrayan balık
   for(let i = 0; i < pondLilyPads.length; i++){
     const lp = pondLilyPads[i];
-    lp.g.position.x = lp.baseX + Math.sin(nowS * 1.5 + lp.ph) * 0.06;
-    lp.g.position.z = lp.baseZ + Math.cos(nowS * 1.3 + lp.ph) * 0.06;
+    lp.g.position.x = lp.baseX + Math.sin(nowS * 1.5 * currentWindStrength + lp.ph) * 0.06 * currentWindStrength;
+    lp.g.position.z = lp.baseZ + Math.cos(nowS * 1.3 * currentWindStrength + lp.ph) * 0.06 * currentWindStrength;
   }
   for(let i = 0; i < pondWaveRings.length; i++){
     const rw = pondWaveRings[i];
-    rw.t += dt * 0.75;
+    rw.t += dt * 0.75 * currentWindStrength;
     if(rw.t >= 2.0){
       rw.t = 0;
       rw.x = (Math.random() - 0.5) * 4.5;
       rw.z = (Math.random() - 0.5) * 4.5;
     }
-    const sc = 1 + rw.t * 3.8;
+    const sc = 1 + rw.t * (3.6 + currentWindStrength * 0.45);
     rw.m.position.set(rw.x, 0.078, rw.z);
     rw.m.scale.set(sc, sc, 1);
-    rw.m.material.opacity = Math.max(0, (1 - rw.t / 2.0) * 0.55);
+    rw.m.material.opacity = Math.max(0, (1 - rw.t / 2.0) * Math.min(0.75, 0.48 * currentWindStrength));
   }
   if(!jumpFishState.active){
     jumpFishState.cd -= dt;
@@ -9526,7 +9697,6 @@ function updateAtmosphericVisuals(dt){
     sb.wL.rotation.z = flp;
     sb.wR.rotation.z = -flp;
   }
-  const myX = C.driving ? C.x : P.x, myZ = C.driving ? C.z : P.z;
   for(let i = 0; i < streetPigeons.length; i++){
     const pg = streetPigeons[i];
     if(!pg.flying){
@@ -10279,9 +10449,12 @@ comoWalkers = comoWalkers.filter(w => !w.dead);
     if(t.state === 'leave' && t.z > 8){ scene.remove(t.g); taxman = null; }
   }
 
-  // yağmur
+  // #7 Rüzgârlı yağmurda damlaların eğik yağması
   if(rain.visible){
+    const rainWindX = dt * 3.8 * currentWindStrength;
     for(let i = 0; i < RAIN_N; i++){
+      rainPos[i*3] += rainWindX;
+      if(rainPos[i*3] > 12) rainPos[i*3] -= 24;
       rainPos[i*3+1] -= dt * 14;
       if(rainPos[i*3+1] < 0) rainPos[i*3+1] += 10;
     }
@@ -11849,7 +12022,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-28-145445';
+const APP_VERSION = '2026-10-28-151547';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
