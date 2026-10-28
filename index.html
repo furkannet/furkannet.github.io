@@ -1201,6 +1201,7 @@ const bushClumpGeo = new THREE.DodecahedronGeometry(0.22, 0);
 const petalGeo = new THREE.OctahedronGeometry(0.085, 0);
 const flowerStemGeo = new THREE.CylinderGeometry(0.018, 0.022, 0.22, 5);
 
+const swayTreeCrowns = [];
 function makeNaturalTree(x, z, variant = 0){
   const tg = new THREE.Group();
   tg.position.set(x, 0, z);
@@ -1210,22 +1211,26 @@ function makeNaturalTree(x, z, variant = 0){
   rootM.position.set(0, 0.17, 0); tg.add(rootM);
   const tr = new THREE.Mesh(GEO.trunk, trunkMat);
   tr.position.set(0, 0.72, 0); tg.add(tr);
+  const crownPivot = new THREE.Group();
+  crownPivot.position.set(0, 1.15, 0);
+  tg.add(crownPivot);
+  swayTreeCrowns.push({pivot: crownPivot, phase: (x * 0.37 + z * 0.23), x, z});
   if(variant % 2 === 0){
     // Katmanlı doğal çam ağacı (3 kademeli organik taç)
     const t1 = new THREE.Mesh(treeTier1Geo, leafMat);
-    t1.position.set(0, 1.65, 0); t1.rotation.y = 0.3; tg.add(t1);
+    t1.position.set(0, 0.50, 0); t1.rotation.y = 0.3; crownPivot.add(t1);
     const t2 = new THREE.Mesh(treeTier2Geo, leafMidMat);
-    t2.position.set(0, 2.38, 0); t2.rotation.y = 1.1; tg.add(t2);
+    t2.position.set(0, 1.23, 0); t2.rotation.y = 1.1; crownPivot.add(t2);
     const t3 = new THREE.Mesh(treeTier3Geo, leafLightMat);
-    t3.position.set(0, 3.02, 0); t3.rotation.y = 2.0; tg.add(t3);
+    t3.position.set(0, 1.87, 0); t3.rotation.y = 2.0; crownPivot.add(t3);
   } else {
     // Doğal yapraklı meşe/çınar ağacı (çoklu organik yaprak kümeleri)
-    [[0, 2.15, 0, 1.25, leafMat], [-0.48, 1.92, 0.32, 0.92, leafMidMat], [0.48, 1.98, -0.28, 0.95, leafMidMat], [0.18, 2.58, 0.24, 0.88, leafLightMat], [-0.26, 2.48, -0.35, 0.82, leafLightMat]].forEach(([lx, ly, lz, sc, m]) => {
+    [[0, 1.00, 0, 1.25, leafMat], [-0.48, 0.77, 0.32, 0.92, leafMidMat], [0.48, 0.83, -0.28, 0.95, leafMidMat], [0.18, 1.43, 0.24, 0.88, leafLightMat], [-0.26, 1.33, -0.35, 0.82, leafLightMat]].forEach(([lx, ly, lz, sc, m]) => {
       const cr = new THREE.Mesh(treeCrownGeo, m);
       cr.position.set(lx, ly, lz);
       cr.scale.set(sc, sc * 0.88, sc);
       cr.rotation.set(lx, ly, lz);
-      tg.add(cr);
+      crownPivot.add(cr);
     });
   }
   return tg;
@@ -9082,6 +9087,457 @@ function updateShopSpeakerAndScratch(dt){
   }
   const nearScratch = !C.driving && !D.driving && !CM.driving && !policeChase.inPrison && Math.hypot(P.x - SCRATCH_STAND_POS.x, P.z - SCRATCH_STAND_POS.z) < 4.5;
   disp('scratchCardBtn', nearScratch ? 'block' : 'none');
+  updateAtmosphericVisuals(dt);
+}
+
+// ================= 🌟 11 YENİ DOĞAL & ATMOSFERİK GRAFİK PAKETİ (SIFIR FPS KAYBI) =================
+// #1: 3B Kabarık Bulutlar & Parlayan Güneş Halesi
+const cloudPuffGeo = new THREE.DodecahedronGeometry(1.0, 0);
+const cloudMat = new THREE.MeshLambertMaterial({color: 0xf8fafc, fog: false});
+const skyClouds = [];
+[
+  [-32, 26, -75, 1.3], [18, 28, -55, 1.5], [-14, 25, -25, 1.1],
+  [26, 27, -15, 1.4], [-38, 29, -45, 1.6], [8, 26, -85, 1.2], [-8, 30, -65, 1.35]
+].forEach(([cx, cy, cz, sc], idx) => {
+  const cg = new THREE.Group();
+  cg.position.set(cx, cy, cz);
+  cg.scale.set(sc, sc * 0.65, sc);
+  [[0, 0, 0, 2.2], [-1.7, -0.2, 0.3, 1.6], [1.8, -0.15, -0.2, 1.7], [0.4, 0.45, -0.6, 1.5], [-0.6, 0.35, 0.7, 1.4]].forEach(([px, py, pz, r]) => {
+    const m = new THREE.Mesh(cloudPuffGeo, cloudMat);
+    m.position.set(px, py, pz);
+    m.scale.set(r, r * 0.78, r);
+    m.rotation.set(px, py, pz);
+    cg.add(m);
+  });
+  scene.add(cg);
+  skyClouds.push({g: cg, spd: 0.55 + (idx % 3) * 0.22});
+});
+const sunHaloTex = tex(128, 128, (g, w, h) => {
+  const gr = g.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w / 2);
+  gr.addColorStop(0, 'rgba(255,252,220,1)');
+  gr.addColorStop(0.28, 'rgba(255,225,140,0.85)');
+  gr.addColorStop(0.65, 'rgba(255,190,90,0.22)');
+  gr.addColorStop(1, 'rgba(255,180,70,0)');
+  g.fillStyle = gr;
+  g.fillRect(0, 0, w, h);
+});
+const sunHaloSprite = new THREE.Sprite(new THREE.SpriteMaterial({map: sunHaloTex, transparent: true, fog: false, depthWrite: false}));
+sunHaloSprite.position.set(-28, 44, -82);
+sunHaloSprite.scale.set(26, 26, 1);
+scene.add(sunHaloSprite);
+
+// #2 ve #20: Dalgalanan Parlak Gölet Suyu, Nilüfer Çiçekleri & Sudan Sıçrayan 3B Balıklar
+const lilyPadGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.025, 9);
+const lilyPadMat = M(0x16a34a);
+const lilyFlowerMat = M(0xf472b6);
+const pondLilyPads = [];
+[[-1.8, -1.4], [1.4, -2.1], [-2.4, 1.6], [0.8, 2.3], [-0.4, -3.1], [2.1, 1.2]].forEach(([lx, lz], idx) => {
+  const lg = new THREE.Group();
+  lg.position.set(lx, 0.075, lz);
+  const pad = new THREE.Mesh(lilyPadGeo, lilyPadMat);
+  lg.add(pad);
+  if(idx % 2 === 0){
+    const fl = new THREE.Mesh(petalGeo, lilyFlowerMat);
+    fl.position.set(0, 0.05, 0);
+    fl.scale.set(1.5, 0.9, 1.5);
+    lg.add(fl);
+  }
+  pondGroup.add(lg);
+  pondLilyPads.push({g: lg, baseX: lx, baseZ: lz, ph: idx * 1.1});
+});
+const pondWaveRings = [0, 1].map(i => {
+  const rg = new THREE.Mesh(new THREE.RingGeometry(0.25, 0.34, 14).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({color: 0xe0f2fe, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false}));
+  rg.position.set(0, 0.078, 0);
+  pondGroup.add(rg);
+  return {m: rg, t: i * 1.2, x: 0, z: 0};
+});
+const jumpingFishMesh = new THREE.Group();
+addTo(jumpingFishMesh, new THREE.ConeGeometry(0.14, 0.48, 6).rotateX(Math.PI / 2), M(0xf97316), 0, 0, 0);
+addTo(jumpingFishMesh, new THREE.ConeGeometry(0.12, 0.22, 4).rotateX(-Math.PI / 2), M(0xfb923c), 0, 0, -0.28);
+jumpingFishMesh.visible = false;
+pondGroup.add(jumpingFishMesh);
+const jumpFishState = {active: false, t: 0, cd: 3.5, x0: 0, z0: 0, dx: 1, dz: 0};
+
+// #5: Parkta Uçuşan Renkli Kelebekler & Geceleri Parlayan Ateşböcekleri
+const wingGeo = new THREE.CircleGeometry(0.09, 5);
+const butterflies = [];
+[0xf43f5e, 0x38bdf8, 0xfacc15, 0xc084fc, 0xfb923c, 0x4ade80].forEach((col, i) => {
+  const bg = new THREE.Group();
+  const wm = new THREE.MeshBasicMaterial({color: col, side: THREE.DoubleSide});
+  const wL = new THREE.Mesh(wingGeo, wm); wL.position.x = -0.05;
+  const wR = new THREE.Mesh(wingGeo, wm); wR.position.x = 0.05;
+  bg.add(wL, wR);
+  const bx = i < 3 ? (-26 - i * 4) : (17.2 + (i - 3) * 0.8);
+  const bz = i < 3 ? (-32 - i * 12) : (-20 - (i - 3) * 3);
+  bg.position.set(bx, 0.7, bz);
+  scene.add(bg);
+  butterflies.push({g: bg, wL, wR, cx: bx, cz: bz, ph: i * 1.3});
+});
+const firefliesGroup = new THREE.Group();
+firefliesGroup.visible = false;
+scene.add(firefliesGroup);
+const fireflyGeo = new THREE.OctahedronGeometry(0.055, 0);
+const fireflyMat = new THREE.MeshBasicMaterial({color: 0xbef264, fog: false});
+const fireflies = [];
+for(let i = 0; i < 18; i++){
+  const fm = new THREE.Mesh(fireflyGeo, fireflyMat);
+  const fx = i % 2 === 0 ? (-36 + (i * 1.1)) : (14 + (i * 0.4));
+  const fz = -75 + i * 3.8;
+  fm.position.set(fx, 0.8 + (i % 3) * 0.4, fz);
+  firefliesGroup.add(fm);
+  fireflies.push({m: fm, bx: fx, bz: fz, ph: i * 0.7});
+}
+
+// #7: Ağaçlardan Süzülerek Dökülen Yapraklar
+const fallLeafGeo = new THREE.OctahedronGeometry(0.07, 0);
+const fallLeafMats = [M(0x4ade80), M(0xfacc15), M(0xfb923c)];
+const fallingLeaves = [];
+for(let i = 0; i < 14; i++){
+  const lm = new THREE.Mesh(fallLeafGeo, fallLeafMats[i % 3]);
+  lm.scale.set(1.2, 0.35, 0.8);
+  const tr = swayTreeCrowns[i % Math.max(1, swayTreeCrowns.length)] || {x: -30, z: -50};
+  lm.position.set(tr.x + (Math.random() - 0.5) * 1.5, 1.5 + Math.random() * 1.8, tr.z + (Math.random() - 0.5) * 1.5);
+  scene.add(lm);
+  fallingLeaves.push({m: lm, tx: tr.x, tz: tr.z, ph: i * 0.9, spd: 0.45 + (i % 4) * 0.12});
+}
+
+// #8: Yağmurda Yerde Parlayan Su Birikintileri & Damla Halkaları
+const rainPuddlesGroup = new THREE.Group();
+rainPuddlesGroup.visible = false;
+scene.add(rainPuddlesGroup);
+const puddleMat = new THREE.MeshBasicMaterial({color: 0x60a5fa, transparent: true, opacity: 0.42, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3});
+const puddleRippleMat = new THREE.MeshBasicMaterial({color: 0xdbeafe, transparent: true, opacity: 0.65, side: THREE.DoubleSide, depthWrite: false});
+const puddleRipples = [];
+[
+  [-1.8, 0.025, -12, 1.5, 2.2], [2.1, 0.025, -28, 1.8, 2.6], [-2.0, 0.025, -48, 1.6, 2.1],
+  [1.7, 0.025, -68, 1.7, 2.5], [6.2, 0.315, -8, 1.2, 1.6], [-6.2, 0.315, -22, 1.3, 1.7], [6.4, 0.315, -36, 1.2, 1.8]
+].forEach(([px, py, pz, sx, sz], idx) => {
+  const pm = new THREE.Mesh(BLOB_GEO, puddleMat);
+  pm.position.set(px, py, pz);
+  pm.scale.set(sx, 1, sz);
+  rainPuddlesGroup.add(pm);
+  const rp = new THREE.Mesh(new THREE.RingGeometry(0.12, 0.17, 12).rotateX(-Math.PI / 2), puddleRippleMat);
+  rp.position.set(px, py + 0.005, pz);
+  rainPuddlesGroup.add(rp);
+  puddleRipples.push({m: rp, t: idx * 0.35});
+});
+
+// #9: Gökyüzünde Dev Renkli 3B Gökkuşağı Kemeri (Yağmur sonrası & gündüz görünür)
+const rainbowGroup = new THREE.Group();
+rainbowGroup.position.set(-6, 0, -96);
+scene.add(rainbowGroup);
+[0xef4444, 0xf97316, 0xfacc15, 0x22c55e, 0x38bdf8, 0xa855f7].forEach((col, i) => {
+  const rIn = 34 + i * 1.15;
+  const arc = new THREE.Mesh(
+    new THREE.RingGeometry(rIn, rIn + 1.05, 24, 1, 0, Math.PI),
+    new THREE.MeshBasicMaterial({color: col, transparent: true, opacity: 0.38, side: THREE.DoubleSide, fog: false, depthWrite: false})
+  );
+  rainbowGroup.add(arc);
+});
+
+// #10: Gökyüzünde V Şeklinde Uçan Kuş Sürüleri & Kaldırımda Kaçışan Güvercinler
+const birdWingGeo = B(0.28, 0.03, 0.12);
+const birdMat = M(0x1e293b);
+const skyFlock = new THREE.Group();
+skyFlock.position.set(0, 19, -80);
+scene.add(skyFlock);
+const skyBirds = [];
+[[0, 0], [-1.2, -0.9], [1.2, -0.9], [-2.4, -1.8], [2.4, -1.8], [-3.6, -2.7], [3.6, -2.7]].forEach(([bx, bz], i) => {
+  const bg = new THREE.Group();
+  bg.position.set(bx, 0, bz);
+  const wL = addTo(bg, birdWingGeo, birdMat, -0.14, 0, 0);
+  const wR = addTo(bg, birdWingGeo, birdMat, 0.14, 0, 0);
+  skyFlock.add(bg);
+  skyBirds.push({wL, wR, ph: i * 0.6});
+});
+const pigeonBodyGeo = new THREE.DodecahedronGeometry(0.11, 0);
+const pigeonHeadGeo = new THREE.DodecahedronGeometry(0.065, 0);
+const pigeonMat = M(0x94a3b8), pigeonWingMat = M(0x64748b);
+const streetPigeons = [];
+[[6.2, -15], [7.1, -15.6], [-5.8, -31], [-6.4, -31.7], [6.5, -52]].forEach(([px, pz], i) => {
+  const pg = new THREE.Group();
+  pg.position.set(px, 0.32, pz);
+  addBlob(pg, 0.16, 0.16, 0.01);
+  addTo(pg, pigeonBodyGeo, pigeonMat, 0, 0.11, 0).scale.set(0.9, 0.85, 1.35);
+  addTo(pg, pigeonHeadGeo, pigeonWingMat, 0, 0.20, 0.10);
+  const wL = addTo(pg, B(0.14, 0.02, 0.12), pigeonWingMat, -0.1, 0.13, 0);
+  const wR = addTo(pg, B(0.14, 0.02, 0.12), pigeonWingMat, 0.1, 0.13, 0);
+  scene.add(pg);
+  streetPigeons.push({g: pg, wL, wR, homeX: px, homeZ: pz, x: px, y: 0.32, z: pz, flying: false, t: 0, ph: i * 1.4});
+});
+
+// #12: Araba Fren İzi & Drift Lastik İzleri (Asfaltta kalan siyah iz havuzu, 0 çöp üretimi)
+const SKID_POOL_MAX = 48;
+const skidGeo = new THREE.PlaneGeometry(0.24, 0.75).rotateX(-Math.PI / 2);
+const skidMat = new THREE.MeshBasicMaterial({color: 0x090b0e, transparent: true, opacity: 0.55, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2});
+const skidPool = [];
+let skidIdx = 0, skidSpawnAcc = 0;
+for(let i = 0; i < SKID_POOL_MAX; i++){
+  const sm = new THREE.Mesh(skidGeo, skidMat);
+  sm.visible = false;
+  scene.add(sm);
+  skidPool.push(sm);
+}
+function dropSkidMarkPair(cx, cz, ch){
+  const ca = Math.cos(ch), sa = Math.sin(ch);
+  [-0.78, 0.78].forEach(side => {
+    const m = skidPool[skidIdx];
+    skidIdx = (skidIdx + 1) % SKID_POOL_MAX;
+    m.position.set(cx - sa * 1.45 + ca * side, 0.024, cz - ca * 1.45 - sa * side);
+    m.rotation.z = -ch;
+    m.visible = true;
+  });
+}
+
+// #17: Gece Gökyüzünde Kayan Yıldızlar & Renkli Kuzey Işıkları (Aurora Borealis)
+const auroraTex = tex(256, 64, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, w, 0);
+  gr.addColorStop(0, 'rgba(34,197,94,0)');
+  gr.addColorStop(0.25, 'rgba(74,222,128,0.55)');
+  gr.addColorStop(0.5, 'rgba(56,189,248,0.65)');
+  gr.addColorStop(0.75, 'rgba(192,132,252,0.55)');
+  gr.addColorStop(1, 'rgba(168,85,247,0)');
+  g.fillStyle = gr;
+  g.fillRect(0, 0, w, h);
+});
+const auroraCurtain1 = new THREE.Mesh(
+  new THREE.CylinderGeometry(72, 72, 18, 20, 1, true, -Math.PI * 0.42, Math.PI * 0.84),
+  new THREE.MeshBasicMaterial({map: auroraTex, transparent: true, opacity: 0.55, side: THREE.DoubleSide, fog: false, depthWrite: false})
+);
+auroraCurtain1.position.set(0, 44, -20);
+skyFx.add(auroraCurtain1);
+const shootingStarMesh = new THREE.Mesh(B(2.8, 0.09, 0.09), new THREE.MeshBasicMaterial({color: 0xffffff, fog: false}));
+shootingStarMesh.visible = false;
+skyFx.add(shootingStarMesh);
+const shootStarState = {active: false, t: 0, cd: 3.0, x: 0, y: 55, z: -60, vx: 38, vy: -14};
+
+// #24: Nitro Basınca Egzozdan Çıkan Mavi-Turuncu Alev
+const nitroFlameGroup = new THREE.Group();
+const flameGeo = new THREE.ConeGeometry(0.11, 0.75, 6).rotateX(-Math.PI / 2);
+const flameMatBlue = new THREE.MeshBasicMaterial({color: 0x38bdf8});
+const flameMatCore = new THREE.MeshBasicMaterial({color: 0xfef08a});
+[-0.5, 0.5].forEach(fx => {
+  const f1 = addTo(nitroFlameGroup, flameGeo, flameMatBlue, fx, 0.30, 2.48);
+  const f2 = addTo(nitroFlameGroup, flameGeo, flameMatCore, fx, 0.30, 2.38);
+  f2.scale.set(0.6, 0.6, 0.65);
+});
+nitroFlameGroup.visible = false;
+scene.add(nitroFlameGroup);
+
+function updateAtmosphericVisuals(dt){
+  const nowS = performance.now() * 0.001;
+
+  // #1 Bulutların süzülmesi & Güneş Halesi görünürlüğü
+  const isDayOrDusk = skyPeriod === 'day' || skyPeriod === 'dusk';
+  sunHaloSprite.visible = isDayOrDusk;
+  for(let i = 0; i < skyClouds.length; i++){
+    const cl = skyClouds[i];
+    cl.g.position.z += cl.spd * dt;
+    if(cl.g.position.z > 25) cl.g.position.z = -98;
+  }
+
+  // #9 Gökkuşağı (gündüz ve alacakaranlıkta görünür)
+  rainbowGroup.visible = isDayOrDusk;
+
+  // #7 Rüzgârda hafifçe sallanan ağaç tepeleri ve süzülen yapraklar
+  for(let i = 0; i < swayTreeCrowns.length; i++){
+    const sw = swayTreeCrowns[i];
+    sw.pivot.rotation.z = Math.sin(nowS * 1.8 + sw.phase) * 0.045;
+    sw.pivot.rotation.x = Math.cos(nowS * 1.4 + sw.phase) * 0.035;
+  }
+  for(let i = 0; i < fallingLeaves.length; i++){
+    const lf = fallingLeaves[i];
+    lf.m.position.y -= lf.spd * dt;
+    lf.m.position.x = lf.tx + Math.sin(nowS * 2.2 + lf.ph) * 0.85;
+    lf.m.position.z = lf.tz + Math.cos(nowS * 1.7 + lf.ph) * 0.85;
+    lf.m.rotation.x += dt * 2.5;
+    lf.m.rotation.z += dt * 1.8;
+    if(lf.m.position.y < 0.06){
+      lf.m.position.y = 2.6 + (i % 3) * 0.3;
+    }
+  }
+
+  // #2 ve #20 Gölet su halkaları, nilüferlerin salınımı ve sudan sıçrayan balık
+  for(let i = 0; i < pondLilyPads.length; i++){
+    const lp = pondLilyPads[i];
+    lp.g.position.x = lp.baseX + Math.sin(nowS * 1.5 + lp.ph) * 0.06;
+    lp.g.position.z = lp.baseZ + Math.cos(nowS * 1.3 + lp.ph) * 0.06;
+  }
+  for(let i = 0; i < pondWaveRings.length; i++){
+    const rw = pondWaveRings[i];
+    rw.t += dt * 0.75;
+    if(rw.t >= 2.0){
+      rw.t = 0;
+      rw.x = (Math.random() - 0.5) * 4.5;
+      rw.z = (Math.random() - 0.5) * 4.5;
+    }
+    const sc = 1 + rw.t * 3.8;
+    rw.m.position.set(rw.x, 0.078, rw.z);
+    rw.m.scale.set(sc, sc, 1);
+    rw.m.material.opacity = Math.max(0, (1 - rw.t / 2.0) * 0.55);
+  }
+  if(!jumpFishState.active){
+    jumpFishState.cd -= dt;
+    if(jumpFishState.cd <= 0){
+      jumpFishState.active = true;
+      jumpFishState.t = 0;
+      jumpFishState.x0 = (Math.random() - 0.5) * 3.8;
+      jumpFishState.z0 = (Math.random() - 0.5) * 3.8;
+      const ang = Math.random() * Math.PI * 2;
+      jumpFishState.dx = Math.cos(ang) * 1.6;
+      jumpFishState.dz = Math.sin(ang) * 1.6;
+      jumpingFishMesh.visible = true;
+      jumpingFishMesh.rotation.y = Math.atan2(jumpFishState.dx, jumpFishState.dz);
+    }
+  } else {
+    jumpFishState.t += dt * 1.7;
+    const p = jumpFishState.t;
+    if(p >= 1){
+      jumpFishState.active = false;
+      jumpFishState.cd = 3.2 + Math.random() * 3.0;
+      jumpingFishMesh.visible = false;
+      if(pondWaveRings[0]){
+        pondWaveRings[0].t = 0.05;
+        pondWaveRings[0].x = jumpFishState.x0 + jumpFishState.dx;
+        pondWaveRings[0].z = jumpFishState.z0 + jumpFishState.dz;
+      }
+    } else {
+      jumpingFishMesh.position.set(
+        jumpFishState.x0 + jumpFishState.dx * p,
+        0.08 + Math.sin(p * Math.PI) * 1.15,
+        jumpFishState.z0 + jumpFishState.dz * p
+      );
+      jumpingFishMesh.rotation.x = (p - 0.5) * 1.8;
+    }
+  }
+
+  // #5 Kelebekler (gündüz) & Ateşböcekleri (gece)
+  const isNight = skyPeriod === 'night' || skyPeriod === 'eve';
+  firefliesGroup.visible = isNight;
+  for(let i = 0; i < butterflies.length; i++){
+    const bf = butterflies[i];
+    bf.g.visible = !isNight;
+    if(!isNight){
+      const flap = Math.sin(nowS * 18 + bf.ph) * 0.75;
+      bf.wL.rotation.y = flap;
+      bf.wR.rotation.y = -flap;
+      const a = nowS * 1.4 + bf.ph;
+      bf.g.position.set(bf.cx + Math.cos(a) * 1.4, 0.55 + Math.abs(Math.sin(a * 2)) * 0.45, bf.cz + Math.sin(a) * 1.4);
+      bf.g.rotation.y = -a;
+    }
+  }
+  if(isNight){
+    for(let i = 0; i < fireflies.length; i++){
+      const ff = fireflies[i];
+      const a = nowS * 1.2 + ff.ph;
+      ff.m.position.set(ff.bx + Math.sin(a) * 0.9, 0.65 + Math.sin(a * 1.7) * 0.35, ff.bz + Math.cos(a) * 0.9);
+      const s = 0.6 + Math.abs(Math.sin(nowS * 3.5 + ff.ph)) * 0.7;
+      ff.m.scale.set(s, s, s);
+    }
+  }
+
+  // #8 Yağmur su birikintileri ve damla halkaları
+  const isRain = weather === 'rain';
+  rainPuddlesGroup.visible = isRain;
+  if(isRain){
+    for(let i = 0; i < puddleRipples.length; i++){
+      const pr = puddleRipples[i];
+      pr.t = (pr.t + dt * 1.6) % 1.0;
+      const sc = 0.5 + pr.t * 4.2;
+      pr.m.scale.set(sc, sc, 1);
+      pr.m.material.opacity = (1 - pr.t) * 0.65;
+    }
+  }
+
+  // #10 Uçan Kuş Sürüleri & Kaldırımda Güvercinler
+  skyFlock.position.z += dt * 7.5;
+  if(skyFlock.position.z > 20) skyFlock.position.z = -95;
+  for(let i = 0; i < skyBirds.length; i++){
+    const sb = skyBirds[i];
+    const flp = Math.sin(nowS * 11 + sb.ph) * 0.48;
+    sb.wL.rotation.z = flp;
+    sb.wR.rotation.z = -flp;
+  }
+  const myX = C.driving ? C.x : P.x, myZ = C.driving ? C.z : P.z;
+  for(let i = 0; i < streetPigeons.length; i++){
+    const pg = streetPigeons[i];
+    if(!pg.flying){
+      const d = Math.hypot(myX - pg.x, myZ - pg.z);
+      if(d < 3.6){
+        pg.flying = true;
+        pg.t = 0;
+      } else {
+        pg.g.position.set(pg.homeX + Math.sin(nowS * 1.8 + pg.ph) * 0.35, 0.32 + Math.abs(Math.sin(nowS * 6 + pg.ph)) * 0.03, pg.homeZ + Math.cos(nowS * 1.5 + pg.ph) * 0.35);
+        pg.g.rotation.y = Math.sin(nowS + pg.ph) * 1.5;
+        pg.wL.rotation.z = 0; pg.wR.rotation.z = 0;
+      }
+    } else {
+      pg.t += dt;
+      const flp = Math.sin(nowS * 22 + pg.ph) * 0.7;
+      pg.wL.rotation.z = flp; pg.wR.rotation.z = -flp;
+      if(pg.t < 3.5){
+        pg.g.position.y = 0.32 + pg.t * 2.4;
+        pg.g.position.x += Math.sin(pg.ph) * dt * 2.5;
+        pg.g.position.z -= dt * 3.0;
+      } else if(pg.t < 6.0){
+        const r = (pg.t - 3.5) / 2.5;
+        pg.g.position.set(pg.homeX, 0.32 + (1 - r) * 6.0, pg.homeZ);
+      } else {
+        pg.flying = false;
+        pg.x = pg.homeX; pg.z = pg.homeZ;
+      }
+    }
+  }
+
+  // #12 Fren izi & Drift lastik izi + #24 Nitro Mavi Egzoz Alevi
+  const isBrakingHard = C.driving && C.braking && Math.abs(C.v) > 3.2;
+  const isDriftingNow = C.driving && C.drifting && Math.abs(C.v) > 2.2;
+  if(isBrakingHard || isDriftingNow){
+    skidSpawnAcc += dt;
+    if(skidSpawnAcc >= 0.06){
+      skidSpawnAcc = 0;
+      dropSkidMarkPair(C.x, C.z, C.h);
+    }
+  }
+  const nitroActive = C.driving && keys.shift && (C.throttle || 0) > 0 && C.nitro > 0;
+  nitroFlameGroup.visible = !!nitroActive;
+  if(nitroActive){
+    nitroFlameGroup.position.set(C.x, 0, C.z);
+    nitroFlameGroup.rotation.y = C.h + Math.PI + (C.slip || 0);
+    const fScale = 0.85 + Math.random() * 0.55;
+    nitroFlameGroup.scale.set(1, 1, fScale);
+  }
+
+  // #17 Gece Kayan Yıldızlar & Kuzey Işıkları (Aurora)
+  if(skyFx.visible){
+    auroraCurtain1.rotation.y = Math.sin(nowS * 0.35) * 0.18;
+    auroraCurtain1.material.opacity = 0.42 + Math.sin(nowS * 1.1) * 0.16;
+    if(!shootStarState.active){
+      shootStarState.cd -= dt;
+      if(shootStarState.cd <= 0){
+        shootStarState.active = true;
+        shootStarState.t = 0;
+        shootStarState.x = -35 + Math.random() * 40;
+        shootStarState.y = 52 + Math.random() * 14;
+        shootStarState.z = -55 - Math.random() * 25;
+        shootingStarMesh.visible = true;
+      }
+    } else {
+      shootStarState.t += dt;
+      shootingStarMesh.position.set(
+        shootStarState.x + shootStarState.vx * shootStarState.t,
+        shootStarState.y + shootStarState.vy * shootStarState.t,
+        shootStarState.z
+      );
+      shootingStarMesh.rotation.z = -0.35;
+      if(shootStarState.t >= 0.85){
+        shootStarState.active = false;
+        shootStarState.cd = 3.5 + Math.random() * 4.5;
+        shootingStarMesh.visible = false;
+      }
+    }
+  }
 }
 function renderGallery(){
   const box = $('galBody');
@@ -11249,7 +11705,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-28-133653';
+const APP_VERSION = '2026-10-28-135012';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
