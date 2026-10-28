@@ -236,7 +236,6 @@ button small{font-size:9px;margin-top:0}
 <button id="raceBtn" style="display:none;background:#14532d;border-color:#4ade80;font-weight:700">🏁 Yarış (500₺)</button>
 <button id="kuryeBtn" style="display:none;background:#b45309;border-color:#ffd54a;font-weight:700">🛵 Kurye Teslim</button>
 <button id="bankBtn" style="display:none;background:#0f766e;border-color:#2dd4bf;font-weight:700">🏦 Banka & ATM</button>
-<button id="casinoBtn" style="display:none;background:#7e22ce;border-color:#e879f9;font-weight:700">🎰 Kumarhane</button>
 <button id="fishBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:700">🎣 Balık Tut</button>
 <button id="buyDetBtn" style="display:none;background:#0f766e;border-color:#2dd4bf;font-weight:700">📡 Dedektör Al (250₺)</button>
 <button id="buyPickBtn" style="display:none;background:#9a3412;border-color:#fb923c;font-weight:700">⛏️ Kazma Al (150₺)</button>
@@ -249,7 +248,6 @@ button small{font-size:9px;margin-top:0}
 <button id="mineCartBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:900">🛒 Vagonla Sat!</button>
 <button id="c4PlantBtn" style="display:none;background:#991b1b;border-color:#f87171;font-weight:900">💣 C4 Yerleştir!</button>
 <button id="c4DetBtn" style="display:none;background:#dc2626;border-color:#fde047;font-weight:900">💥 C4 Patlat (Kumanda)!</button>
-<button id="slot3dBtn" style="display:none;background:#7e22ce;border-color:#fde047;font-weight:900">🎰 3D Slot Kolu Çek (150₺)</button>
 <button id="policeCarBtn" style="display:none;background:#1d4ed8;border-color:#93c5fd;font-weight:900">🚔 Polis Arabasını Çal (E)</button>
 <button id="sirenBtn" style="display:none;background:#b91c1c;border-color:#60a5fa;font-weight:900">🚨 Siren: Açık</button>
 <button id="shopSpeakerBtn" style="display:none;background:#7c3aed;border-color:#c084fc;font-weight:900">📻 Dükkân Müziği: Açık</button>
@@ -483,32 +481,6 @@ button small{font-size:9px;margin-top:0}
     </div>
     <div id="bankMsg" style="min-height:18px;font-size:12px;margin-top:6px;font-weight:700;color:#4ade80"></div>
     <button id="bankCloseBtn" class="wide" style="margin-top:8px">Kapat</button>
-  </div>
-</div>
-<div id="casinoModal" class="modal" style="z-index:26">
-  <div class="card" style="text-align:center;max-width:390px">
-    <h2>🎰 Royal Kumarhane</h2>
-    <p style="font-size:12px;margin-bottom:6px">Bahsini seç, kolu çevir! 3 aynı sembol <b>10x</b>, 2 aynı sembol <b>2.5x</b> kazandırır. Kırmızı/Siyah <b>2x</b> verir!</p>
-    <div id="casinoBalBox" style="padding:7px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:14px;margin-bottom:8px"></div>
-    <div id="slotReels" style="display:flex;justify-content:center;gap:10px;margin:8px 0;padding:12px;border-radius:12px;background:#090d16;border:2px solid #f59e0b;font-size:34px">
-      <span id="reel0" style="width:58px;height:58px;display:flex;align-items:center;justify-content:center;background:#1e293b;border-radius:10px">🍒</span>
-      <span id="reel1" style="width:58px;height:58px;display:flex;align-items:center;justify-content:center;background:#1e293b;border-radius:10px">💎</span>
-      <span id="reel2" style="width:58px;height:58px;display:flex;align-items:center;justify-content:center;background:#1e293b;border-radius:10px">7️⃣</span>
-    </div>
-    <input id="casinoBetIn" type="number" min="10" value="100" placeholder="Bahis tutarı (₺)..." style="width:100%;padding:8px;border-radius:8px;border:1px solid var(--line);background:#222b38;color:var(--ink);font-size:15px;text-align:center">
-    <div style="display:flex;gap:5px;margin-top:6px;justify-content:center;flex-wrap:wrap">
-      <button class="cBetQ" data-v="50" style="padding:5px 8px;font-size:12px">50₺</button>
-      <button class="cBetQ" data-v="250" style="padding:5px 8px;font-size:12px">250₺</button>
-      <button class="cBetQ" data-v="1000" style="padding:5px 8px;font-size:12px">1000₺</button>
-      <button id="cBetMax" style="padding:5px 8px;font-size:12px;background:#7e22ce;border-color:#e879f9">Yarısı</button>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px">
-      <button id="slotSpinBtn" style="padding:10px 6px;background:#ca8a04;border-color:#fde047;font-weight:800;font-size:13px">🎰 KOLU ÇEVİR</button>
-      <button id="roulRedBtn" style="padding:10px 6px;background:#dc2626;border-color:#fca5a5;font-weight:800;font-size:13px">🔴 KIRMIZI (2x)</button>
-      <button id="roulBlkBtn" style="padding:10px 6px;background:#111827;border-color:#9ca3af;font-weight:800;font-size:13px">⚫ SİYAH (2x)</button>
-    </div>
-    <div id="casinoMsg" style="min-height:20px;font-size:13px;margin-top:8px;font-weight:700;color:#fde047"></div>
-    <button id="casinoCloseBtn" class="wide" style="margin-top:8px">Kapat</button>
   </div>
 </div>
 <div id="minerModal" class="modal" style="z-index:26">
@@ -2468,41 +2440,6 @@ washSign.position.set(2.35, 3.65, 0);
 washSign.rotation.y = Math.PI / 2;
 carWashGroup.add(washSign);
 
-// 2) ROYAL KUMARHANE BİNASI (sol kaldırımda, z=-68)
-const CASINO_POS = {x: -9.8, z: -68, doorX: -7.8, doorZ: -68};
-const casinoGroup = new THREE.Group();
-casinoGroup.position.set(CASINO_POS.x, 0, CASINO_POS.z);
-scene.add(casinoGroup);
-addRectShadow(casinoGroup, 4.0, 6.0, 0, 0, 0.032);
-[[B(3.2, 0.1, 5.2), 0x3b0764, 0, 0.05, 0],
- [B(0.12, 3.8, 5.2), 0x1e1b4b, -1.54, 1.9, 0],
- [B(3.2, 3.8, 0.12), 0x2e1065, 0, 1.9, -2.54],
- [B(3.2, 3.8, 0.12), 0x2e1065, 0, 1.9, 2.54],
- [B(3.5, 0.3, 5.5), 0xd97706, 0, 3.9, 0]
-].forEach(([geo, col, x, y, z]) => addTo(casinoGroup, geo, M(col), x, y, z));
-// Neon sütunlar ve altın giriş
-[-2.1, 2.1].forEach(z => addTo(casinoGroup, new THREE.CylinderGeometry(0.16, 0.18, 3.7, 8), M(0xfbbf24), 1.52, 1.85, z));
-const casinoSignTex = tex(256, 96, (g, w, h) => {
-  g.fillStyle = '#4c1d95'; g.fillRect(0, 0, w, h);
-  g.strokeStyle = '#fde047'; g.lineWidth = 6; g.strokeRect(3, 3, w - 6, h - 6);
-  g.fillStyle = '#fef08a'; g.font = 'bold 36px sans-serif';
-  g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText('🎰 KUMARHANE', w / 2, h / 2 + 2);
-});
-const casinoSign = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.95), new THREE.MeshBasicMaterial({map: casinoSignTex}));
-casinoSign.position.set(1.64, 3.25, 0);
-casinoSign.rotation.y = Math.PI / 2;
-casinoGroup.add(casinoSign);
-// İçeride slot makineleri (görsel)
-[-1.2, 0, 1.2].forEach(z => {
-  addTo(casinoGroup, B(0.6, 1.5, 0.65), M(0xb91c1c), -0.6, 0.8, z);
-  addTo(casinoGroup, B(0.08, 0.45, 0.5), new THREE.MeshBasicMaterial({color: 0xfef08a}), -0.28, 1.15, z);
-});
-const croupier = human(0x991b1b, 0x111827, pick(SKINS), pick(HAIRS));
-croupier.position.set(1.9, 0, 0);
-croupier.rotation.y = Math.PI / 2;
-casinoGroup.add(croupier);
-
 // 3) BALIK TUTMA GÖLETİ VE İSKELE (parkta, x=-29, z=-22)
 const POND_POS = {x: -29, z: -22, dockX: -24.5, dockZ: -22};
 const pondGroup = new THREE.Group();
@@ -2921,9 +2858,102 @@ function syncRestaurantLayout(){
     TABLES_POS[1].seatZ = TABLES_POS[1].z - 0.7;
     if(TABLES_POS[1].meshGroup) TABLES_POS[1].meshGroup.position.set(TABLES_POS[1].x, isRest ? 0.05 : 0.02, TABLES_POS[1].z);
   }
+  if(typeof positionMatchTv === 'function') positionMatchTv();
 }
 diningTablesGroup.visible = false;
 scene.add(diningTablesGroup);
+
+// 📺 #24: Restoran Duvarında & Dükkan Yanında Canlı Futbol Maçı Yayını Yapan Dev 3B Televizyon (Masadaki müşteriler 2x Bahşiş bırakır!)
+const matchTvGroup = new THREE.Group();
+scene.add(matchTvGroup);
+// TV dış çerçeve, altın stant direkleri ve hoparlör barı
+addTo(matchTvGroup, B(2.55, 1.55, 0.14), M(0x0f172a), 0, 2.35, 0);
+addTo(matchTvGroup, B(2.65, 0.12, 0.18), M(0xfacc15), 0, 3.16, 0); // üst altın çıta
+addTo(matchTvGroup, B(2.40, 0.16, 0.18), M(0x1e293b), 0, 1.52, 0.04); // alt soundbar hoparlör
+const tvStandLegs = new THREE.Group();
+addTo(tvStandLegs, B(0.12, 1.6, 0.12), M(0x334155), -0.95, 0.8, 0);
+addTo(tvStandLegs, B(0.12, 1.6, 0.12), M(0x334155), 0.95, 0.8, 0);
+addTo(tvStandLegs, B(2.3, 0.08, 0.65), M(0x1e293b), 0, 0.04, 0);
+matchTvGroup.add(tvStandLegs);
+
+// Yeşil çim saha ekranı, beyaz saha çizgileri ve kaleler
+const pitchTex = tex(256, 144, (g, w, h) => {
+  for(let i = 0; i < 8; i++){
+    g.fillStyle = i % 2 === 0 ? '#15803d' : '#16a34a';
+    g.fillRect(i * (w / 8), 0, w / 8, h);
+  }
+  g.strokeStyle = 'rgba(255,255,255,0.88)';
+  g.lineWidth = 3;
+  g.strokeRect(10, 10, w - 20, h - 20);
+  g.beginPath(); g.moveTo(w / 2, 10); g.lineTo(w / 2, h - 10); g.stroke();
+  g.beginPath(); g.arc(w / 2, h / 2, 22, 0, Math.PI * 2); g.stroke();
+  g.strokeRect(10, h / 2 - 28, 26, 56);
+  g.strokeRect(w - 36, h / 2 - 28, 26, 56);
+});
+const tvPitchMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.36, 1.34), new THREE.MeshBasicMaterial({map: pitchTex, fog: false}));
+tvPitchMesh.position.set(0, 2.35, 0.078);
+matchTvGroup.add(tvPitchMesh);
+
+// Üst Canlı Maç Skor Tabelası (CANLI MAÇ · DÖNERSPOR - RAKİP)
+const tvScoreCv = document.createElement('canvas');
+tvScoreCv.width = 256; tvScoreCv.height = 48;
+const tvScoreCtx = tvScoreCv.getContext('2d');
+const tvScoreTex = new THREE.CanvasTexture(tvScoreCv);
+const tvScoreBoard = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 0.34), new THREE.MeshBasicMaterial({map: tvScoreTex, fog: false}));
+tvScoreBoard.position.set(0, 2.86, 0.084);
+matchTvGroup.add(tvScoreBoard);
+
+let tvHomeScore = 2, tvAwayScore = 1, tvGoalFlashT = 0, tvGoalCD = 22;
+function redrawTvScoreBoard(isGoalNow){
+  tvScoreCtx.fillStyle = isGoalNow ? '#ca8a04' : '#090d16';
+  tvScoreCtx.fillRect(0, 0, 256, 48);
+  tvScoreCtx.strokeStyle = '#fde047';
+  tvScoreCtx.lineWidth = 4;
+  tvScoreCtx.strokeRect(2, 2, 252, 44);
+  tvScoreCtx.fillStyle = '#ffffff';
+  tvScoreCtx.font = 'bold 21px sans-serif';
+  tvScoreCtx.textAlign = 'center';
+  tvScoreCtx.textBaseline = 'middle';
+  if(isGoalNow){
+    tvScoreCtx.fillText(`⚽ GOOOL!! ${tvHomeScore} - ${tvAwayScore} ⚽`, 128, 25);
+  } else {
+    tvScoreCtx.fillText(`🔴 CANLI: DÖNER ${tvHomeScore} - ${tvAwayScore} RAKİP`, 128, 25);
+  }
+  tvScoreTex.needsUpdate = true;
+}
+redrawTvScoreBoard(false);
+
+// Ekranda koşan 3B minik futbolcular (kırmızı ve mavi takım) ve hareketli futbol topu
+const tvPlayerGeo = B(0.08, 0.14, 0.02);
+const tvRedMat = new THREE.MeshBasicMaterial({color: 0xef4444, fog: false});
+const tvBlueMat = new THREE.MeshBasicMaterial({color: 0x38bdf8, fog: false});
+const tvBallMat = new THREE.MeshBasicMaterial({color: 0xffffff, fog: false});
+const tvPlayers = [];
+[[-0.65, 0.05, true], [-0.25, -0.22, true], [-0.20, 0.20, true], [0.20, -0.18, false], [0.25, 0.22, false], [0.65, -0.05, false]].forEach(([px, py, isRed], idx) => {
+  const pm = new THREE.Mesh(tvPlayerGeo, isRed ? tvRedMat : tvBlueMat);
+  pm.position.set(px, 2.25 + py, 0.085);
+  matchTvGroup.add(pm);
+  tvPlayers.push({m: pm, bx: px, by: 2.25 + py, ph: idx * 1.1});
+});
+const tvBallMesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.055, 0), tvBallMat);
+tvBallMesh.position.set(0, 2.25, 0.09);
+matchTvGroup.add(tvBallMesh);
+
+function positionMatchTv(){
+  const isRest = !!(S.kar.restoran || S.mk.restoran);
+  if(isRest){
+    // Restoran alındığında içeride kuzey duvarında masalara doğru bakar
+    matchTvGroup.position.set(13.8, 0.45, -5.85);
+    matchTvGroup.rotation.y = 0;
+    tvStandLegs.visible = false;
+  } else {
+    // Karavan modunda masa takımının hemen önünde ayaklı dev ekran olarak durur
+    matchTvGroup.position.set(11.4, 0, -4.8);
+    matchTvGroup.rotation.y = Math.PI;
+    tvStandLegs.visible = true;
+  }
+}
+positionMatchTv();
 
 // Garson (Servis Elemanı): beyaz gömlek, siyah pantolon, kırmızı papyon, elinde tepsi
 const waiterMesh = human(0xffffff, 0x111827, pick(SKINS), 0x1b1b1b);
@@ -3764,7 +3794,6 @@ function free(x, z){
   if(x > -11.4 && x < -8.2 && z > -8.5 && z < -3.5) return false; // market binası
   if(x > -11.4 && x < -8.2 && z > -16.9 && z < -12.1) return false; // banka binası
   if(x > -11.4 && x < -8.2 && z > -26.5 && z < -21.5) return false; // galeri binası
-  if(x > -11.4 && x < -8.2 && z > -70.6 && z < -65.4) return false; // kumarhane binası
   // balık göleti: yürünebilir ve içinde yüzülebilir!
   // çitle çevrili hazine kazı alanı (yalnızca kapıdan girilir: x=-20, z=-64..-60)
   if(z >= -74.2 && z <= -49.8 && x >= -36.2 && x <= -19.8){
@@ -6644,13 +6673,8 @@ canvas.addEventListener('pointerup', e => {
     deliverPhoneOrder();
     return;
   }
-  // terörist: silah kuşanıksa vur, silahcı: dükkânı aç, çark: çevir, 3D slot: kolu çek, polis arabası: çal
+  // terörist: silah kuşanıksa vur, silahcı: dükkânı aç, çark: çevir, polis arabası: çal
   if(ray.intersectObject(wheelGroup, true).length){ spinWheel(); return; }
-  if(ray.intersectObject(slot3dGroup, true).length){
-    if(Math.hypot(P.x - SLOT3D_POS.x, P.z - SLOT3D_POS.z) < 5.5) pull3DSlotMachine();
-    else flash('🎰 3D Slot Makinesine biraz yaklaş!', '#f87171');
-    return;
-  }
   if(ray.intersectObject(scratchStandGroup, true).length){
     if(Math.hypot(P.x - SCRATCH_STAND_POS.x, P.z - SCRATCH_STAND_POS.z) < 5.5) startNewScratchCard();
     else flash('🎟️ Kazı Kazan standına biraz yaklaş!', '#f87171');
@@ -6746,14 +6770,6 @@ canvas.addEventListener('pointerup', e => {
       askNPC('Bankacı', -7.8, -14.5, ['Paranı faize yatır, her gün %15 kazansın!', 'Acil araba veya motor için kredi çekebilirsin.']);
       openBankModal();
     } else flash('Bankaya veya ATM\'ye biraz yaklaş', '#f87171');
-    return;
-  }
-  // kumarhaneye / krupiyeye dokunmak = kumarhane ekranı
-  if(ray.intersectObject(casinoGroup, true).length || ray.intersectObject(croupier, true).length){
-    if(Math.hypot(P.x - CASINO_POS.doorX, P.z - CASINO_POS.doorZ) < 6.5){
-      askNPC('Krupiye', -7.8, -66.2, ['Royal Casino\'ya hoş geldin! Şansını denemeye hazır mısın?']);
-      openCasinoModal();
-    } else flash('Kumarhaneye biraz yaklaş', '#f87171');
     return;
   }
   // balık göletine dokunmak = balık tut
@@ -7625,110 +7641,7 @@ if($('bankPayLoanBtn')) $('bankPayLoanBtn').onclick = () => {
   flash(`🧾 ${pay.toLocaleString('tr-TR')}₺ kredi borcu ödendi!`, '#4ade80');
 };
 
-/* ================= Kumarhane, Oto Yıkama, Drift Sayacı, Balık Tutma & Dedektör ================= */
-const SLOT_SYMS = ['🍒', '🍋', '🔔', '💎', '7️⃣', '👑'];
-let casinoSpinning = false;
-function renderCasinoModal(){
-  if($('casinoBalBox')){
-    $('casinoBalBox').innerHTML = `💵 Cüzdanındaki Nakit: <b style="color:#4ade80">${(S.money || 0).toLocaleString('tr-TR')}₺</b>`;
-  }
-}
-function openCasinoModal(){
-  setOpen = true;
-  if($('casinoMsg')) $('casinoMsg').textContent = '';
-  renderCasinoModal();
-  if($('casinoModal')) $('casinoModal').style.display = 'flex';
-}
-function closeCasinoModal(){
-  setOpen = false;
-  if($('casinoModal')) $('casinoModal').style.display = 'none';
-  renderAll();
-}
-if($('casinoBtn')) $('casinoBtn').onclick = openCasinoModal;
-if($('casinoCloseBtn')) $('casinoCloseBtn').onclick = closeCasinoModal;
-document.querySelectorAll('.cBetQ').forEach(btn => {
-  btn.onclick = () => {
-    const inp = $('casinoBetIn');
-    if(!inp) return;
-    inp.value = (Number(inp.value) || 0) + (Number(btn.dataset.v) || 0);
-  };
-});
-if($('cBetMax')) $('cBetMax').onclick = () => {
-  const inp = $('casinoBetIn');
-  if(inp) inp.value = Math.max(0, Math.floor(S.money || 0));
-};
-if($('slotSpinBtn')) $('slotSpinBtn').onclick = () => {
-  if(casinoSpinning) return;
-  const bet = Math.floor(Number($('casinoBetIn') && $('casinoBetIn').value) || 0);
-  const msg = $('casinoMsg');
-  if(bet <= 0){ if(msg){ msg.style.color = '#f87171'; msg.textContent = 'Geçerli bir bahis tutarı yaz!'; } return; }
-  if((S.money || 0) < bet){ if(msg){ msg.style.color = '#f87171'; msg.textContent = 'Bu bahis için yeterli nakit paran yok!'; } return; }
-  S.money -= bet;
-  casinoSpinning = true;
-  renderCasinoModal(); renderAll();
-  if(msg){ msg.style.color = '#ffd54a'; msg.textContent = '🎰 Çarklar dönüyor...'; }
-  let ticks = 0;
-  const iv = setInterval(() => {
-    ticks++;
-    for(let i = 0; i < 3; i++){
-      const el = $('reel' + i);
-      if(el) el.textContent = SLOT_SYMS[(Math.random() * SLOT_SYMS.length) | 0];
-    }
-    beep(420 + ticks * 25, 0.04, 'triangle', 0.05);
-    if(ticks >= 12){
-      clearInterval(iv);
-      casinoSpinning = false;
-      const r0 = SLOT_SYMS[(Math.random() * SLOT_SYMS.length) | 0];
-      const r1 = SLOT_SYMS[(Math.random() * SLOT_SYMS.length) | 0];
-      const r2 = SLOT_SYMS[(Math.random() * SLOT_SYMS.length) | 0];
-      if($('reel0')) $('reel0').textContent = r0;
-      if($('reel1')) $('reel1').textContent = r1;
-      if($('reel2')) $('reel2').textContent = r2;
-      let win = 0;
-      if(r0 === r1 && r1 === r2){
-        win = Math.round(bet * 10);
-      } else if(r0 === r1 || r1 === r2 || r0 === r2){
-        win = Math.round(bet * 2.5);
-      }
-      if(win > 0){
-        S.money += win;
-        beep(880, 0.22, 'sine', 0.14);
-        if(r0 === r1 && r1 === r2) spawnFirework(CASINO_POS.x, CASINO_POS.z);
-        if(msg){ msg.style.color = '#4ade80'; msg.textContent = `🎉 TEBRİKLER! +${win.toLocaleString('tr-TR')}₺ kazandın!`; }
-        flash(`🎰 Slot Kazancı: +${win.toLocaleString('tr-TR')}₺!`, '#4ade80');
-      } else {
-        beep(220, 0.14, 'sawtooth', 0.06);
-        if(msg){ msg.style.color = '#f87171'; msg.textContent = `😢 Kaybettin (${bet.toLocaleString('tr-TR')}₺). Tekrar dene!`; }
-      }
-      save(); renderCasinoModal(); renderAll();
-    }
-  }, 75);
-};
-function playRouletteColor(pickRed){
-  if(casinoSpinning) return;
-  const bet = Math.floor(Number($('casinoBetIn') && $('casinoBetIn').value) || 0);
-  const msg = $('casinoMsg');
-  if(bet <= 0){ if(msg){ msg.style.color = '#f87171'; msg.textContent = 'Geçerli bir bahis tutarı yaz!'; } return; }
-  if((S.money || 0) < bet){ if(msg){ msg.style.color = '#f87171'; msg.textContent = 'Bu bahis için yeterli nakit paran yok!'; } return; }
-  S.money -= bet;
-  const resRed = Math.random() < 0.485;
-  const won = (pickRed === resRed);
-  const resLbl = resRed ? '🔴 KIRMIZI' : '⚫ SİYAH';
-  if(won){
-    const prize = bet * 2;
-    S.money += prize;
-    beep(840, 0.18, 'sine', 0.12);
-    if(msg){ msg.style.color = '#4ade80'; msg.textContent = `${resLbl} geldi! +${prize.toLocaleString('tr-TR')}₺ kazandın!`; }
-    flash(`🎰 Rulet ${resLbl}: +${prize.toLocaleString('tr-TR')}₺!`, '#4ade80');
-  } else {
-    beep(210, 0.15, 'sawtooth', 0.06);
-    if(msg){ msg.style.color = '#f87171'; msg.textContent = `${resLbl} geldi! ${bet.toLocaleString('tr-TR')}₺ kaybettin.`; }
-  }
-  save(); renderCasinoModal(); renderAll();
-}
-if($('roulRedBtn')) $('roulRedBtn').onclick = () => playRouletteColor(true);
-if($('roulBlkBtn')) $('roulBlkBtn').onclick = () => playRouletteColor(false);
-
+/* ================= Oto Yıkama, Drift Sayacı, Balık Tutma & Dedektör ================= */
 // Köpüklü Araba Yıkama & Drift Puan Sayacı
 let washTimer = 0, washCD = 0, washFoamTick = 0;
 let driftScore = 0, driftTime = 0, driftMult = 1, driftIdleT = 0;
@@ -8553,58 +8466,6 @@ function spawnHeistCashBags(cx, cz, count, valEach, isVaultLoot){
   }
 }
 
-// ================= 🎰 3D Kolu Çekilen Slot Makinesi (#6 - Kumarcının / Kumarhanenin Önünde) =================
-const SLOT3D_POS = {x: -7.9, z: -66.1};
-const slot3dGroup = new THREE.Group();
-slot3dGroup.position.set(SLOT3D_POS.x, 0.3, SLOT3D_POS.z);
-slot3dGroup.rotation.y = Math.PI / 2;
-scene.add(slot3dGroup);
-addRectShadow(slot3dGroup, 1.35, 1.25, 0, 0, 0.02);
-addTo(slot3dGroup, B(0.95, 1.85, 0.85), M(0x7e22ce), 0, 0.92, 0); // mor casino gövde
-addTo(slot3dGroup, B(1.02, 0.24, 0.92), M(0xfacc15), 0, 1.92, 0); // altın taç
-addTo(slot3dGroup, B(0.82, 0.65, 0.08), M(0x090d16), 0, 1.25, 0.41); // ekran çerçevesi
-const slot3dReelColors = [0xef4444, 0xfacc15, 0x38bdf8, 0x4ade80, 0xe879f9];
-const slot3dReels = [-0.24, 0, 0.24].map(rx => {
-  const rm = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.20, 8).rotateZ(Math.PI / 2), new THREE.MeshBasicMaterial({color: 0xfacc15}));
-  rm.position.set(rx, 1.25, 0.43);
-  slot3dGroup.add(rm);
-  return rm;
-});
-// Sağ yanda çekilen kol (lever)
-const slot3dLeverPivot = new THREE.Group();
-slot3dLeverPivot.position.set(0.52, 1.15, 0.1);
-addTo(slot3dLeverPivot, new THREE.CylinderGeometry(0.04, 0.04, 0.62, 6), M(0xd1d5db), 0, 0.28, 0);
-addTo(slot3dLeverPivot, new THREE.SphereGeometry(0.11, 8, 6), new THREE.MeshBasicMaterial({color: 0xef4444}), 0, 0.60, 0);
-slot3dGroup.add(slot3dLeverPivot);
-const slot3dSignTex = tex(256, 72, (g, w, h) => {
-  g.fillStyle = '#4c1d95'; g.fillRect(0, 0, w, h);
-  g.strokeStyle = '#fde047'; g.lineWidth = 5; g.strokeRect(3, 3, w - 6, h - 6);
-  g.fillStyle = '#fde047'; g.font = 'bold 30px sans-serif';
-  g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText('🎰 3D SLOT (150₺)', w / 2, h / 2 + 2);
-});
-const slot3dSign = new THREE.Mesh(new THREE.PlaneGeometry(1.35, 0.42), new THREE.MeshBasicMaterial({map: slot3dSignTex, side: THREE.DoubleSide}));
-slot3dSign.position.set(0, 2.28, 0);
-slot3dGroup.add(slot3dSign);
-
-const slot3dState = {spinning: false, t: 0};
-function pull3DSlotMachine(){
-  if(slot3dState.spinning) return;
-  const bet = 150;
-  if((S.money || 0) < bet){
-    flash('🎰 3D Slot Makinesi kolunu çekmek için 150₺ lazım!', '#f87171');
-    return;
-  }
-  S.money -= bet;
-  slot3dState.spinning = true;
-  slot3dState.t = 1.35;
-  slot3dLeverPivot.rotation.x = 1.15; // kol aşağı çekilir
-  beep(520, 0.12, 'triangle', 0.12);
-  flash('🎰 3D Slot kolu çekildi! Makaralar dönüyor...', '#fde047');
-  save(); renderAll();
-}
-if($('slot3dBtn')) $('slot3dBtn').onclick = pull3DSlotMachine;
-
 // Gerçekçi Polis Sireni Sesi (vii-uuu / wail-yelp frekans kaymalı)
 function playPoliceSirenWail(vol = 0.08){
   try{
@@ -8921,42 +8782,6 @@ function updateHeistAndC4(dt){
     vaultRobCD = Math.max(0, vaultRobCD - dt);
     if(vaultRobCD === 0) bankVaultDoorPivot.rotation.y = 0;
   }
-  // 3D Slot Makinesi dönüş ve ikramiye kontrolü (#6)
-  if(slot3dState.spinning){
-    slot3dState.t -= dt;
-    slot3dLeverPivot.rotation.x = Math.max(0, slot3dLeverPivot.rotation.x - dt * 1.4);
-    slot3dReels.forEach((rm, idx) => {
-      rm.rotation.x += dt * (14 + idx * 3);
-      if(Math.random() < 0.35){
-        rm.material.color.setHex(slot3dReelColors[(Math.random() * slot3dReelColors.length) | 0]);
-      }
-    });
-    if(slot3dState.t <= 0){
-      slot3dState.spinning = false;
-      slot3dLeverPivot.rotation.x = 0;
-      const c0 = slot3dReelColors[(Math.random() * slot3dReelColors.length) | 0];
-      const c1 = slot3dReelColors[(Math.random() * slot3dReelColors.length) | 0];
-      const c2 = slot3dReelColors[(Math.random() * slot3dReelColors.length) | 0];
-      slot3dReels[0].material.color.setHex(c0);
-      slot3dReels[1].material.color.setHex(c1);
-      slot3dReels[2].material.color.setHex(c2);
-      let prize = 0;
-      if(c0 === c1 && c1 === c2) prize = 1500;
-      else if(c0 === c1 || c1 === c2 || c0 === c2) prize = 400;
-      if(prize > 0){
-        S.money = (S.money || 0) + prize;
-        if(prize >= 1500 && typeof spawnFirework === 'function') spawnFirework(SLOT3D_POS.x, SLOT3D_POS.z);
-        beep(920, 0.25, 'sine', 0.18);
-        flash(`🎰🎉 3D SLOT BÜYÜK KAZANÇ! +${prize}₺ kazandın!`, '#4ade80');
-      } else {
-        beep(220, 0.14, 'sawtooth', 0.08);
-        flash('🎰 3D Slot boş çıktı! Kolunu tekrar çekip şansını dene!', '#f87171');
-      }
-      save(); renderAll();
-    }
-  }
-  const nearSlot3d = !C.driving && !D.driving && !CM.driving && !policeChase.inPrison && Math.hypot(P.x - SLOT3D_POS.x, P.z - SLOT3D_POS.z) < 4.2;
-  disp('slot3dBtn', nearSlot3d ? 'block' : 'none');
 
   // Polis Arabası siren ışıkları ve pozisyonu (#27)
   if(C.driving && C.activeVeh === 'police'){
@@ -10159,6 +9984,39 @@ function updateAtmosphericVisuals(dt){
     cr.clawL.rotation.y = pinch;
     cr.clawR.rotation.y = -pinch;
   }
+
+  // 📺 #24 Restoran Dev 3B Televizyonunda Canlı Futbol Maçı Animasyonu & Gol Heyecanı
+  if(typeof matchTvGroup !== 'undefined' && matchTvGroup.visible){
+    const bx = Math.sin(nowS * 2.8) * 0.85;
+    const by = 2.22 + Math.cos(nowS * 3.7) * 0.32;
+    tvBallMesh.position.set(bx, by, 0.09);
+    tvBallMesh.rotation.z = nowS * 6.0;
+    for(let i = 0; i < tvPlayers.length; i++){
+      const tp = tvPlayers[i];
+      tp.m.position.x = tp.bx + Math.sin(nowS * 3.2 + tp.ph) * 0.22;
+      tp.m.position.y = tp.by + Math.cos(nowS * 2.6 + tp.ph) * 0.16;
+    }
+    if(tvGoalFlashT > 0){
+      tvGoalFlashT -= dt;
+      if(tvGoalFlashT <= 0){
+        redrawTvScoreBoard(false);
+      }
+    } else {
+      tvGoalCD -= dt;
+      if(tvGoalCD <= 0){
+        tvGoalCD = 26 + Math.random() * 18;
+        if(Math.random() < 0.72) tvHomeScore++;
+        else tvAwayScore++;
+        tvGoalFlashT = 4.0;
+        redrawTvScoreBoard(true);
+        const distTv = Math.hypot(myX - matchTvGroup.position.x, myZ - matchTvGroup.position.z);
+        if(distTv < 22){
+          beep(660, 0.18, 'triangle', 0.09);
+          flash(`⚽📺 GOOL! Dev TV'de maç skoru: DÖNERSPOR ${tvHomeScore} - ${tvAwayScore} RAKİP!`, '#4ade80');
+        }
+      }
+    }
+  }
 }
 function renderGallery(){
   const box = $('galBody');
@@ -10841,12 +10699,13 @@ comoWalkers = comoWalkers.filter(w => !w.dead);
           }
           c.diningState = null;
           c.tableSlot = null;
-          const masaTip = c.foodDelivered ? 65 : 40;
+          const baseMasaTip = c.foodDelivered ? 65 : 40;
+          const masaTip = baseMasaTip * 2; // 📺 Canlı Maç TV'si sayesinde masadaki müşteriler 2x bahşiş bırakır!
           S.money += masaTip;
           shiftEarned += masaTip;
           S.xp = (S.xp || 0) + masaTip;
           checkLevelUp();
-          flash(c.foodDelivered ? `🪑🤵 Müşteri masada garson servisiyle yedi! +${masaTip}₺ Bahşiş!` : `🪑 Müşteri masada yemeğini yedi! +${masaTip}₺ Masa Bahşişi!`, '#4ade80');
+          flash(c.foodDelivered ? `📺⚽ Müşteri garson servisiyle canlı maç izleyerek yedi! +${masaTip}₺ (2x Maç Bahşişi!)` : `📺⚽ Müşteri masada canlı maç izleyerek yedi! +${masaTip}₺ (2x Maç Bahşişi!)`, '#4ade80');
           changed = true;
           c.leave(true);
         }
@@ -11248,8 +11107,6 @@ function frame(now){
   disp('carExit', C.driving && Math.abs(C.v) < 1 ? 'block' : 'none');
   const nearBank = !C.driving && !D.driving && !CM.driving && Math.hypot(P.x - BANK_POS.atmX, P.z - BANK_POS.atmZ) < 4.8;
   disp('bankBtn', nearBank ? 'block' : 'none');
-  const nearCasino = !C.driving && !D.driving && !CM.driving && Math.hypot(P.x - CASINO_POS.doorX, P.z - CASINO_POS.doorZ) < 5.2;
-  disp('casinoBtn', nearCasino ? 'block' : 'none');
   const nearPond = !C.driving && !D.driving && !CM.driving && Math.hypot(P.x - POND_POS.dockX, P.z - POND_POS.dockZ) < 5.0;
   disp('fishBtn', nearPond ? 'block' : 'none');
   updateCarWashAndDrift(dt);
@@ -12397,7 +12254,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-28-170425';
+const APP_VERSION = '2026-10-28-193846';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
