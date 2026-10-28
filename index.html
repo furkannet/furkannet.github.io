@@ -252,6 +252,21 @@ button small{font-size:9px;margin-top:0}
 <button id="slot3dBtn" style="display:none;background:#7e22ce;border-color:#fde047;font-weight:900">🎰 3D Slot Kolu Çek (150₺)</button>
 <button id="policeCarBtn" style="display:none;background:#1d4ed8;border-color:#93c5fd;font-weight:900">🚔 Polis Arabasını Çal (E)</button>
 <button id="sirenBtn" style="display:none;background:#b91c1c;border-color:#60a5fa;font-weight:900">🚨 Siren: Açık</button>
+<button id="shopSpeakerBtn" style="display:none;background:#7c3aed;border-color:#c084fc;font-weight:900">📻 Dükkân Müziği: Açık</button>
+<button id="scratchCardBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">🎟️ Kazı Kazan Al (100₺)</button>
+</div>
+<div id="scratchModal" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:27;width:min(360px,92vw);background:rgba(20,24,36,.98);border:2px solid #fbbf24;border-radius:14px;padding:14px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.88)">
+  <div style="font-weight:900;font-size:17px;color:#fde047;margin-bottom:4px">🎟️ ŞANSLI KAZI KAZAN KARTI</div>
+  <div id="scratchSub" style="font-size:12px;color:#cbd5e1;margin-bottom:8px">Parmağını veya fareyi gri alanın üstünde sürükleyerek kazı! Aynı 3 ödülü bulursan kazanırsın!</div>
+  <div style="position:relative;width:270px;height:140px;margin:0 auto 10px;border-radius:10px;overflow:hidden;border:2px solid #f59e0b;background:linear-gradient(135deg,#fef08a,#f59e0b);user-select:none">
+    <div id="scratchGrid" style="position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4px;padding:6px;align-items:center;justify-items:center;font-weight:900;font-size:15px;color:#1e293b"></div>
+    <canvas id="scratchCv" width="270" height="140" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer"></canvas>
+  </div>
+  <div id="scratchResultMsg" style="min-height:20px;font-size:14px;font-weight:900;color:#4ade80;margin-bottom:8px"></div>
+  <div style="display:flex;gap:8px">
+    <button id="scratchAgainBtn" style="flex:1;padding:10px;font-size:14px;font-weight:900;background:#ca8a04;border-color:#fde047;border-radius:10px">🎟️ Yeni Kart Al (100₺)</button>
+    <button id="scratchCloseBtn" style="padding:10px 14px;font-size:14px;font-weight:700;border-radius:10px">Kapat</button>
+  </div>
 </div>
 <div id="policeChaseHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:24;background:linear-gradient(135deg,rgba(185,28,28,.96),rgba(29,78,216,.96));border:2px solid #fde047;color:#fff;padding:7px 16px;border-radius:999px;font-weight:900;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.75);pointer-events:none;white-space:nowrap">🚨 POLİS KOVALIYOR! Kaç: 10 sn</div>
 <div id="prisonBox" style="display:none;position:fixed;left:50%;top:52%;transform:translate(-50%,-50%);z-index:26;width:min(360px,92vw);background:rgba(15,23,42,.97);border:2px solid #ef4444;border-radius:14px;padding:14px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.88)">
@@ -652,6 +667,7 @@ const KAR = [
   {id:'masa', name:'🪑 Masa & Sandalye Takımı', desc:'Dükkanın önüne masalar kurulur, oturan müşteriler +40₺ bahşiş bırakır', price:450},
   {id:'garson', name:'🤵 Garson (Servis Elemanı)', desc:'Hazırlanan yemekleri masadaki müşterilere götürür (+25₺ ekstra bahşiş)', price:500},
   {id:'kurye', name:'🛵 Kurye & Telefon Siparişi', desc:'Telefonla paket sipariş gelir, kuryeye teslim edince 2 katı ücret alırsın', price:600},
+  {id:'hoparlor', name:'📻 Dükkân Hoparlörü & Müzik Yayını', desc:'Dükkânın üstüne hoparlör takılır; müzik çaldıkça müşteriler %25 daha hızlı gelir, sabır ve bahşiş +%15 artar!', price:550},
   {id:'restoran', name:'🏪 Büyük Döner Restoranı Binası', desc:'Karavandan 2 katlı lüks restorana geç! Kapasite +60 artar, tüm kazançlar +%35 yükselir!', price:15000}
 ];
 
@@ -1706,6 +1722,21 @@ fryer.visible = fridge.visible = tray.visible = false;
 // servis penceresi panjuru (kapalıyken servis yapılamaz)
 const shutter = addTo(stall, B(0.05, 0.95, 4.0), M(0x9aa3ad), -1.18, 1.62, 0);
 shutter.visible = false;
+// 📻 Dükkân Hoparlörü & Müzik Yayını (#11 - Çatı üstü çift neon bass hoparlör)
+const shopSpeakerGroup = new THREE.Group();
+const shopSpeakerCones = [];
+[-1.7, 1.7].forEach(sz => {
+  const spkBox = new THREE.Group();
+  spkBox.position.set(-1.05, 3.12, sz);
+  addTo(spkBox, B(0.36, 0.56, 0.44), M(0x18181f), 0, 0, 0);
+  addTo(spkBox, B(0.04, 0.52, 0.40), new THREE.MeshBasicMaterial({color: 0xc084fc}), -0.17, 0, 0);
+  const coneM = addTo(spkBox, new THREE.CylinderGeometry(0.14, 0.08, 0.06, 8).rotateZ(Math.PI / 2), M(0x0f172a), -0.19, 0.08, 0);
+  addTo(spkBox, new THREE.CylinderGeometry(0.11, 0.06, 0.06, 8).rotateZ(Math.PI / 2), new THREE.MeshBasicMaterial({color: 0x38bdf8}), -0.19, -0.12, 0);
+  shopSpeakerCones.push(coneM);
+  shopSpeakerGroup.add(spkBox);
+});
+shopSpeakerGroup.visible = false;
+stall.add(shopSpeakerGroup);
 
 // tezgâh üstü tabak yuvaları (2 adet)
 const slotMeshes = [-1.2, 1.2].map(z => {
@@ -2917,7 +2948,7 @@ class Cust {
       scene.add(this.child);
     }
     this.order = buildOrder(type);
-    this.maxPat = 35 * (1 + 0.2 * S.up.sabir) * this.T.pat * (weather === 'rain' ? 0.85 : 1) * (S.mk.hali ? 1.1 : 1) * (S.mk.klima ? 1.05 : 1);
+    this.maxPat = 35 * (1 + 0.2 * S.up.sabir) * this.T.pat * (weather === 'rain' ? 0.85 : 1) * (S.mk.hali ? 1.1 : 1) * (S.mk.klima ? 1.05 : 1) * ((S.kar.hoparlor && shopMusicOn) ? 1.15 : 1);
     this.patience = this.maxPat;
     this.x = 5.0; this.z = SPAWN_Z; this.slotZ = SLOT0;
     this.waiting = false; this.leaving = false; this.walk = true;
@@ -3291,6 +3322,7 @@ function renderStall(){
   if(typeof syncRestaurantLayout === 'function') syncRestaurantLayout();
   guardMesh.visible = !!(m.guard || S.mk.guard);
   dogMesh.visible = !!(m.guard || S.mk.guard);
+  if(typeof shopSpeakerGroup !== 'undefined') shopSpeakerGroup.visible = !!(k.hoparlor || m.hoparlor || S.kar.hoparlor || S.mk.hoparlor);
   klimaUnit.visible = !!(m.klima || S.mk.klima);
   comoTruck.visible = true; // dükkân her zaman görünür (satın alınca gelir)
   comoStaffMesh.visible = !!(m.comoStaff || S.mk.comoStaff);
@@ -5730,7 +5762,7 @@ function serve(auto = false){
     const q = meats.reduce((a, p) => a + p.q, 0) / Math.max(1, meats.length);
     const pat = Math.max(0, c.patience / c.maxPat);
     const base = c.order.reduce((a, id) => a + PRICE[id], 0);
-    const tip = Math.round((pat * 25 + q * 20 + c.T.tip) * (1 + 0.15 * S.up.kasa) * (hotLeft > 0 ? 2 : 1) * (S.kar.led ? 1.1 : 1) * (S.mk.kahve ? 1.05 : 1));
+    const tip = Math.round((pat * 25 + q * 20 + c.T.tip) * (1 + 0.15 * S.up.kasa) * (hotLeft > 0 ? 2 : 1) * (S.kar.led ? 1.1 : 1) * (S.mk.kahve ? 1.05 : 1) * ((S.kar.hoparlor && shopMusicOn) ? 1.15 : 1));
     const vipBonus = c.type === 'vip' ? 250 : 0;
     const restMult = (S.kar.restoran || S.mk.restoran) ? 1.35 : 1;
     const total = Math.round((Math.round(base * c.T.pay) + tip) * 1.15 * restMult) + vipBonus; // döner ve COMOGENE satışları %15 fazla + Restoran +%35 + VIP ödülü
@@ -6034,6 +6066,7 @@ const MKT = [
   {id:'masa', name:'🪑 Masa & Sandalye Takımı', desc:'Dükkanın önüne masalar kurulur, oturan müşteriler +40₺ bahşiş bırakır', price:450},
   {id:'garson', name:'🤵 Garson (Servis Elemanı)', desc:'Hazırlanan yemekleri masadaki müşterilere götürür (+25₺ ekstra bahşiş)', price:500},
   {id:'kurye', name:'🛵 Kurye & Telefon Siparişi', desc:'Telefonla paket sipariş gelir, kuryeye teslim edince 2 katı ücret alırsın', price:600},
+  {id:'hoparlor', name:'📻 Dükkân Hoparlörü & Müzik Yayını', desc:'Dükkânın üstüne hoparlör takılır; müzik çaldıkça müşteriler %25 daha hızlı gelir, sabır ve bahşiş +%15 artar!', price:550},
   {id:'restoran', name:'🏪 Büyük Döner Restoranı Binası', desc:'Karavandan 2 katlı lüks restorana geç! Kapasite +60 artar, tüm kazançlar +%35 yükselir!', price:15000},
   {id:'villa', name:'🏡 Garajlı Lüks Villa (2 Katlı Malikâne)', desc:'Evin 2 katlı, teraslı, büyük havuzlu ve otomatik garajlı lüks villaya dönüşür!', price:20000}
 ];
@@ -6239,6 +6272,11 @@ canvas.addEventListener('pointerup', e => {
   if(ray.intersectObject(slot3dGroup, true).length){
     if(Math.hypot(P.x - SLOT3D_POS.x, P.z - SLOT3D_POS.z) < 5.5) pull3DSlotMachine();
     else flash('🎰 3D Slot Makinesine biraz yaklaş!', '#f87171');
+    return;
+  }
+  if(ray.intersectObject(scratchStandGroup, true).length){
+    if(Math.hypot(P.x - SCRATCH_STAND_POS.x, P.z - SCRATCH_STAND_POS.z) < 5.5) startNewScratchCard();
+    else flash('🎟️ Kazı Kazan standına biraz yaklaş!', '#f87171');
     return;
   }
   if(!C.driving && ray.intersectObject(policeCarMesh, true).length){
@@ -8598,6 +8636,234 @@ function updateHeistAndC4(dt){
     txt('c4PlantBtn', lbl);
   }
   disp('c4DetBtn', activeC4 ? 'block' : 'none');
+  updateShopSpeakerAndScratch(dt);
+}
+
+// ================= 📻 Dükkân Hoparlörü & Müzik Yayını (#11) =================
+let shopMusicOn = true;
+let shopMusicBeatT = 0;
+let shopMusicNoteIdx = 0;
+const SHOP_MELODY_NOTES = [330, 392, 440, 523, 440, 392, 349, 294];
+
+function toggleShopSpeakerMusic(){
+  shopMusicOn = !shopMusicOn;
+  txt('shopSpeakerBtn', shopMusicOn ? '📻 Dükkân Müziği: Açık' : '📻 Dükkân Müziği: Kapalı');
+  beep(shopMusicOn ? 660 : 330, 0.1, 'triangle', 0.1);
+  flash(shopMusicOn ? '📻 Dükkân hoparlöründen müzik yayını başladı! Müşteriler daha hızlı gelir!' : '📻 Dükkân müziği kapatıldı', '#c084fc');
+}
+if($('shopSpeakerBtn')) $('shopSpeakerBtn').onclick = toggleShopSpeakerMusic;
+
+// ================= 🎟️ Market Önünde Kazı Kazan Standı & Kart Kazıma Oyunu (#23) =================
+const SCRATCH_STAND_POS = {x: -7.8, z: -8.6};
+const scratchStandGroup = new THREE.Group();
+scratchStandGroup.position.set(SCRATCH_STAND_POS.x, 0.3, SCRATCH_STAND_POS.z);
+scratchStandGroup.rotation.y = Math.PI / 2;
+scene.add(scratchStandGroup);
+addTo(scratchStandGroup, B(0.95, 1.05, 0.65), M(0xca8a04), 0, 0.52, 0); // altın sarısı tezgâh
+addTo(scratchStandGroup, B(1.02, 0.10, 0.72), M(0xef4444), 0, 1.08, 0); // kırmızı üst tabla
+// Üstteki renkli kazı kazan bilet desteleri
+[-0.26, 0, 0.26].forEach((bx, idx) => {
+  addTo(scratchStandGroup, B(0.22, 0.06, 0.34), M(idx === 1 ? 0x38bdf8 : 0xfde047), bx, 1.15, 0.05);
+});
+// Şemsiye/tente direği ve tabelası
+addTo(scratchStandGroup, new THREE.CylinderGeometry(0.04, 0.04, 1.2, 6), M(0xe2e8f0), 0, 1.65, -0.22);
+const scratchSignTex = tex(256, 72, (g, w, h) => {
+  g.fillStyle = '#b91c1c'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#fde047'; g.lineWidth = 5; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#fde047'; g.font = 'bold 28px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🎟️ KAZI KAZAN 100₺', w / 2, h / 2 + 2);
+});
+const scratchSign = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.42), new THREE.MeshBasicMaterial({map: scratchSignTex, side: THREE.DoubleSide}));
+scratchSign.position.set(0, 2.22, -0.22);
+scratchStandGroup.add(scratchSign);
+
+const SCRATCH_PRIZE_POOL = [
+  {label: '💎 1.000₺', val: 1000},
+  {label: '👑 500₺',   val: 500},
+  {label: '💵 250₺',   val: 250},
+  {label: '🪙 150₺',   val: 150},
+  {label: '🍀 50₺',    val: 50}
+];
+const scratchState = {
+  open: false,
+  revealed: false,
+  drawing: false,
+  scratchedStrokes: 0,
+  winPrize: 0,
+  cells: []
+};
+
+function startNewScratchCard(){
+  const cost = 100;
+  if((S.money || 0) < cost){
+    flash('🎟️ Kazı Kazan kartı almak için 100₺ lazım!', '#f87171');
+    return;
+  }
+  S.money -= cost;
+  save(); renderAll();
+  beep(680, 0.1, 'triangle', 0.12);
+  // %55 ihtimalle 3 aynı sembol eşleşir ve ödül kazandırır!
+  const isWinner = Math.random() < 0.55;
+  let winObj = null;
+  if(isWinner){
+    const r = Math.random();
+    winObj = r < 0.10 ? SCRATCH_PRIZE_POOL[0]
+           : r < 0.28 ? SCRATCH_PRIZE_POOL[1]
+           : r < 0.58 ? SCRATCH_PRIZE_POOL[2]
+           : r < 0.85 ? SCRATCH_PRIZE_POOL[3]
+           : SCRATCH_PRIZE_POOL[4];
+  }
+  const cells = [];
+  if(winObj){
+    cells.push(winObj, winObj, winObj);
+    const others = SCRATCH_PRIZE_POOL.filter(p => p !== winObj);
+    while(cells.length < 6){
+      const op = others[(Math.random() * others.length) | 0];
+      if(cells.filter(c => c === op).length < 2) cells.push(op);
+    }
+  } else {
+    // Hiçbir ödül 3 kez tekrar etmesin (en fazla 2 kez)
+    while(cells.length < 6){
+      const op = SCRATCH_PRIZE_POOL[(Math.random() * SCRATCH_PRIZE_POOL.length) | 0];
+      if(cells.filter(c => c === op).length < 2) cells.push(op);
+    }
+  }
+  // Karıştır
+  for(let i = cells.length - 1; i > 0; i--){
+    const j = (Math.random() * (i + 1)) | 0;
+    [cells[i], cells[j]] = [cells[j], cells[i]];
+  }
+  scratchState.open = true;
+  scratchState.revealed = false;
+  scratchState.drawing = false;
+  scratchState.scratchedStrokes = 0;
+  scratchState.winPrize = winObj ? winObj.val : 0;
+  scratchState.cells = cells;
+  setOpen = true;
+  if($('scratchGrid')){
+    $('scratchGrid').innerHTML = cells.map(c =>
+      `<div style="background:rgba(255,255,255,.78);border-radius:8px;padding:8px 4px;width:100%;text-align:center;box-shadow:inset 0 1px 3px rgba(0,0,0,.25)">${c.label}</div>`
+    ).join('');
+  }
+  if($('scratchResultMsg')){
+    $('scratchResultMsg').style.color = '#fde047';
+    $('scratchResultMsg').textContent = '✨ Parmağınla gri kaplamayı kazı!';
+  }
+  const cv = $('scratchCv');
+  if(cv){
+    const ctx = cv.getContext('2d');
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.strokeStyle = '#64748b';
+    ctx.lineWidth = 2;
+    for(let x = -140; x < 270; x += 18){
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 140, 140); ctx.stroke();
+    }
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 20px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🪙 BURAYI KAZI! 🪙', cv.width / 2, cv.height / 2);
+  }
+  disp('scratchModal', 'block');
+}
+
+function finishScratchReveal(){
+  if(scratchState.revealed) return;
+  scratchState.revealed = true;
+  const cv = $('scratchCv');
+  if(cv){
+    const ctx = cv.getContext('2d');
+    ctx.clearRect(0, 0, cv.width, cv.height);
+  }
+  const msg = $('scratchResultMsg');
+  if(scratchState.winPrize > 0){
+    S.money = (S.money || 0) + scratchState.winPrize;
+    S.xp = (S.xp || 0) + 40;
+    checkLevelUp();
+    if(scratchState.winPrize >= 500 && typeof spawnFirework === 'function'){
+      spawnFirework(SCRATCH_STAND_POS.x, SCRATCH_STAND_POS.z);
+    }
+    beep(920, 0.24, 'sine', 0.18);
+    if(msg){
+      msg.style.color = '#4ade80';
+      msg.textContent = `🎉 TEBRİKLER! 3 Eşleşme ile +${scratchState.winPrize}₺ Kazandın!`;
+    }
+    flash(`🎟️🎉 Kazı Kazan'dan +${scratchState.winPrize}₺ ikramiye çıktı!`, '#4ade80');
+  } else {
+    beep(230, 0.14, 'sawtooth', 0.08);
+    if(msg){
+      msg.style.color = '#f87171';
+      msg.textContent = '😢 3 aynı sembol çıkmadı! Yeni kartla tekrar dene!';
+    }
+  }
+  save(); renderAll();
+}
+
+(function initScratchCanvasEvents(){
+  const cv = $('scratchCv');
+  if(!cv) return;
+  const scratchAt = e => {
+    if(!scratchState.open || scratchState.revealed) return;
+    const r = cv.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * cv.width;
+    const y = ((e.clientY - r.top) / r.height) * cv.height;
+    const ctx = cv.getContext('2d');
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x, y, 22, 0, Math.PI * 2);
+    ctx.fill();
+    scratchState.scratchedStrokes++;
+    if(scratchState.scratchedStrokes % 5 === 0) beep(700 + (scratchState.scratchedStrokes % 15) * 20, 0.02, 'triangle', 0.04);
+    if(scratchState.scratchedStrokes >= 22){
+      finishScratchReveal();
+    }
+  };
+  cv.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    scratchState.drawing = true;
+    scratchAt(e);
+  });
+  cv.addEventListener('pointermove', e => {
+    if(!scratchState.drawing) return;
+    e.stopPropagation();
+    scratchAt(e);
+  });
+  window.addEventListener('pointerup', () => { scratchState.drawing = false; });
+})();
+
+if($('scratchCardBtn')) $('scratchCardBtn').onclick = startNewScratchCard;
+if($('scratchAgainBtn')) $('scratchAgainBtn').onclick = startNewScratchCard;
+if($('scratchCloseBtn')) $('scratchCloseBtn').onclick = () => {
+  scratchState.open = false;
+  setOpen = false;
+  disp('scratchModal', 'none');
+  renderAll();
+};
+
+function updateShopSpeakerAndScratch(dt){
+  const hasSpk = !!(S.kar.hoparlor || S.mk.hoparlor);
+  const nearStallSpk = hasSpk && !C.driving && !D.driving && !CM.driving && Math.hypot(P.x - D.x, P.z - D.z) < 6.2;
+  disp('shopSpeakerBtn', nearStallSpk ? 'block' : 'none');
+  if(hasSpk && shopMusicOn){
+    const pulse = 1 + Math.abs(Math.sin(performance.now() * 0.016)) * 0.28;
+    shopSpeakerCones.forEach(c => c.scale.set(1, pulse, pulse));
+    shopMusicBeatT += dt;
+    if(shopMusicBeatT >= 0.55){
+      shopMusicBeatT = 0;
+      const d = Math.hypot((C.driving ? C.x : P.x) - D.x, (C.driving ? C.z : P.z) - D.z);
+      if(d < 18){
+        const note = SHOP_MELODY_NOTES[shopMusicNoteIdx % SHOP_MELODY_NOTES.length];
+        shopMusicNoteIdx++;
+        const vol = Math.max(0.01, (1 - d / 18) * 0.045);
+        beep(note, 0.12, 'triangle', vol);
+      }
+    }
+  }
+  const nearScratch = !C.driving && !D.driving && !CM.driving && !policeChase.inPrison && Math.hypot(P.x - SCRATCH_STAND_POS.x, P.z - SCRATCH_STAND_POS.z) < 4.5;
+  disp('scratchCardBtn', nearScratch ? 'block' : 'none');
 }
 function renderGallery(){
   const box = $('galBody');
@@ -8862,7 +9128,7 @@ function step(dt, play){
     if(spawnT <= 0 && queue.length < MAX_QUEUE){
       spawnCust();
       renderFuture();
-      spawnT = Math.max(3, 7 - 1.2 * S.up.reklam) * (0.8 + Math.random() * 0.4);
+      spawnT = Math.max(2.4, 7 - 1.2 * S.up.reklam) * ((S.kar.hoparlor && shopMusicOn) ? 0.78 : 1) * (0.8 + Math.random() * 0.4);
     }
   }
 
@@ -10761,7 +11027,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-27-191325';
+const APP_VERSION = '2026-10-28-123922';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
