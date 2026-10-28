@@ -1002,20 +1002,41 @@ function tex(w, h, fn){
   t.anisotropy = 2;
   return t;
 }
-// sahte yumuşak gölge: gerçek gölge haritası yerine zemine yatan tek bir şeffaf daire (ortak geometri/malzeme)
-const BLOB_GEO = new THREE.CircleGeometry(1, 12).rotateX(-Math.PI / 2);
+// sahte yumuşak gölge: gerçek gölge haritası yerine zemine yatan şeffaf daire ve dikdörtgen gölgeler (ortak geometri/malzeme, 0 FPS kaybı)
+const BLOB_GEO = new THREE.CircleGeometry(1, 14).rotateX(-Math.PI / 2);
 const BLOB_MAT = new THREE.MeshBasicMaterial({
   map: tex(64, 64, (g,w,h) => {
     const gr = g.createRadialGradient(w/2, h/2, 0, w/2, h/2, w/2);
-    gr.addColorStop(0, 'rgba(0,0,0,.55)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    gr.addColorStop(0, 'rgba(0,0,0,.62)');
+    gr.addColorStop(0.55, 'rgba(0,0,0,.34)');
+    gr.addColorStop(1, 'rgba(0,0,0,0)');
     g.fillStyle = gr; g.fillRect(0, 0, w, h);
   }),
   transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2
 });
-function addBlob(g, sx, sz){
+const RECT_SHADOW_GEO = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+const RECT_SHADOW_MAT = new THREE.MeshBasicMaterial({
+  map: tex(64, 64, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    for(let i = 10; i >= 0; i--){
+      const pad = i * 1.6;
+      g.fillStyle = 'rgba(0,0,0,0.055)';
+      g.fillRect(pad, pad, w - pad * 2, h - pad * 2);
+    }
+  }),
+  transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2
+});
+function addBlob(g, sx, sz, oy = 0.04){
   const b = new THREE.Mesh(BLOB_GEO, BLOB_MAT);
-  b.position.y = 0.04; b.scale.set(sx, 1, sz);
+  b.position.y = oy; b.scale.set(sx, 1, sz);
   g.add(b);
+  return b;
+}
+function addRectShadow(g, sx, sz, ox = 0, oz = 0, oy = 0.035){
+  const b = new THREE.Mesh(RECT_SHADOW_GEO, RECT_SHADOW_MAT);
+  b.position.set(ox, oy, oz); b.scale.set(sx, 1, sz);
+  g.add(b);
+  return b;
 }
 const winTex = tex(64, 64, (g,w,h) => {
   g.fillStyle = '#8c8377'; g.fillRect(0,0,w,h);
@@ -1032,22 +1053,56 @@ const ground = new THREE.Mesh(new THREE.PlaneGeometry(400,400), M(0x2e3b33));
 ground.rotation.x = -Math.PI/2; ground.position.y = -0.01;
 scene.add(ground);
 
-// asfalt ve kaldırım dokuları
+// asfalt, kaldırım ve zengin doğal çim dokuları
 const asphaltTex = tex(256, 256, (g, w, h) => {
-  g.fillStyle = '#2b2f36'; g.fillRect(0, 0, w, h);
-  for(let i = 0; i < 1400; i++){
-    g.fillStyle = Math.random() < 0.5 ? '#23272e' : '#353b44';
+  g.fillStyle = '#252930'; g.fillRect(0, 0, w, h);
+  for(let i = 0; i < 1800; i++){
+    g.fillStyle = Math.random() < 0.5 ? '#1d2127' : '#313742';
     g.fillRect(Math.random() * w, Math.random() * h, 2, 2);
   }
+  g.strokeStyle = 'rgba(255,255,255,0.06)';
+  g.lineWidth = 2;
+  g.beginPath(); g.moveTo(14, 0); g.lineTo(14, h); g.moveTo(w - 14, 0); g.lineTo(w - 14, h); g.stroke();
 });
 asphaltTex.wrapS = asphaltTex.wrapT = THREE.RepeatWrapping;
 asphaltTex.repeat.set(2, 20);
 const tileTex = tex(128, 128, (g, w, h) => {
-  g.fillStyle = '#a9a9a6'; g.fillRect(0, 0, w, h);
-  g.strokeStyle = '#8a8a86'; g.lineWidth = 3; g.strokeRect(0, 0, w, h);
+  g.fillStyle = '#b4b1a9'; g.fillRect(0, 0, w, h);
+  const cols = ['#aba79e', '#b9b5ad', '#a39f96', '#c0bcb4'];
+  for(let y = 0; y < h; y += 32){
+    const off = ((y / 32) % 2) * 16;
+    for(let x = -16; x < w; x += 32){
+      g.fillStyle = cols[((x + y) * 7) & 3];
+      g.fillRect(x + off + 2, y + 2, 28, 28);
+      g.fillStyle = 'rgba(255,255,255,0.16)';
+      g.fillRect(x + off + 2, y + 2, 28, 3);
+      g.fillStyle = 'rgba(0,0,0,0.14)';
+      g.fillRect(x + off + 2, y + 27, 28, 3);
+    }
+  }
 });
 tileTex.wrapS = tileTex.wrapT = THREE.RepeatWrapping;
-tileTex.repeat.set(1, 22);
+tileTex.repeat.set(2, 32);
+
+function makeRichGrassMat(rx, rz, tintHex){
+  const t = tex(128, 128, (g, w, h) => {
+    g.fillStyle = tintHex || '#357a3e';
+    g.fillRect(0, 0, w, h);
+    const shades = ['#2b6633', '#3e8c47', '#4da156', '#25582c', '#5cb863'];
+    for(let i = 0; i < 420; i++){
+      const gx = Math.random() * w, gy = Math.random() * h;
+      g.strokeStyle = shades[i % shades.length];
+      g.lineWidth = 1.6;
+      g.beginPath();
+      g.moveTo(gx, gy);
+      g.quadraticCurveTo(gx + (Math.random() - 0.5) * 4, gy - 4, gx + (Math.random() - 0.5) * 6, gy - 7);
+      g.stroke();
+    }
+  });
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(rx, rz);
+  return new THREE.MeshLambertMaterial({map: t, side: THREE.DoubleSide});
+}
 
 const road = new THREE.Mesh(new THREE.PlaneGeometry(8.2,110), new THREE.MeshLambertMaterial({map:asphaltTex}));
 road.rotation.x = -Math.PI/2; road.position.set(0,0,-40);
@@ -1057,19 +1112,22 @@ scene.add(road);
 const walkMat = new THREE.MeshLambertMaterial({map:tileTex});
 const sideL = new THREE.Mesh(B(5,0.3,110), walkMat); sideL.position.set(-6.5,0.15,-40); sideL.receiveShadow = true; scene.add(sideL);
 const sideR = new THREE.Mesh(B(7,0.3,110), walkMat); sideR.position.set(7.5,0.15,-40); sideR.receiveShadow = true; scene.add(sideR);
-const rightLawnN = new THREE.Mesh(new THREE.PlaneGeometry(14, 57), M(0x4f9d55));
+const rightGrassMatN = makeRichGrassMat(6, 24, '#3b8544');
+const rightGrassMatS = makeRichGrassMat(6, 18, '#3b8544');
+const rightGrassMatSmall = makeRichGrassMat(2, 5, '#3b8544');
+const rightLawnN = new THREE.Mesh(new THREE.PlaneGeometry(14, 57), rightGrassMatN);
 rightLawnN.rotation.x = -Math.PI / 2;
 rightLawnN.position.set(17.5, 0.02, -66.5);
 scene.add(rightLawnN);
-const rightLawnS = new THREE.Mesh(new THREE.PlaneGeometry(14, 43), M(0x4f9d55));
+const rightLawnS = new THREE.Mesh(new THREE.PlaneGeometry(14, 43), rightGrassMatS);
 rightLawnS.rotation.x = -Math.PI / 2;
 rightLawnS.position.set(17.5, 0.02, -16.5);
 scene.add(rightLawnS);
-const rightLawnW = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 10), M(0x4f9d55));
+const rightLawnW = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 10), rightGrassMatSmall);
 rightLawnW.rotation.x = -Math.PI / 2;
 rightLawnW.position.set(11.3, 0.02, -43);
 scene.add(rightLawnW);
-const rightLawnE = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 10), M(0x4f9d55));
+const rightLawnE = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 10), rightGrassMatSmall);
 rightLawnE.rotation.x = -Math.PI / 2;
 rightLawnE.position.set(22.9, 0.02, -43);
 scene.add(rightLawnE);
@@ -1131,9 +1189,78 @@ function addSmashable(g, x, z, r = 0.9, col = 0x8b5a2b, col2 = 0x555555, localPa
   });
 }
 
-// lambalar ve ağaçlar
+// lambalar ve doğal katmanlı ağaçlar / çiçekler
 const glowMat = new THREE.MeshBasicMaterial({color:0xffe08a, fog:false});
-const trunkMat = M(0x5a3d25), leafMat = M(0x2f6b3a), poleMat = M(0x333333);
+const trunkMat = M(0x5a3d25), leafMat = M(0x2f6b3a), leafMidMat = M(0x3a8046), leafLightMat = M(0x4a9b57), poleMat = M(0x333333);
+const treeTier1Geo = new THREE.ConeGeometry(1.18, 1.45, 7);
+const treeTier2Geo = new THREE.ConeGeometry(0.92, 1.25, 7);
+const treeTier3Geo = new THREE.ConeGeometry(0.62, 1.05, 7);
+const treeCrownGeo = new THREE.DodecahedronGeometry(0.76, 0);
+const treeRootGeo = new THREE.CylinderGeometry(0.14, 0.24, 0.35, 6);
+const bushClumpGeo = new THREE.DodecahedronGeometry(0.22, 0);
+const petalGeo = new THREE.OctahedronGeometry(0.085, 0);
+const flowerStemGeo = new THREE.CylinderGeometry(0.018, 0.022, 0.22, 5);
+
+function makeNaturalTree(x, z, variant = 0){
+  const tg = new THREE.Group();
+  tg.position.set(x, 0, z);
+  scene.add(tg);
+  addBlob(tg, 1.75, 1.75, 0.035); // ağacın altında gerçekçi yumuşak gölge
+  const rootM = new THREE.Mesh(treeRootGeo, trunkMat);
+  rootM.position.set(0, 0.17, 0); tg.add(rootM);
+  const tr = new THREE.Mesh(GEO.trunk, trunkMat);
+  tr.position.set(0, 0.72, 0); tg.add(tr);
+  if(variant % 2 === 0){
+    // Katmanlı doğal çam ağacı (3 kademeli organik taç)
+    const t1 = new THREE.Mesh(treeTier1Geo, leafMat);
+    t1.position.set(0, 1.65, 0); t1.rotation.y = 0.3; tg.add(t1);
+    const t2 = new THREE.Mesh(treeTier2Geo, leafMidMat);
+    t2.position.set(0, 2.38, 0); t2.rotation.y = 1.1; tg.add(t2);
+    const t3 = new THREE.Mesh(treeTier3Geo, leafLightMat);
+    t3.position.set(0, 3.02, 0); t3.rotation.y = 2.0; tg.add(t3);
+  } else {
+    // Doğal yapraklı meşe/çınar ağacı (çoklu organik yaprak kümeleri)
+    [[0, 2.15, 0, 1.25, leafMat], [-0.48, 1.92, 0.32, 0.92, leafMidMat], [0.48, 1.98, -0.28, 0.95, leafMidMat], [0.18, 2.58, 0.24, 0.88, leafLightMat], [-0.26, 2.48, -0.35, 0.82, leafLightMat]].forEach(([lx, ly, lz, sc, m]) => {
+      const cr = new THREE.Mesh(treeCrownGeo, m);
+      cr.position.set(lx, ly, lz);
+      cr.scale.set(sc, sc * 0.88, sc);
+      cr.rotation.set(lx, ly, lz);
+      tg.add(cr);
+    });
+  }
+  return tg;
+}
+
+function makeNaturalFlowerCluster(x, z, colHex = 0xe74c3c){
+  const fg = new THREE.Group();
+  fg.position.set(x, 0, z);
+  scene.add(fg);
+  addBlob(fg, 0.48, 0.48, 0.032);
+  // Alt doğal yaprak kümesi (kare kutu yerine organik dodecahedron)
+  [[-0.08, 0.11, -0.06, 1.0], [0.09, 0.10, 0.07, 0.85], [0.02, 0.12, -0.09, 0.78]].forEach(([bx, by, bz, s]) => {
+    const b = new THREE.Mesh(bushClumpGeo, leafMidMat);
+    b.position.set(bx, by, bz);
+    b.scale.set(s, s * 0.65, s);
+    b.rotation.y = bx * 4;
+    fg.add(b);
+  });
+  // Çiçek sapları ve taç yaprakları
+  const pMat = M(colHex), centerMat = M(0xfacc15);
+  [[-0.09, -0.05, 0.26], [0.09, 0.06, 0.29], [0.01, -0.08, 0.24]].forEach(([fx, fz, fy]) => {
+    const st = new THREE.Mesh(flowerStemGeo, leafMat);
+    st.position.set(fx, fy * 0.5, fz);
+    fg.add(st);
+    const pet = new THREE.Mesh(petalGeo, pMat);
+    pet.position.set(fx, fy, fz);
+    pet.scale.set(1.25, 0.65, 1.25);
+    fg.add(pet);
+    const cen = new THREE.Mesh(petalGeo, centerMat);
+    cen.position.set(fx, fy + 0.03, fz);
+    cen.scale.set(0.55, 0.55, 0.55);
+    fg.add(cen);
+  });
+  return fg;
+}
 // sokak lambalarının altındaki ışık havuzları (geceleri görünür)
 const lampPoolMat = new THREE.MeshBasicMaterial({color: 0xffe08a, transparent: true, opacity: 0, depthWrite: false});
 for(let z = -80; z < 10; z += 16){
@@ -1141,6 +1268,7 @@ for(let z = -80; z < 10; z += 16){
     const lampG = new THREE.Group();
     lampG.position.set(x, 0, z);
     scene.add(lampG);
+    addBlob(lampG, 0.55, 0.55, 0.31);
     const pole = new THREE.Mesh(GEO.pole, poleMat);
     pole.position.set(0, 1.6, 0); lampG.add(pole);
     const head = new THREE.Mesh(GEO.lampHead, poleMat);
@@ -1162,6 +1290,7 @@ for(let z = -62; z < 4; z += 18){
 const bench = new THREE.Group();
 bench.position.set(10.3, 0, -33);
 scene.add(bench);
+addRectShadow(bench, 0.9, 1.9, 0, 0, 0.31);
 [[B(0.5, 0.08, 1.6), 0, 0.45, 0], [B(0.08, 0.5, 1.6), -0.22, 0.75, 0], [B(0.08, 0.02, 1.6), -0.1, 1.0, 0]]
   .forEach(([geo, x, y, z]) => {
     const m = new THREE.Mesh(geo, benchMat);
@@ -1177,7 +1306,7 @@ addSmashable(bin, 10.3, -44, 0.8, 0x2f3b36, 0x555555);
 const homeWall = new THREE.Group();
 
 // evin arkasındaki bahçe: çim, çit, ağaçlar, çiçekler
-const lawn = new THREE.Mesh(new THREE.PlaneGeometry(5.5, 14), M(0x3f8f4a));
+const lawn = new THREE.Mesh(new THREE.PlaneGeometry(5.5, 14), makeRichGrassMat(3, 7, '#347d3d'));
 lawn.rotation.x = -Math.PI / 2;
 lawn.position.set(18.75, 0.03, -22);
 scene.add(lawn);
@@ -1189,20 +1318,13 @@ const fenceMat = M(0x8d6e4b);
     scene.add(f);
     addSmashable(f, x, z, 1.4, 0x8d6e4b, 0x6b4a2e);
   });
-[[20.2, -26], [20.2, -18]].forEach(([x, z]) => {
-  const tg = new THREE.Group();
-  tg.position.set(x, 0, z);
-  scene.add(tg);
-  const tr = new THREE.Mesh(GEO.trunk, trunkMat);
-  tr.position.set(0, 0.6, 0); tg.add(tr);
-  const top = new THREE.Mesh(GEO.treeTop, leafMat);
-  top.position.set(0, 2.4, 0); tg.add(top);
+[[20.2, -26, 0], [20.2, -18, 1]].forEach(([x, z, v]) => {
+  const tg = makeNaturalTree(x, z, v);
   addSmashable(tg, x, z, 1.0, 0x5a3d25, 0x2f6b3a);
 });
-[[17, -20], [17.3, -21], [17.1, -24.5], [18.5, -27.5]].forEach(([x, z]) => {
-  const fl = new THREE.Mesh(B(0.3, 0.12, 0.3), M(0xe74c3c));
-  fl.position.set(x, 0.1, z); scene.add(fl);
-  addSmashable(fl, x, z, 0.7, 0xe74c3c, 0x2f8f46);
+[[17, -20, 0xe74c3c], [17.3, -21, 0xf1c40f], [17.1, -24.5, 0xe84393], [18.5, -27.5, 0x38bdf8]].forEach(([x, z, col]) => {
+  const fl = makeNaturalFlowerCluster(x, z, col);
+  addSmashable(fl, x, z, 0.7, col, 0x2f8f46);
 });
 
 // garaj (markette satılır, alınınca evin bahçesine kurulur)
@@ -1278,6 +1400,7 @@ const home = new THREE.Group();
 home.position.set(13, 0, -22);
 home.scale.set(1.2, 1.2, 1.2); // ev dış boyutu (iç eşyalar genişletildi)
 scene.add(home);
+addRectShadow(home, 4.9, 5.9, 0, 0, 0.032);
 // (addTo bu noktada henüz tanımlı değil, o yüzden doğrudan mesh oluşturuluyor)
 [[B(4, 3.2, 5), 0xe8dcc4, 0, 1.6, 0],        // duvarlar
  [B(4.4, 0.2, 5.4), 0x8b3a2b, 0, 3.3, 0],    // çatı
@@ -1408,7 +1531,7 @@ villaLuxuryGroup.add(villaLuxSign);
 
 
 // yolun karşısında kocaman park alanı: çimen ve ağaçlar (görsel)
-const parkLawn = new THREE.Mesh(new THREE.PlaneGeometry(32, 110), M(0x4f9d55));
+const parkLawn = new THREE.Mesh(new THREE.PlaneGeometry(32, 110), makeRichGrassMat(14, 48, '#3b8544'));
 parkLawn.rotation.x = -Math.PI / 2;
 parkLawn.position.set(-25, 0.02, -40);
 scene.add(parkLawn);
@@ -1426,22 +1549,107 @@ scene.add(parkLawn);
   bay.position.set(x, 0.05, -15);
   scene.add(bay);
 });
-[[-28, -82], [-30, -64], [-34, -76], [-30, -44], [-36, -22], [-26, -12], [-34, -50], [-38, -66]].forEach(([x, z]) => {
-  const tg = new THREE.Group();
-  tg.position.set(x, 0, z);
-  scene.add(tg);
-  const tr = new THREE.Mesh(GEO.trunk, trunkMat);
-  tr.position.set(0, 0.6, 0); tg.add(tr);
-  const top = new THREE.Mesh(GEO.treeTop, leafMat);
-  top.position.set(0, 2.4, 0); tg.add(top);
+[[-28, -82], [-30, -64], [-34, -76], [-30, -44], [-36, -22], [-26, -12], [-34, -50], [-38, -66]].forEach(([x, z], idx) => {
+  const tg = makeNaturalTree(x, z, idx);
   addSmashable(tg, x, z, 1.1, 0x5a3d25, 0x2f6b3a);
 });
+// Park alanında doğal çiçek kümeleri
+[[-27, -30, 0xfacc15], [-33, -35, 0xe74c3c], [-37, -44, 0xe84393], [-32, -56, 0x38bdf8], [-25, -78, 0xfacc15], [-36, -60, 0xe74c3c]].forEach(([fx, fz, col]) => {
+  const fl = makeNaturalFlowerCluster(fx, fz, col);
+  addSmashable(fl, fx, fz, 0.7, col, 0x2f8f46);
+});
+
+// 🌿 TEK ÇİZİMDE (1 DRAW CALL) 3B DOĞAL ÇİM YAPRAKLARI (FBS DÜŞÜRMEZ!)
+(function build3DGrassBlades(){
+  const bladeCount = 820;
+  // Her çim tutamı 2 çapraz sivrilen yapraktan (6 köşe = 2 üçgen) oluşur; hepsi tek BufferGeometry içinde birleşir
+  const positions = new Float32Array(bladeCount * 2 * 3 * 3);
+  const normals = new Float32Array(bladeCount * 2 * 3 * 3);
+  const colors = new Float32Array(bladeCount * 2 * 3 * 3);
+  let ptr = 0, cPtr = 0, nPtr = 0;
+
+  function isExcludedGrassSpot(x, z){
+    // Sağ çimde ev, restoran, maden çukuru üstünü boş bırak
+    if(x > 0){
+      if(x >= 10.2 && x <= 16.0 && z >= -26.0 && z <= -18.0) return true; // ev
+      if(x >= 11.0 && x <= 21.0 && z >= -7.5 && z <= 4.5) return true;    // döner karavanı / restoran
+      if(x >= 11.4 && x <= 22.0 && z >= -49.5 && z <= -40.5) return true; // maden çukuru
+      return false;
+    }
+    // Sol park çiminde otopark asfaltı, balık göleti ve hapishane içini boş bırak
+    if(x > -25.2 && z > -40.5 && z < 10.5) return true; // otopark asfaltı
+    if(Math.hypot(x - (-29), z - (-22)) < 6.4) return true; // balık göleti
+    if(x > -32.5 && x < -25.5 && z > -43.5 && z < -33.5) return true; // hapishane ve önü
+    return false;
+  }
+
+  const palette = [
+    [0.18, 0.48, 0.22],
+    [0.22, 0.56, 0.27],
+    [0.27, 0.64, 0.31],
+    [0.16, 0.44, 0.20],
+    [0.32, 0.69, 0.35]
+  ];
+
+  for(let i = 0; i < bladeCount; i++){
+    let gx = 0, gz = 0, ok = false;
+    for(let tries = 0; tries < 12; tries++){
+      if(i % 2 === 0){
+        // Sol park çim alanı
+        gx = -40.2 + Math.random() * 23.0;
+        gz = -92.0 + Math.random() * 98.0;
+      } else {
+        // Sağ çim alanı
+        gx = 11.4 + Math.random() * 12.2;
+        gz = -92.0 + Math.random() * 98.0;
+      }
+      if(!isExcludedGrassSpot(gx, gz)){ ok = true; break; }
+    }
+    if(!ok){ gx = -35 + (Math.random() - 0.5) * 6; gz = -80 + (Math.random() - 0.5) * 14; }
+
+    const h = 0.22 + Math.random() * 0.24;
+    const hw = 0.045 + Math.random() * 0.025;
+    const baseAng = Math.random() * Math.PI * 2;
+    const col = palette[i % palette.length];
+
+    for(let b = 0; b < 2; b++){
+      const ang = baseAng + b * (Math.PI * 0.42) + (Math.random() - 0.5) * 0.2;
+      const ca = Math.cos(ang), sa = Math.sin(ang);
+      const leanX = -sa * (0.04 + Math.random() * 0.06);
+      const leanZ = ca * (0.04 + Math.random() * 0.06);
+      const x1 = gx - ca * hw, z1 = gz - sa * hw;
+      const x2 = gx + ca * hw, z2 = gz + sa * hw;
+      const x3 = gx + leanX,   z3 = gz + leanZ;
+
+      positions[ptr++] = x1; positions[ptr++] = 0.02; positions[ptr++] = z1;
+      positions[ptr++] = x2; positions[ptr++] = 0.02; positions[ptr++] = z2;
+      positions[ptr++] = x3; positions[ptr++] = 0.02 + h; positions[ptr++] = z3;
+
+      normals[nPtr++] = 0; normals[nPtr++] = 1; normals[nPtr++] = 0;
+      normals[nPtr++] = 0; normals[nPtr++] = 1; normals[nPtr++] = 0;
+      normals[nPtr++] = 0; normals[nPtr++] = 1; normals[nPtr++] = 0;
+
+      // Kök kısmı biraz daha koyu, uç kısmı güneş vurmuş gibi daha açık yeşil
+      colors[cPtr++] = col[0] * 0.72; colors[cPtr++] = col[1] * 0.72; colors[cPtr++] = col[2] * 0.72;
+      colors[cPtr++] = col[0] * 0.72; colors[cPtr++] = col[1] * 0.72; colors[cPtr++] = col[2] * 0.72;
+      colors[cPtr++] = Math.min(1, col[0] * 1.28); colors[cPtr++] = Math.min(1, col[1] * 1.28); colors[cPtr++] = Math.min(1, col[2] * 1.28);
+    }
+  }
+  const grassGeo = new THREE.BufferGeometry();
+  grassGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  grassGeo.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+  grassGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  const grassBladeMat = new THREE.MeshLambertMaterial({vertexColors: true, side: THREE.DoubleSide});
+  const grassMesh = new THREE.Mesh(grassGeo, grassBladeMat);
+  scene.add(grassMesh);
+})();
 
 // parkta banklar (ahşap oturak, demir ayaklar)
 [[-6.2, -40], [-6.2, -76]].forEach(([x, z]) => { // yol kenarındaki kaldırımda
   const bench = new THREE.Group();
   bench.position.set(x, 0, z);
   scene.add(bench);
+  addRectShadow(bench, 0.9, 2.1, 0, 0, 0.31);
   const woodB = M(0x9c6b3f), ironB = M(0x333333);
   [[B(0.5, 0.08, 1.8), 0, 0.45, 0, woodB],
    [B(0.1, 0.5, 1.8), -0.22, 0.75, 0, woodB],
@@ -1649,6 +1857,7 @@ const stall = new THREE.Group();
 stall.position.set(13.2, 0, -1); // kaldırımın arkasındaki çimli alanda durur
 stall.scale.set(TS, TS, TS);
 scene.add(stall);
+addRectShadow(stall, 3.2, 6.0, 0, 0, 0.032);
 const CREAM = M(0xf3e9d2), RED = M(0xc0392b), ROOF = M(0xf5f5f5), DARK = M(0x2a2e35), STEEL = M(0xbfc5cc), TIRE = M(0x111111);
 // karavan iç dekorasyonu
 const floorTex = tex(64, 64, (g, w, h) => {
@@ -1824,6 +2033,7 @@ restaurantFacade.add(restSign);
 const vendor = new THREE.Group();
 vendor.position.set(8.6, 0, 4.8);
 scene.add(vendor);
+addRectShadow(vendor, 2.2, 1.8, 0, 0, 0.31);
 addTo(vendor, B(1.6,0.9,1.2), M(0x8b5e3c), 0, 0.45, 0);
 addTo(vendor, B(0.3,0.25,0.3), M(0x3498db), -0.3, 1.02, 0.2);
 addTo(vendor, B(0.3,0.25,0.3), M(0xf1c40f), 0.2, 1.02, -0.1);
@@ -1952,6 +2162,7 @@ stall.add(worker);
 const market = new THREE.Group();
 market.position.set(-9.8, 0, -6);
 scene.add(market);
+addRectShadow(market, 3.8, 5.8, 0, 0, 0.032);
 // market binası: duvarlar, çatı, zemin; ön yüzü cam (içindeki ürünler görünür)
 [[B(3, 0.1, 5), 0xd8ccb0, 0, 0.05, 0],          // zemin
  [B(0.1, 3.5, 5), 0xf0e0c0, -1.45, 1.75, 0],    // arka duvar
@@ -2011,6 +2222,7 @@ market.add(marketKeeper);
 const galeri = new THREE.Group();
 galeri.position.set(-9.8, 0, -24);
 scene.add(galeri);
+addRectShadow(galeri, 3.8, 5.8, 0, 0, 0.032);
 // galeri binası: içi görünen vitrin (ön yüzü cam)
 [[B(3, 0.1, 5), 0xd8ccb0, 0, 0.05, 0],
  [B(0.1, 3.5, 5), 0x37474f, -1.45, 1.75, 0],
@@ -2047,6 +2259,7 @@ const BANK_POS = {x: -9.8, z: -14.5, atmX: -8.0, atmZ: -14.5, vaultX: -8.2, vaul
 const bankGroup = new THREE.Group();
 bankGroup.position.set(BANK_POS.x, 0, BANK_POS.z);
 scene.add(bankGroup);
+addRectShadow(bankGroup, 3.8, 5.4, 0, 0, 0.032);
 [[B(3, 0.1, 4.6), 0xe2e8f0, 0, 0.05, 0],
  [B(0.1, 3.6, 4.6), 0x0f172a, -1.45, 1.8, 0],
  [B(3, 3.6, 0.1), 0x1e293b, 0, 1.8, -2.25],
@@ -2136,6 +2349,7 @@ const CASINO_POS = {x: -9.8, z: -68, doorX: -7.8, doorZ: -68};
 const casinoGroup = new THREE.Group();
 casinoGroup.position.set(CASINO_POS.x, 0, CASINO_POS.z);
 scene.add(casinoGroup);
+addRectShadow(casinoGroup, 4.0, 6.0, 0, 0, 0.032);
 [[B(3.2, 0.1, 5.2), 0x3b0764, 0, 0.05, 0],
  [B(0.12, 3.8, 5.2), 0x1e1b4b, -1.54, 1.9, 0],
  [B(3.2, 3.8, 0.12), 0x2e1065, 0, 1.9, -2.54],
@@ -7986,6 +8200,7 @@ function updateMinerPlace(dt){
 // ================= 💣 C4 Uzaktan Kumandalı Bomba, 🏦 ATM Soygunu & 🚚 Zırhlı Para Kamyonu (#9 ve #3) =================
 // 1) Yoldan geçen siyah Zırhlı Banka Para Kamyonu
 const armoredTruckMesh = new THREE.Group();
+addRectShadow(armoredTruckMesh, 2.8, 5.6, 0, -0.3, 0.04);
 addTo(armoredTruckMesh, B(2.2, 2.1, 4.8), M(0x111827), 0, 1.35, 0);        // siyah zırhlı kasa
 addTo(armoredTruckMesh, B(2.24, 0.22, 4.84), M(0xfbbf24), 0, 1.25, 0);     // sarı banka güvenlik şeridi
 addTo(armoredTruckMesh, B(2.0, 1.3, 1.4), M(0x1e293b), 0, 1.15, -2.6);     // zırhlı ön kabin
@@ -8060,6 +8275,7 @@ const slot3dGroup = new THREE.Group();
 slot3dGroup.position.set(SLOT3D_POS.x, 0.3, SLOT3D_POS.z);
 slot3dGroup.rotation.y = Math.PI / 2;
 scene.add(slot3dGroup);
+addRectShadow(slot3dGroup, 1.35, 1.25, 0, 0, 0.02);
 addTo(slot3dGroup, B(0.95, 1.85, 0.85), M(0x7e22ce), 0, 0.92, 0); // mor casino gövde
 addTo(slot3dGroup, B(1.02, 0.24, 0.92), M(0xfacc15), 0, 1.92, 0); // altın taç
 addTo(slot3dGroup, B(0.82, 0.65, 0.08), M(0x090d16), 0, 1.25, 0.41); // ekran çerçevesi
@@ -8132,6 +8348,7 @@ const PRISON_POS = {x: -29, z: -40, cellX: -29, cellZ: -40, frontX: -29, frontZ:
 const prisonGroup = new THREE.Group();
 prisonGroup.position.set(PRISON_POS.x, 0, PRISON_POS.z);
 scene.add(prisonGroup);
+addRectShadow(prisonGroup, 6.4, 6.4, 0, 0, 0.032);
 addTo(prisonGroup, B(5.6, 0.12, 5.6), M(0x334155), 0, 0.06, 0); // beton zemin
 addTo(prisonGroup, B(5.6, 3.2, 0.2), M(0x1e293b), 0, 1.6, -2.7); // arka duvar
 addTo(prisonGroup, B(0.2, 3.2, 5.6), M(0x1e293b), -2.7, 1.6, 0); // sol duvar
@@ -8659,6 +8876,7 @@ const scratchStandGroup = new THREE.Group();
 scratchStandGroup.position.set(SCRATCH_STAND_POS.x, 0.3, SCRATCH_STAND_POS.z);
 scratchStandGroup.rotation.y = Math.PI / 2;
 scene.add(scratchStandGroup);
+addRectShadow(scratchStandGroup, 1.35, 1.05, 0, 0, 0.02);
 addTo(scratchStandGroup, B(0.95, 1.05, 0.65), M(0xca8a04), 0, 0.52, 0); // altın sarısı tezgâh
 addTo(scratchStandGroup, B(1.02, 0.10, 0.72), M(0xef4444), 0, 1.08, 0); // kırmızı üst tabla
 // Üstteki renkli kazı kazan bilet desteleri
@@ -10134,26 +10352,29 @@ comoTruck.add(comoMenuBoard);
 comoTruck.children.forEach(ch => {
   if(ch.material && ch.material.map === marketSignTex) ch.material = new THREE.MeshBasicMaterial({map: cigSignTex});
 });
-// COMOGENE dükkanının etrafındaki saksılı çiçekler
+// COMOGENE dükkanının etrafındaki saksılı çiçekler (doğal yaprak ve taç yapraklı)
 const comoPotGeo = new THREE.CylinderGeometry(0.24, 0.17, 0.36, 8);
-const comoBushGeo = B(0.32, 0.28, 0.32);
-const comoBloomGeo = B(0.13, 0.13, 0.13);
+const comoBushGeo = new THREE.DodecahedronGeometry(0.24, 0);
+const comoBloomGeo = new THREE.OctahedronGeometry(0.085, 0);
 const comoPotMat = M(0xb85d38), comoLeafMat = M(0x2f8f46);
 [
   [1.75, -2.3, 0xe74c3c], [1.75, -0.9, 0xf1c40f], [1.75, 0.9, 0xe84393], [1.75, 2.3, 0xe74c3c],
   [1.3, 2.75, 0xf1c40f], [-0.2, 2.75, 0xe84393],
   [1.1, -2.75, 0xe84393], [0.0, -2.75, 0xf1c40f]
 ].forEach(([px, pz, col]) => {
+  addBlob(comoTruck, 0.42, 0.42, 0.035).position.set(px, 0.035, pz);
   const pot = new THREE.Mesh(comoPotGeo, comoPotMat);
   pot.position.set(px, 0.18, pz);
   comoTruck.add(pot);
   const bush = new THREE.Mesh(comoBushGeo, comoLeafMat);
-  bush.position.set(px, 0.48, pz);
+  bush.position.set(px, 0.46, pz);
+  bush.scale.set(1.1, 0.85, 1.1);
   comoTruck.add(bush);
   const flMat = M(col);
-  [[-0.08, 0.65, -0.06], [0.08, 0.67, 0.06], [0, 0.69, -0.02]].forEach(([fx, fy, fz]) => {
+  [[-0.08, 0.64, -0.06], [0.08, 0.66, 0.06], [0, 0.68, -0.02]].forEach(([fx, fy, fz]) => {
     const bl = new THREE.Mesh(comoBloomGeo, flMat);
     bl.position.set(px + fx, fy, pz + fz);
+    bl.scale.set(1.2, 0.65, 1.2);
     comoTruck.add(bl);
   });
 });
@@ -10176,6 +10397,7 @@ const wheelGroup = new THREE.Group();
 wheelGroup.position.set(WHEEL_POS.x, 0, WHEEL_POS.z);
 wheelGroup.rotation.y = -Math.PI / 2; // yola bakar
 scene.add(wheelGroup);
+addRectShadow(wheelGroup, 1.4, 1.2, 0, 0, 0.31);
 const wheelBase = new THREE.Mesh(B(1.1, 0.14, 0.9), M(0x2a2e35));
 wheelBase.position.set(0, 0.07, 0);
 wheelGroup.add(wheelBase);
@@ -11027,7 +11249,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-28-125147';
+const APP_VERSION = '2026-10-28-133653';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
