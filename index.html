@@ -9325,6 +9325,73 @@ const flameMatCore = new THREE.MeshBasicMaterial({color: 0xfef08a});
 nitroFlameGroup.visible = false;
 scene.add(nitroFlameGroup);
 
+// 🦆 #2 (Yeni): Balık Göletinde Yüzen 3B Anne Ördek ve 3 Yavru Ördek Ailesi
+const duckBodyGeo = new THREE.DodecahedronGeometry(0.18, 0);
+const duckHeadGeo = new THREE.DodecahedronGeometry(0.11, 0);
+const duckBeakGeo = new THREE.ConeGeometry(0.055, 0.14, 5).rotateX(Math.PI / 2);
+const momDuckMat = M(0xf8fafc), momGreenHeadMat = M(0x15803d), ducklingMat = M(0xfacc15), beakOrangeMat = M(0xf97316);
+const duckFamily = [];
+for(let i = 0; i < 4; i++){
+  const dg = new THREE.Group();
+  const isMom = i === 0;
+  const sc = isMom ? 1.0 : 0.58;
+  dg.scale.set(sc, sc, sc);
+  const body = addTo(dg, duckBodyGeo, isMom ? momDuckMat : ducklingMat, 0, 0.08, 0);
+  body.scale.set(0.95, 0.72, 1.35);
+  const head = addTo(dg, duckHeadGeo, isMom ? momGreenHeadMat : ducklingMat, 0, 0.24, 0.16);
+  head.scale.set(0.9, 0.95, 0.95);
+  addTo(dg, duckBeakGeo, beakOrangeMat, 0, 0.23, 0.30);
+  pondGroup.add(dg);
+  duckFamily.push({g: dg, idx: i, offsetAng: i * 0.32});
+}
+let duckFamilyAng = 0;
+
+// 🐸 #15: Nilüferlerde Oturan & Yaklaşınca "Vrak" Deyip Suya Zıplayan 3B Yeşil Kurbağalar
+const frogBodyGeo = new THREE.DodecahedronGeometry(0.11, 0);
+const frogEyeGeo = new THREE.OctahedronGeometry(0.032, 0);
+const frogMat = M(0x22c55e), frogDarkMat = M(0x15803d), frogEyeMat = M(0xfef08a);
+const pondFrogs = [];
+[0, 2, 4].forEach((padIdx, i) => {
+  const pad = pondLilyPads[padIdx];
+  if(!pad) return;
+  const fg = new THREE.Group();
+  const body = addTo(fg, frogBodyGeo, frogMat, 0, 0.07, 0);
+  body.scale.set(1.0, 0.72, 1.2);
+  addTo(fg, frogEyeGeo, frogEyeMat, -0.05, 0.14, 0.06);
+  addTo(fg, frogEyeGeo, frogEyeMat, 0.05, 0.14, 0.06);
+  addTo(fg, frogBodyGeo, frogDarkMat, -0.09, 0.04, -0.03).scale.set(0.45, 0.45, 0.75);
+  addTo(fg, frogBodyGeo, frogDarkMat, 0.09, 0.04, -0.03).scale.set(0.45, 0.45, 0.75);
+  fg.position.set(pad.baseX, 0.09, pad.baseZ);
+  pondGroup.add(fg);
+  pondFrogs.push({
+    g: fg, pad, state: 'sit', t: 0, ph: i * 1.7,
+    jx: 0, jz: 0
+  });
+});
+
+// 🦀 #22: Gölet Taşlarının Üstünde Kıskaç Açıp Kapayarak Yan Yana Yürüyen Kırmızı Yengeçler
+const crabBodyGeo = new THREE.DodecahedronGeometry(0.13, 0);
+const crabClawGeo = new THREE.OctahedronGeometry(0.065, 0);
+const crabLegGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.11, 4).rotateZ(Math.PI / 3);
+const crabRedMat = M(0xef4444), crabDarkRedMat = M(0xb91c1c);
+const pondCrabs = [];
+[0.85, 2.2, 3.8, 5.1].forEach((baseAng, i) => {
+  const cg = new THREE.Group();
+  addTo(cg, crabBodyGeo, crabRedMat, 0, 0.07, 0).scale.set(1.35, 0.55, 0.95);
+  addTo(cg, frogEyeGeo, M(0x111827), -0.05, 0.13, 0.08);
+  addTo(cg, frogEyeGeo, M(0x111827), 0.05, 0.13, 0.08);
+  const clawL = addTo(cg, crabClawGeo, crabDarkRedMat, -0.17, 0.09, 0.11);
+  clawL.scale.set(0.9, 0.6, 1.4);
+  const clawR = addTo(cg, crabClawGeo, crabDarkRedMat, 0.17, 0.09, 0.11);
+  clawR.scale.set(0.9, 0.6, 1.4);
+  [-0.06, 0, 0.06].forEach(lz => {
+    addTo(cg, crabLegGeo, crabDarkRedMat, -0.15, 0.04, lz);
+    addTo(cg, crabLegGeo, crabDarkRedMat, 0.15, 0.04, lz);
+  });
+  pondGroup.add(cg);
+  pondCrabs.push({g: cg, clawL, clawR, baseAng, ph: i * 1.5});
+});
+
 function updateAtmosphericVisuals(dt){
   const nowS = performance.now() * 0.001;
 
@@ -9537,6 +9604,83 @@ function updateAtmosphericVisuals(dt){
         shootingStarMesh.visible = false;
       }
     }
+  }
+
+  // 🦆 #2 Gölette Yüzen 3B Anne Ördek & Yavru Ördek Ailesi
+  duckFamilyAng += dt * 0.36;
+  for(let i = 0; i < duckFamily.length; i++){
+    const dk = duckFamily[i];
+    const a = duckFamilyAng - dk.offsetAng;
+    const rad = 2.95 + Math.sin(a * 2.0 + i) * 0.35;
+    const dx = Math.cos(a) * rad;
+    const dz = Math.sin(a) * rad;
+    const nextA = a + 0.05;
+    const nx = Math.cos(nextA) * rad;
+    const nz = Math.sin(nextA) * rad;
+    dk.g.position.set(dx, 0.065 + Math.sin(nowS * 5 + i) * 0.012, dz);
+    dk.g.rotation.y = Math.atan2(nx - dx, nz - dz);
+    dk.g.rotation.z = Math.sin(nowS * 6 + i * 1.2) * 0.06;
+  }
+
+  // 🐸 #15 Nilüferlerde Oturan & Yaklaşınca "Vrak" Deyip Suya Zıplayan 3B Kurbağalar
+  for(let i = 0; i < pondFrogs.length; i++){
+    const fr = pondFrogs[i];
+    const padX = fr.pad.g.position.x, padZ = fr.pad.g.position.z;
+    const worldFx = POND_POS.x + padX, worldFz = POND_POS.z + padZ;
+    if(fr.state === 'sit'){
+      fr.g.visible = true;
+      fr.g.position.set(padX, 0.09 + Math.abs(Math.sin(nowS * 3 + fr.ph)) * 0.015, padZ);
+      fr.g.rotation.x = 0;
+      const distMe = Math.hypot(myX - worldFx, myZ - worldFz);
+      if(distMe < 4.2){
+        fr.state = 'jump';
+        fr.t = 0;
+        const jumpAng = Math.atan2(padZ, padX) + Math.PI + (Math.random() - 0.5) * 0.6;
+        fr.jx = Math.cos(jumpAng) * 1.3;
+        fr.jz = Math.sin(jumpAng) * 1.3;
+        fr.g.rotation.y = Math.atan2(fr.jx, fr.jz);
+        beep(195, 0.09, 'sawtooth', 0.06); // kurbağa "vrak" sesi
+      }
+    } else if(fr.state === 'jump'){
+      fr.t += dt * 2.2;
+      if(fr.t >= 1){
+        fr.state = 'hide';
+        fr.t = 0;
+        fr.g.visible = false;
+        if(pondWaveRings[1]){
+          pondWaveRings[1].t = 0.05;
+          pondWaveRings[1].x = padX + fr.jx;
+          pondWaveRings[1].z = padZ + fr.jz;
+        }
+      } else {
+        fr.g.position.set(
+          padX + fr.jx * fr.t,
+          0.09 + Math.sin(fr.t * Math.PI) * 0.75,
+          padZ + fr.jz * fr.t
+        );
+        fr.g.rotation.x = (fr.t - 0.5) * 1.5;
+      }
+    } else if(fr.state === 'hide'){
+      fr.t += dt;
+      if(fr.t >= 4.0 && Math.hypot(myX - worldFx, myZ - worldFz) > 4.5){
+        fr.state = 'sit';
+        fr.g.visible = true;
+      }
+    }
+  }
+
+  // 🦀 #22 Gölet Taşlarının Üstünde Kıskaç Açıp Kapayarak Yan Yürüyen Kırmızı Yengeçler
+  for(let i = 0; i < pondCrabs.length; i++){
+    const cr = pondCrabs[i];
+    const sideShift = Math.sin(nowS * 2.2 + cr.ph) * 0.14;
+    const ang = cr.baseAng + sideShift;
+    const rx = Math.cos(ang) * 5.45;
+    const rz = Math.sin(ang) * 5.45;
+    cr.g.position.set(rx, 0.28 + Math.abs(Math.sin(nowS * 10 + cr.ph)) * 0.018, rz);
+    cr.g.rotation.y = -ang + Math.PI / 2;
+    const pinch = Math.sin(nowS * 7 + cr.ph) * 0.35;
+    cr.clawL.rotation.y = pinch;
+    cr.clawR.rotation.y = -pinch;
   }
 }
 function renderGallery(){
@@ -11705,7 +11849,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-28-135012';
+const APP_VERSION = '2026-10-28-145445';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
