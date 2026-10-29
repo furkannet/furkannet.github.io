@@ -189,7 +189,6 @@ button small{font-size:9px;margin-top:0}
 <div id="toolbar">
   <button id="setBtn" title="Ayarlar">⚙</button>
   <button id="fsBtn" title="Tam Ekran">⛶<span class="t"> Tam Ekran</span></button>
-  <button id="endDay" title="Günü Bitir">🌙<span class="t"> Günü Bitir</span></button>
   <button id="charBtn" title="Karakter">🧑<span class="t"> Karakter</span></button>
   <button id="frBtn" title="Arkadaşlar">👥<span class="t"> Arkadaşlar</span></button>
   <button id="chatBtn" title="Sohbet">💬<span class="t"> Sohbet</span></button>
@@ -3696,9 +3695,8 @@ function hungerHTML(){
       `<i style="display:block;height:100%;width:${C.nitro}%;background:#ff8a4c"></i></div>` : '');
 }
 function renderStats(){
-  const t = Math.max(0, shiftT);
-  const m = Math.floor(t / 60), s = Math.floor(t % 60);
-  const goal = goalFor(S.day);
+  const cp = typeof clockParts === 'function' ? clockParts() : {h: 8, m: 0};
+  const timeStr = `${String(cp.h).padStart(2,'0')}:${String(cp.m).padStart(2,'0')}`;
   const hearts = '❤'.repeat(Math.max(0, can)) + '♡'.repeat(Math.max(0, MAX_LIVES - can));
   const peerNames = Object.values(roomPeers).map(p => p.name);
   const myDisplayName = (S.settings && S.settings.name) || (getProfile() && getProfile().user) || '';
@@ -3707,7 +3705,7 @@ function renderStats(){
       ? `<div style="margin-bottom:2px;color:#4ade80">🗺 <b>${activeFriendAcct}</b> Haritası <button id="backMyAcct" style="padding:1px 5px;font-size:9px;background:#1e3a52;border-color:#4ade80;margin-left:2px">↩ Kendi Haritana Dön</button></div>`
       : (peerNames.length ? `<div style="margin-bottom:2px;color:#4ade80">🟢 Odadakiler: <b>${peerNames.join(', ')}</b></div>` : '')) +
     (myDisplayName ? `<b>${myDisplayName}</b> <small style="color:#4ade80">● Çevrimiçi</small><br>` : '') +
-    `<span id="lvlBtn" style="cursor:pointer;text-decoration:underline">Seviye <b>${S.level || 1}</b> <small>(${Math.max(0, xpFor((S.level || 1) + 1) - (S.xp || 0)).toLocaleString('tr-TR')}₺ kaldı)</small></span> · Gün <b>${S.day}</b> · ${m}:${String(s).padStart(2,'0')}<br>` +
+    `<span id="lvlBtn" style="cursor:pointer;text-decoration:underline">Seviye <b>${S.level || 1}</b> <small>(${Math.max(0, xpFor((S.level || 1) + 1) - (S.xp || 0)).toLocaleString('tr-TR')}₺ kaldı)</small></span> · Gün <b>${S.day}</b> · 🕒 ${timeStr}<br>` +
     (() => { const lv = S.level || 1, lo = xpFor(lv), hi = xpFor(lv + 1); const pct = Math.min(100, Math.max(0, ((S.xp || 0) - lo) / (hi - lo) * 100)); return `<div style="height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin:2px 0 4px">` + `<i style="display:block;height:100%;width:${pct}%;background:#ffd54a"></i></div>`; })() +
     `Kazanç <b>${shiftEarned}</b>₺<br>` +
     `Para <b>${S.money}₺</b>` + ((S.bank || 0) > 0 ? ` · 🏦 <b>${S.bank}₺</b>` : '') + ((S.loan || 0) > 0 ? ` · 💳 <b style="color:#f87171">-${S.loan}₺</b>` : '') + `<br>` +
@@ -6115,16 +6113,52 @@ $('drive').onclick = () => {
   renderAll();
 };
 
-// ev: kapıya yakınken "Eve Git" ile içeri ışınlanırsın; içerideyken "Dinlen" canları doldurur
+// ev: kapıya yakınken "Eve Git" ile içeri ışınlanırsın; içerideyken "Uyu" ile akşam uyuyunca sabah (gündüz) olur ve yeni güne geçilir
 const nearHome = () => Math.hypot(P.x - 9.9, P.z + 22) < 2.5;
 const inHouse = () => P.x > 10.72 && P.x < 15.28 && P.z > -24.88 && P.z < -19.12;
+function sleepAtHome(){
+  if(!active() || D.driving) return;
+  can = MAX_LIVES;
+  tamponUsed = false;
+  const h = typeof gameHour === 'function' ? gameHour() : 12;
+  const isEveningOrNight = nightMode || h >= 17 || shiftT <= 55;
+  if(isEveningOrNight){
+    S.day = (S.day || 1) + 1;
+    shiftT = SHIFT_LEN;
+    shiftEnded = false;
+    over = false;
+    nightMode = false;
+    if($('nightBtn')) $('nightBtn').innerHTML = '🌙<span class="t"> Gece</span>';
+    wheelSpinsLeft = 3;
+    beggarGave = false;
+    gamePlayed = false;
+    if(typeof resetMineForNewShift === 'function') resetMineForNewShift();
+    let interestMsg = '';
+    if((S.bank || 0) > 0){
+      const interest = Math.max(1, Math.round(S.bank * 0.15));
+      S.bank += interest;
+      interestMsg = ` · 🏦 Faiz +${interest.toLocaleString('tr-TR')}₺`;
+    }
+    if(S.kar.staff){
+      S.wageDue = (S.wageDue || 0) + 5;
+    }
+    skyPeriod = '';
+    if(skyNow){ skyNow.hemi = 1.0; skyNow.sun = 0.9; }
+    updateSky();
+    drawClock();
+    beep(580, 0.18, 'sine', 0.14);
+    flash(`☀️ Mışıl mışıl uyudun ve sabah oldu! Gün ${S.day} başladı!${interestMsg}`, '#ffd54a');
+  } else {
+    beep(520, 0.12, 'sine', 0.11);
+    flash('🛏 Evde dinlendin, canların doldu! (Gündüz olması için akşam/gece olunca uyu)', '#4ade80');
+  }
+  save();
+  renderAll();
+}
 $('home').onclick = () => {
   if(!active() || D.driving) return;
   if(inHouse()){
-    can = MAX_LIVES;
-    tamponUsed = false;
-    flash('Evde dinlendin, canların doldu', '#4ade80');
-    renderAll();
+    sleepAtHome();
   } else if(nearHome()){
     P.x = 13; P.z = -22;
     flash('Eve girdin', '#7dd3fc');
@@ -6415,49 +6449,15 @@ function startShift(){
 }
 
 function endShift(reason){
-  if(shiftEnded) return;
-  shiftEnded = true;
-  const goal = goalFor(S.day);
-  const met = true; // hedef yok: her vardiya tamamlanır
-  let title, text;
-  if(reason === 'fired'){
-    title = 'Kovuldun!';
-    text = `Canların bitti. Kazandığın ${shiftEarned}₺ ama hedef ${goal}₺ idi. Aynı gün tekrar.`;
-    over = true;
-  } else if(met){
-    const bonus = 100 + S.day * 25;
-    S.money += bonus;
-    let interestMsg = '';
-    if((S.bank || 0) > 0){
-      const interest = Math.max(1, Math.round(S.bank * 0.15));
-      S.bank += interest;
-      interestMsg = ` Banka faizi: +${interest.toLocaleString('tr-TR')}₺!`;
-    }
-    title = 'Vardiya Tamam!';
-    text = `Hedefi tutturdun: ${shiftEarned}₺. Bonus +${bonus}₺.${interestMsg} Yarın gün ${S.day + 1}.`;
-    S.day++;
-  } else {
-    title = 'Hedef Tutmadı';
-    text = `${shiftEarned}₺ kazandın, hedef ${goal}₺ idi. Aynı gün tekrar.`;
-  }
-  // seviye: toplam kazanca göre; seviye atlayınca hediye
-  // her 10 günde bir bonus
-  if(S.day % 10 === 0){
-    S.money += 10000;
-    flash('10 gün bonusu: +10.000₺', '#4ade80');
-  }
-  S.best = Math.max(S.best, shiftEarned);
-  save();
-  $('sumTitle').textContent = title;
-  $('sumText').textContent = text;
-  $('sum').style.display = 'flex';
-  renderAll();
+  // Vardiya sistemi kaldırıldı: süre bitince oyun durmaz, akşam/gece devam eder, evde uyuyunca sabah olur!
+  shiftEnded = false;
+  over = false;
+  $('sum').style.display = 'none';
 }
 $('sumNext').onclick = () => startShift();
-// günü erken bitir: hedef tutulduysa bir sonraki güne geçilir
-$('endDay').onclick = () => {
+if($('endDay')) $('endDay').onclick = () => {
   if(!active()) return;
-  endShift('time');
+  sleepAtHome();
 };
 
 /* ================= Mağaza ================= */
@@ -10339,10 +10339,11 @@ function spawnCrosser(){
 
 /* ================= Güncelleme ================= */
 function step(dt, play){
-  // vardiya süresi ve rush saati
+  // gün içi saat akışı (vardiya sonu ekranı yok; akşam/gece olunca evde uyuyarak sabah yapılır)
   if(play){
-    shiftT -= dt;
-    if(shiftT <= 0){ shiftT = 0; endShift('time'); }
+    if(shiftT > 0){
+      shiftT = Math.max(0, shiftT - dt);
+    }
     tm.chargeT += dt;
     if(tm.chargeT >= 45 && tm.charges < 3){
       tm.chargeT = 0; tm.charges++;
@@ -11013,7 +11014,7 @@ comoWalkers = comoWalkers.filter(w => !w.dead);
   else {
     renderBoard();
     // sağ üst/sol üst paneli her karede değil, yalnızca saniye değişince yaz
-    const sec = Math.floor(shiftT);
+    const sec = Math.floor(performance.now() / 1000);
     if(play && sec !== lastSec){ lastSec = sec; renderStats(); }
   }
 }
@@ -11314,7 +11315,8 @@ function frame(now){
   if(hasKurye && phoneOrder && nearKurye) txt('kuryeBtn', `🛵 Kurye Teslim (${Math.ceil(phoneOrder.t)}s)`);
   const hIn = inHouse(), hNear = nearHome() && !D.driving;
   disp('home', (hIn || hNear) && !D.driving ? 'block' : 'none');
-  txt('home', hIn ? '🛏 Dinlen' : '🏠 Eve Git');
+  const isEveNow = nightMode || gameHour() >= 17 || shiftT <= 55;
+  txt('home', hIn ? (isEveNow ? '🛏 Uyu (Sabah Olur)' : '🛏 Dinlen / Uyu') : '🏠 Eve Git');
   disp('homeOut', hIn && !D.driving ? 'block' : 'none');
   if(bubbleT > 0){
     bubbleT -= dt;
@@ -12366,7 +12368,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-120709';
+const APP_VERSION = '2026-10-29-124931';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
