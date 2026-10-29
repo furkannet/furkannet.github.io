@@ -660,7 +660,7 @@ const maxMeat = () => (S.kar.ocak ? 90 : MAX_MEAT) + ((S.kar.restoran || S.mk.re
 
 /* ================= Kayıt ================= */
 const DEF = {
-  money:120, best:0, day:1, meat:30,
+  money:10000, best:0, day:1, meat:30,
   stock:{tavuk:20, cigkofte:0, nar:0, salgam:0, misir:0, biber:0, kofteSos:0, lavas:30, pilav:30, sogan:30, marul:30, domates:30, tursu:30, aci:30, yogurt:30, ayran:30, kola:30, patates:30},
   up:{kesici:0, reklam:0, sabir:0, kasa:0},
   unlock:{porsiyon:false, buzdolabi:false, fritoz:false},
@@ -676,10 +676,12 @@ const DEF = {
   bank:0,
   loan:0,
   rigs:{r1:0, r2:0, r3:0, stored:0},
+  inv:[{id:'ekmek', foodItem:true}, {id:'su', foodItem:true}, null, null, null, null, null, null, null, null],
   fridge:[],
   hotelOwned:false,
   hotelVault:0,
   hotelRoom:0,
+  starterPack10k:true,
   seen:false
 };
 let activeFriendAcct = null; // aktif arkadaşın haritasındaysak arkadaşın adı, kendi haritamızdaysak null
@@ -788,6 +790,24 @@ if(!S.min30){
   S.meat = Math.max(30, S.meat);
   S.min30 = true;
   save();
+}
+// Başlangıç paketi: 10.000₺ para + envantere Ekmek ve Su (mevcut kayıtlara da bir kez verilir)
+if(!S.starterPack10k){
+  S.money = Math.max(10000, (S.money || 0) + 10000);
+  if(!Array.isArray(S.inv) || S.inv.length !== 10) S.inv = Array(10).fill(null);
+  if(!S.inv.some(sl => sl && sl.id === 'ekmek')){
+    const emp1 = S.inv.indexOf(null);
+    if(emp1 >= 0) S.inv[emp1] = {id:'ekmek', foodItem:true};
+    else if(Array.isArray(S.fridge)) S.fridge.push('ekmek');
+  }
+  if(!S.inv.some(sl => sl && sl.id === 'su')){
+    const emp2 = S.inv.indexOf(null);
+    if(emp2 >= 0) S.inv[emp2] = {id:'su', foodItem:true};
+    else if(Array.isArray(S.fridge)) S.fridge.push('su');
+  }
+  S.starterPack10k = true;
+  save();
+  setTimeout(() => { if(typeof flash === 'function') flash('🎁 Başlangıç Paketi: 10.000₺ + 🥖 Ekmek + 💧 Su verildi!', '#4ade80'); }, 700);
 }
 const unlocked = k => !NEEDS[k] || S.unlock[NEEDS[k]] || (NEEDS[k] === 'comogene' && S.mk.comogene);
 
@@ -13461,7 +13481,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-224832';
+const APP_VERSION = '2026-10-29-225502';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
