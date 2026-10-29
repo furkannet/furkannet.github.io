@@ -9976,7 +9976,7 @@ function exitHotelRoom(){
 }
 
 function openHotelModal(){
-  setOpen = true;
+  setOpen = false;
   if((P.y || 0) >= 5.4) selectedHotelFloor = 3;
   else if((P.y || 0) >= 2.1) selectedHotelFloor = 2;
   else if(selectedHotelFloor !== 2 && selectedHotelFloor !== 3) selectedHotelFloor = 2;
@@ -10056,7 +10056,7 @@ function openHotelModal(){
     </div>
   `;
 
-  showInvModal('🏨 5 Yıldızlı Grand Otel (3 Kat · 250 Oda)', html);
+  openModal('🏨 5 Yıldızlı Grand Otel (3 Kat · 250 Oda)', html);
 
   const buyBtn = $('buyGrandHotelBtn');
   if(buyBtn){
@@ -13410,7 +13410,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-201038';
+const APP_VERSION = '2026-10-29-202002';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
