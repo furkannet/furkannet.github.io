@@ -258,6 +258,10 @@ button small{font-size:9px;margin-top:0}
 <button id="grocMarketBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:900">🛒 Gıda Marketi</button>
 <button id="homeFridgeBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:900">🧊 Evin Buzdolabı</button>
 <button id="hotelBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">🏨 Grand Otel (250 Oda)</button>
+<button id="hotelRoofBtn" style="display:none;background:#7e22ce;border-color:#facc15;font-weight:900">🛗 Otel Çatısına Çık (Helikopter Pisti)</button>
+<button id="heliBtn" style="display:none;background:#0284c7;border-color:#fde047;font-weight:900">🚁 Helikoptere Bin (E)</button>
+<button id="heliUpBtn" style="display:none;background:#16a34a;border-color:#86efac;font-weight:900">⬆️ Yüksel (Boşluk)</button>
+<button id="heliDownBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">⬇️ Alçal (Shift)</button>
 <button id="hotelRoomExitBtn" style="display:none;background:#dc2626;border-color:#fca5a5;font-weight:900">🚪 Odadan Lobiye Çık</button>
 </div>
 <div id="policeChaseHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:24;background:linear-gradient(135deg,rgba(185,28,28,.96),rgba(29,78,216,.96));border:2px solid #fde047;color:#fff;padding:7px 16px;border-radius:999px;font-weight:900;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.75);pointer-events:none;white-space:nowrap">🚨 POLİS KOVALIYOR! Kaç: 10 sn</div>
@@ -666,7 +670,7 @@ const DEF = {
   unlock:{porsiyon:false, buzdolabi:false, fritoz:false},
   kar:{motor:false, tampon:false, ocak:false, led:false, staff:false, masa:false, garson:false, kurye:false, restoran:false},
   settings:{sens:1, invY:false, left:false, carMusic:true},
-  mk:{kahve:false, hali:false, robot:false, pc:false, toys:false, guard:false, cam:false, klima:false, comogene:false, comoStaff:false, masa:false, garson:false, kurye:false, restoran:false, villa:false, garaj:false, otel:false},
+  mk:{kahve:false, hali:false, robot:false, pc:false, toys:false, guard:false, cam:false, klima:false, comogene:false, comoStaff:false, masa:false, garson:false, kurye:false, restoran:false, villa:false, garaj:false, otel:false, helikopter:false},
   wageDue:0,
   fuel:100,
   look:{shirt:'#3a6ea5', pants:'#2a2a2a', skin:'#f1c27d', hair:'#1b1b1b'},
@@ -2691,7 +2695,9 @@ for(let fl = 0; fl < 4; fl++){
     addTo(grandHotelGroup, B(0.38, 3.6, 0.24), M(0xb45309), 1.8, fy + 1.8, wz);
   }
 }
-addTo(grandHotelGroup, B(12.0, 0.30, 46.0), M(0xfef9c3), -4.0, 14.35, 0); // 4. kat çatı tavanı
+addTo(grandHotelGroup, B(12.0, 0.30, 17.8), M(0xfef9c3), -4.0, 14.35, -13.8); // 4. kat sol kanat çatı tavanı
+addTo(grandHotelGroup, B(12.0, 0.30, 17.8), M(0xfef9c3), -4.0, 14.35, 13.8);  // 4. kat sağ kanat çatı tavanı (Üstünde Helikopter Pisti var!)
+addTo(grandHotelGroup, B(3.2, 0.30, 10.4), M(0xfef9c3), 0.2, 14.35, 0);       // Çatı katı ön sahanlık tavanı (x: -1.4..+1.8, çatı merdiveninin çıkışı!)
 
 // 2. KAT ZEMİNİ (Y = 3.6 — Merdivenlerin üstü tamamen açık, kafan hiçbir yere çarpmaz!)
 addTo(grandHotelGroup, B(11.6, 0.24, 17.8), M(0xfef3c7), -4.0, 3.52, -13.8); // 2. kat sol kanat tabanı
@@ -2729,12 +2735,15 @@ for(let st = 0; st < 12; st++){
   const sy3 = 7.35 + st * 0.30;
   addTo(grandHotelGroup, B(0.55, 0.28, 4.0), M(0xfef08a), sx1, sy3, 0); // 3->4 VIP Mermer basamak
   addTo(grandHotelGroup, B(0.56, 0.30, 2.6), M(0x7e22ce), sx1, sy3 + 0.01, 0); // Mor/Altın VIP kraliyet halısı
-  // 2. Kattan 3. Kata çıkan çift kollu büyük merdiven (z = -3.5 ve z = +3.5, x=-6.25'ten x=-0.75 sahanlığına çıkar)
+  // 2. Kattan 3. Kata ve 4. Kattan Çatı Pisti Katına çıkan çift kollu büyük merdiven (z = -3.5 ve z = +3.5, x=-6.25'ten x=-0.75 sahanlığına çıkar)
   const sx2 = -6.25 + st * 0.50;
   const sy2 = 3.75 + st * 0.30;
+  const sy4 = 10.95 + st * 0.30;
   [-3.5, 3.5].forEach(sz2 => {
     addTo(grandHotelGroup, B(0.55, 0.28, 2.4), M(0xfef08a), sx2, sy2, sz2);
     addTo(grandHotelGroup, B(0.56, 0.30, 1.5), M(0xb91c1c), sx2, sy2 + 0.01, sz2);
+    addTo(grandHotelGroup, B(0.55, 0.28, 2.4), M(0xfef08a), sx2, sy4, sz2);
+    addTo(grandHotelGroup, B(0.56, 0.30, 1.5), M(0x0284c7), sx2, sy4 + 0.01, sz2); // Çatı Helikopter Pisti mavi halısı
   });
   // Her 2 basamakta bir dikey altın çit direkleri (düşmeyi önleyen korkuluk direkleri)
   if(st % 2 === 0 || st === 11){
@@ -2744,6 +2753,7 @@ for(let st = 0; st < 12; st++){
     });
     [-4.72, -2.28, 2.28, 4.72].forEach(rz => {
       addTo(grandHotelGroup, B(0.12, 1.10, 0.12), M(0xd97706), sx2, sy2 + 0.65, rz);
+      addTo(grandHotelGroup, B(0.12, 1.10, 0.12), M(0xd97706), sx2, sy4 + 0.65, rz);
     });
   }
 }
@@ -2757,6 +2767,8 @@ for(let st = 0; st < 12; st++){
 [-4.72, -2.28, 2.28, 4.72].forEach(rz => {
   addTo(grandHotelGroup, B(6.3, 0.12, 0.14), M(0xfacc15), -3.5, 6.15, rz).rotation.z = 0.52;
   addTo(grandHotelGroup, B(6.3, 0.09, 0.12), M(0xd97706), -3.5, 5.70, rz).rotation.z = 0.52;
+  addTo(grandHotelGroup, B(6.3, 0.12, 0.14), M(0xfacc15), -3.5, 13.35, rz).rotation.z = 0.52;
+  addTo(grandHotelGroup, B(6.3, 0.09, 0.12), M(0xd97706), -3.5, 12.90, rz).rotation.z = 0.52;
 });
 // 2. Kat, 3. Kat ve 4. VIP Kat merdiven boşluğu kenarlarındaki yatay koruma çitleri (boşluğa düşmeyi önler!)
 [-4.92, 4.92].forEach(fz => {
@@ -2905,9 +2917,70 @@ addHotelCeilingLight(grandHotelGroup, -8.0, 3.40, 0, 0, 3.2); // 1. kat merdiven
     addTo(grandHotelGroup, B(0.14, 0.08, 45.4), M(0xd97706), 3.62, fy + 0.48, 0);
   }
 });
-// Çatı kral dairesi kulesi ve altın kubbe süsü (4. katın üstünde!)
-addTo(grandHotelGroup, B(8.5, 2.4, 18.0), M(0xfef08a), -4.0, 15.6, 0);
-addTo(grandHotelGroup, B(9.0, 0.36, 18.6), M(0xb45309), -4.0, 16.9, 0);
+// Çatı kral dairesi kulesi (sol kanatta) ve Sağ Kanatta 🚁 HELİKOPTER PİSTİ (H PAD)!
+addTo(grandHotelGroup, B(7.8, 2.2, 13.5), M(0xfef08a), -4.0, 15.6, -14.2);
+addTo(grandHotelGroup, B(8.4, 0.36, 14.2), M(0xb45309), -4.0, 16.85, -14.2);
+// Çatı terası etrafında altın güvenlik korkulukları (Y = 14.5..15.5)
+addTo(grandHotelGroup, B(0.18, 1.05, 45.6), M(0xfacc15), -9.85, 15.02, 0);
+addTo(grandHotelGroup, B(0.18, 1.05, 45.6), M(0xfacc15), 1.85, 15.02, 0);
+addTo(grandHotelGroup, B(11.8, 1.05, 0.18), M(0xfacc15), -4.0, 15.02, -22.75);
+addTo(grandHotelGroup, B(11.8, 1.05, 0.18), M(0xfacc15), -4.0, 15.02, 22.75);
+// Çatıdaki merdiven boşluğu etrafında koruma korkulukları
+[-4.92, 4.92].forEach(fz => {
+  addTo(grandHotelGroup, B(8.4, 1.05, 0.14), M(0xfacc15), -5.6, 15.02, fz);
+});
+addTo(grandHotelGroup, B(0.14, 1.05, 4.2), M(0xfacc15), -1.42, 15.02, 0);
+
+// 🚁 OTEL ÇATISI HELİKOPTER PİSTİ (H Pad — local x: -4.0, y: 14.55, z: 13.8 -> world x: -40.0, y: 14.55, z: -121.2)
+const HELI_PAD_POS = {x: HOTEL_POS.x - 4.0, y: 14.62, z: HOTEL_POS.z + 13.8};
+addTo(grandHotelGroup, new THREE.CylinderGeometry(5.2, 5.4, 0.14, 12), M(0x1e293b), -4.0, 14.56, 13.8); // Asfalt pist tabanı
+const heliPadRing = new THREE.Mesh(new THREE.RingGeometry(4.1, 4.6, 12).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({color: 0xfacc15, side: THREE.DoubleSide}));
+heliPadRing.position.set(-4.0, 14.64, 13.8);
+grandHotelGroup.add(heliPadRing);
+// Pistin ortasında büyük beyaz "H" harfi
+addTo(grandHotelGroup, B(0.65, 0.04, 3.8), new THREE.MeshBasicMaterial({color: 0xffffff}), -5.2, 14.64, 13.8);
+addTo(grandHotelGroup, B(0.65, 0.04, 3.8), new THREE.MeshBasicMaterial({color: 0xffffff}), -2.8, 14.64, 13.8);
+addTo(grandHotelGroup, B(2.4, 0.04, 0.65), new THREE.MeshBasicMaterial({color: 0xffffff}), -4.0, 14.64, 13.8);
+// Pist çevresinde 8 adet parlayan yeşil/sarı iniş lambası
+for(let hi = 0; hi < 8; hi++){
+  const ha = (hi / 8) * Math.PI * 2;
+  addTo(grandHotelGroup, B(0.24, 0.16, 0.24), new THREE.MeshBasicMaterial({color: hi % 2 === 0 ? 0x4ade80 : 0xfde047}), -4.0 + Math.cos(ha) * 4.85, 14.68, 13.8 + Math.sin(ha) * 4.85);
+}
+
+// 🚁 3B VIP HELİKOPTER MODELİ (Marketten 2M₺'ye alınınca otel çatısındaki H pistinde belirir!)
+const heliMesh = new THREE.Group();
+// Kızaklar (Landing Skids)
+[-0.85, 0.85].forEach(sx => {
+  addTo(heliMesh, B(0.12, 0.10, 3.4), M(0x334155), sx, 0.08, 0);
+  addTo(heliMesh, B(0.10, 0.55, 0.10), M(0x475569), sx, 0.35, -0.75);
+  addTo(heliMesh, B(0.10, 0.55, 0.10), M(0x475569), sx, 0.35, 0.75);
+});
+// Ana gövde (Mavi-Altın VIP tasarım)
+addTo(heliMesh, B(1.75, 1.25, 2.8), M(0x0284c7), 0, 1.0, 0);
+addTo(heliMesh, B(1.80, 0.22, 2.86), M(0xfacc15), 0, 0.88, 0); // Altın VIP kuşak
+// Ön cam kokpit (Tinted mavi cam)
+addTo(heliMesh, B(1.62, 0.92, 1.05), M(0xbae6fd), 0, 1.06, 1.15);
+// Kuyruk bomu ve arka dikey kanat
+addTo(heliMesh, B(0.45, 0.48, 3.2), M(0x0369a1), 0, 1.12, -2.6);
+addTo(heliMesh, B(0.16, 1.15, 0.65), M(0xfacc15), 0, 1.52, -3.95);
+// Üst rotor direği ve dönen ana pervane (heliMainRotor)
+addTo(heliMesh, new THREE.CylinderGeometry(0.14, 0.18, 0.42, 8), M(0x1e293b), 0, 1.80, 0);
+const heliMainRotor = new THREE.Group();
+heliMainRotor.position.set(0, 1.98, 0);
+addTo(heliMainRotor, B(6.8, 0.05, 0.32), M(0x111827), 0, 0, 0);
+addTo(heliMainRotor, B(0.32, 0.05, 6.8), M(0x111827), 0, 0, 0);
+addTo(heliMainRotor, new THREE.CylinderGeometry(0.22, 0.22, 0.12, 8), M(0xfacc15), 0, 0.04, 0);
+heliMesh.add(heliMainRotor);
+// Arka kuyruk pervanesi (heliTailRotor)
+const heliTailRotor = new THREE.Group();
+heliTailRotor.position.set(0.16, 1.65, -4.05);
+addTo(heliTailRotor, B(0.05, 1.35, 0.16), M(0x111827), 0, 0, 0);
+addTo(heliTailRotor, B(0.05, 0.16, 1.35), M(0x111827), 0, 0, 0);
+heliMesh.add(heliTailRotor);
+heliMesh.position.set(HELI_PAD_POS.x, HELI_PAD_POS.y, HELI_PAD_POS.z);
+heliMesh.visible = !!(S.mk && S.mk.helikopter);
+scene.add(heliMesh);
+const HELI = {x: HELI_PAD_POS.x, y: HELI_PAD_POS.y, z: HELI_PAD_POS.z, h: 0, v: 0, vy: 0, flying: false, upHeld: false, downHeld: false};
 
 // Lüks Lobi Girişi, Altın Sütunlar, Açık Kemer Kapı ve Vale Resepsiyonu
 addTo(grandHotelGroup, B(4.8, 0.38, 10.5), M(0xb45309), 4.2, 3.85, 0); // Lobi sundurma çatısı
@@ -4522,17 +4595,25 @@ function free(x, z){
           if(!onStair2Top && !onStair3Bot) return false;
         } else if(curY >= 7.55 && curY < 10.45 && hlx > -6.25 && hlx < -0.55){
           if(Math.abs(hlz) > 1.88) return false;
-        } else if(curY >= 10.45 && hlx > -6.25){
+        } else if(curY >= 10.45 && curY < 11.2 && hlx > -6.25){
           const onStair3Top = Math.abs(hlz) < 1.88 && hlx <= -0.4;
-          if(!onStair3Top) return false;
+          const onStair4Bot = Math.abs(hlz) > 2.32 && Math.abs(hlz) < 4.68 && hlx <= -0.4;
+          if(!onStair3Top && !onStair4Bot) return false;
+        } else if(curY >= 11.2 && curY < 14.0 && hlx > -6.25 && hlx < -0.75){
+          if(!(Math.abs(hlz) > 2.32 && Math.abs(hlz) < 4.68)) return false;
+        } else if(curY >= 14.0 && hlx < -1.45){
+          const onStair4Top = Math.abs(hlz) > 2.32 && Math.abs(hlz) < 4.68 && hlx >= -6.3;
+          if(!onStair4Top) return false;
         }
       }
-      // 2., 3. ve 4. kattaki oda koridor duvarı (hlx = -6.0): kapı boşluklarından (|hlz| ≈ 10.7 ve 18.5) yürüyerek doğrudan odaların içine girilir!
-      if(Math.abs(hlx - (-6.0)) < 0.26 && Math.abs(hlz) >= 6.85){
-        const inRoomDoor = Math.abs(Math.abs(hlz) - 10.7) < 1.15 || Math.abs(Math.abs(hlz) - 18.5) < 1.15;
-        if(!inRoomDoor) return false;
+      // 2., 3. ve 4. kattaki oda koridor duvarı (hlx = -6.0): kapı boşluklarından (|hlz| ≈ 10.7 ve 18.5) yürüyerek doğrudan odaların içine girilir! (Çatıda Y>=13.8 iken duvar yok, Helikopter Pisti açık!)
+      if(curY < 13.8){
+        if(Math.abs(hlx - (-6.0)) < 0.26 && Math.abs(hlz) >= 6.85){
+          const inRoomDoor = Math.abs(Math.abs(hlz) - 10.7) < 1.15 || Math.abs(Math.abs(hlz) - 18.5) < 1.15;
+          if(!inRoomDoor) return false;
+        }
+        if(hlx > -5.9 && hlx < 1.8 && (Math.abs(Math.abs(hlz) - 6.85) < 0.22 || Math.abs(Math.abs(hlz) - 14.6) < 0.22)) return false;
       }
-      if(hlx > -5.9 && hlx < 1.8 && (Math.abs(Math.abs(hlz) - 6.85) < 0.22 || Math.abs(Math.abs(hlz) - 14.6) < 0.22)) return false;
     } else if(x >= -46.3 && x <= -33.7 && z >= -158.3 && z <= -111.7){
       const inHotelLobby = x > -45.7 && x < -34.2 && z > -157.6 && z < -112.4;
       const atHotelDoor = x >= -34.5 && z > -138.8 && z < -131.2;
@@ -4621,8 +4702,34 @@ function comoUpdate(dt){
   if(nx > -74 && nx < 48 && nz > -195 && nz < 10){ CM.x = nx; CM.z = nz; } else CM.v = 0;
 }
 
+function heliUpdate(dt){
+  if(shopOpen || over || tutOpen || shiftEnded || setOpen) return;
+  const throttle = Math.max(-1, Math.min(1, -joy.dy + ((keys.w || keys.arrowup) ? 1 : 0) - ((keys.s || keys.arrowdown) ? 1 : 0)));
+  const steer = Math.max(-1, Math.min(1, joy.dx + ((keys.d || keys.arrowright) ? 1 : 0) - ((keys.a || keys.arrowleft) ? 1 : 0)));
+  HELI.h -= steer * 1.55 * dt;
+  const targetV = throttle >= 0 ? throttle * 16.5 : throttle * 7.5;
+  HELI.v += (targetV - HELI.v) * Math.min(1, 3.2 * dt);
+  const upInput = (HELI.upHeld || keys[' '] || keys.r) ? 1 : 0;
+  const downInput = (HELI.downHeld || keys.shift || keys.f) ? 1 : 0;
+  const targetVy = (upInput - downInput) * 8.5;
+  HELI.vy += (targetVy - HELI.vy) * Math.min(1, 5.0 * dt);
+  const nx = HELI.x + Math.sin(HELI.h) * HELI.v * dt;
+  const nz = HELI.z + Math.cos(HELI.h) * HELI.v * dt;
+  if(nx > -74 && nx < 48) HELI.x = nx;
+  if(nz > -195 && nz < 10) HELI.z = nz;
+  const overHotelRoof = (HELI.x >= HOTEL_POS.x - 10.2 && HELI.x <= HOTEL_POS.x + 2.5 && HELI.z >= HOTEL_POS.z - 23.0 && HELI.z <= HOTEL_POS.z + 23.0);
+  const minFloorY = overHotelRoof ? 14.62 : 0.05;
+  HELI.y = Math.max(minFloorY, Math.min(62.0, HELI.y + HELI.vy * dt));
+  P.x = HELI.x; P.y = HELI.y; P.z = HELI.z;
+  heliMainRotor.rotation.y += dt * 26;
+  heliTailRotor.rotation.x += dt * 32;
+  heliMesh.position.set(HELI.x, HELI.y, HELI.z);
+  heliMesh.rotation.set(HELI.v * 0.012, HELI.h, -steer * 0.16);
+}
+
 function updatePlayer(dt){
   if(shopOpen || over || tutOpen || shiftEnded || kick || setOpen || passengerOf) return;
+  if(typeof HELI !== 'undefined' && HELI.flying){ heliUpdate(dt); return; }
   if(CM.driving){ comoUpdate(dt); return; }
   if(D.driving){ driveUpdate(dt); return; }
   if(C.driving){ carUpdate(dt); return; }
@@ -4642,7 +4749,7 @@ function updatePlayer(dt){
 
 // yolda yürürken araba çarparsa: can gider, kaldırıma geri dönersin
 function walkerHit(dt){
-  if(D.driving || shopOpen || over || tutOpen || shiftEnded || setOpen) return;
+  if(D.driving || (typeof HELI !== 'undefined' && HELI.flying) || (P.y || 0) > 1.5 || shopOpen || over || tutOpen || shiftEnded || setOpen) return;
   crashCD -= dt;
   if(Math.abs(P.x) >= 4.3 || crashCD > 0) return;
   if(cars.some(c => Math.abs(P.x - c.g.position.x) < 1.6 && Math.abs(P.z - c.g.position.z) < 2.8)){
@@ -6669,10 +6776,11 @@ window.addEventListener('keydown', e => {
   thirdPerson = !thirdPerson;
   flash(thirdPerson ? 'Dış görüş' : 'İç görüş', '#7dd3fc');
 });
-// E: arabaya, motora veya polis arabasına bin / in
+// E: arabaya, motora, polis arabasına veya helikoptere bin / in
 window.addEventListener('keydown', e => {
   if(e.key.toLowerCase() !== 'e') return;
-  if($('carBtn').style.display === 'block') $('carBtn').click();
+  if($('heliBtn') && $('heliBtn').style.display === 'block') $('heliBtn').click();
+  else if($('carBtn').style.display === 'block') $('carBtn').click();
   else if($('motoBtn') && $('motoBtn').style.display === 'block') $('motoBtn').click();
   else if($('policeCarBtn') && $('policeCarBtn').style.display === 'block') $('policeCarBtn').click();
   else if($('carExit').style.display === 'block') $('carExit').click();
@@ -7216,6 +7324,7 @@ const MKT = [
   {id:'hoparlor', name:'📻 Dükkân Hoparlörü & Müzik Yayını', desc:'Dükkânın üstüne hoparlör takılır; müzik çaldıkça müşteriler %25 daha hızlı gelir, sabır ve bahşiş +%15 artar!', price:550},
   {id:'restoran', name:'🏪 Büyük Döner Restoranı Binası', desc:'Karavandan 2 katlı lüks restorana geç! Kapasite +60 artar, tüm kazançlar +%35 yükselir!', price:15000},
   {id:'villa', name:'🏡 Garajlı Lüks Villa (2 Katlı Malikâne)', desc:'Evin 2 katlı, teraslı, büyük havuzlu ve otomatik garajlı lüks villaya dönüşür!', price:20000},
+  {id:'helikopter', name:'🚁 VIP Helikopter (Otel Çatı Pisti)', desc:'Grand Otelin çatısındaki H pistine özel helikopterin konur! Binip tüm şehrin üstünde uçabilirsin!', price:2000000},
   {id:'otel', name:'🏨 5 Yıldızlı Grand Otel (3 Kat · 250 Oda)', desc:'3 katlı, 250 odalı dev otelin sahibi ol! Her oda 10.000₺ kira kazandırır ve tüm odalara ücretsiz girersin!', price:10000000}
 ];
 function renderMarket(){
@@ -7238,9 +7347,15 @@ function renderMarket(){
         S.hotelOwned = true;
         S.hotelVault = (S.hotelVault || 0) + 250000;
       }
+      if(k.id === 'helikopter'){
+        if(typeof heliMesh !== 'undefined') heliMesh.visible = true;
+        if(typeof HELI !== 'undefined' && typeof HELI_PAD_POS !== 'undefined'){
+          HELI.x = HELI_PAD_POS.x; HELI.y = HELI_PAD_POS.y; HELI.z = HELI_PAD_POS.z; HELI.h = 0; HELI.v = 0; HELI.vy = 0;
+        }
+      }
       save();
       beep(700, 0.1);
-      flash(`${k.name} alındı!`, '#4ade80');
+      flash(k.id === 'helikopter' ? '🚁 VIP Helikopter alındı ve Grand Otelin çatısındaki H pistine kondu!' : `${k.name} alındı!`, '#4ade80');
       renderMarket(); renderAll();
     };
     d.appendChild(b);
@@ -8846,8 +8961,14 @@ function getMineFloorY(px, pz){
   const hlz = pz - HOTEL_POS.z;
   if(hlx >= -9.8 && hlx <= 3.7 && hlz >= -22.8 && hlz <= 22.8){
     const curY = P.y || 0;
+    // 4. VIP Kattan Çatı Helikopter Pistine çıkan Yan Büyük Merdivenler (hlz: -4.9 .. -2.1 veya +2.1 .. +4.9, hlx: -6.6 .. -0.4)
+    if(((hlz >= -4.9 && hlz < -2.1) || (hlz > 2.1 && hlz <= 4.9)) && hlx >= -6.6 && hlx <= -0.4 && curY >= 9.2){
+      const t4 = Math.max(0, Math.min(1, (hlx - (-6.4)) / 5.9));
+      const stair4Y = 10.8 + t4 * 3.75;
+      if(curY >= stair4Y - 1.5) return stair4Y;
+    }
     // 3. Kattan 4. VIP Kata çıkan Orta Büyük Merdiven (hlz: -2.1 .. +2.1, hlx: -6.6 .. -0.4)
-    if(hlz >= -2.1 && hlz <= 2.1 && hlx >= -6.6 && hlx <= -0.4 && curY >= 5.6){
+    if(hlz >= -2.1 && hlz <= 2.1 && hlx >= -6.6 && hlx <= -0.4 && curY >= 5.6 && curY < 12.6){
       const t3 = Math.max(0, Math.min(1, (-0.5 - hlx) / 5.9));
       const stair3Y = 7.2 + t3 * 3.6;
       if(curY >= stair3Y - 1.5) return stair3Y;
@@ -8864,7 +8985,8 @@ function getMineFloorY(px, pz){
       const stair2Y = 3.6 + t2 * 3.6;
       if(curY >= stair2Y - 1.5) return stair2Y;
     }
-    if(curY >= 9.0) return 10.8; // 4. Kat VIP (Oda 251–270 · 30.000₺)
+    if(curY >= 12.6) return 14.55; // Çatı Katı (🚁 Helikopter Pisti)
+    if(curY >= 9.0) return 10.8;   // 4. Kat VIP (Oda 251–270 · 30.000₺)
     if(curY >= 5.4) return 7.2;  // 3. Kat (Oda 126–250 · 10.000₺)
     if(curY >= 2.1) return 3.6;  // 2. Kat (Oda 1–125 · 10.000₺)
     return 0;                    // 1. Kat (Kapalı Havuz, Büyük Merdiven ve Bekleme Odası)
@@ -10096,6 +10218,7 @@ function openHotelModal(){
         <button data-hfloor="3" style="flex:1;padding:6px;font-weight:900;font-size:11px;background:${selectedHotelFloor===3?'#0284c7':'#1e293b'};border-color:#38bdf8;border-radius:7px">3. Kat (126–250)</button>
         <button data-hfloor="4" style="flex:1;padding:6px;font-weight:900;font-size:11px;background:${selectedHotelFloor===4?'#7e22ce':'#3b0764'};border-color:#facc15;color:#fde047;border-radius:7px">👑 4. Kat VIP (251–270 · 30B₺)</button>
       </div>
+      <button id="goHotelRoofModalBtn" style="width:100%;padding:8px;margin-bottom:8px;font-weight:900;font-size:12px;background:#0284c7;border-color:#fde047;border-radius:8px;color:#fff">🛗🚁 Otel Çatısına Çık (Helikopter Pisti · ${S.mk && S.mk.helikopter ? 'Helikopterin Hazır!' : 'Markette 2M₺'})</button>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
         <span style="font-size:12px;font-weight:700;color:#cbd5e1">Oda No (1–270):</span>
         <input id="hotelRoomInput" type="number" min="1" max="270" value="${inHotelRoomState || floorStart}" style="width:80px;padding:6px;border-radius:6px;border:1px solid #475569;background:#090d16;color:#fff;font-weight:900;text-align:center">
@@ -10162,6 +10285,22 @@ function openHotelModal(){
       enterHotelRoom(val);
     };
   }
+  if($('goHotelRoofModalBtn')){
+    $('goHotelRoofModalBtn').onclick = () => {
+      setOpen = false;
+      invModal.style.display = 'none';
+      if(inHotelRoomState > 0){
+        inHotelRoomState = 0;
+        hotelRoomInteriorGroup.visible = false;
+      }
+      P.x = HOTEL_POS.x - 1.0;
+      P.z = HOTEL_POS.z + 8.5;
+      P.y = 14.55;
+      P.yaw = 0;
+      beep(780, 0.14, 'sine', 0.14);
+      flash('🛗🚁 Otel Çatısındaki Helikopter Pistine çıktın!', '#fde047');
+    };
+  }
 
   if($('hotelUseBedBtn')){
     $('hotelUseBedBtn').onclick = () => {
@@ -10207,6 +10346,72 @@ function openHotelModal(){
 
 if($('hotelBtn')) $('hotelBtn').onclick = openHotelModal;
 if($('hotelRoomExitBtn')) $('hotelRoomExitBtn').onclick = exitHotelRoom;
+if($('hotelRoofBtn')) $('hotelRoofBtn').onclick = () => {
+  if(!active() || C.driving || D.driving || CM.driving || (typeof HELI !== 'undefined' && HELI.flying)) return;
+  if(inHotelRoomState > 0){
+    inHotelRoomState = 0;
+    hotelRoomInteriorGroup.visible = false;
+  }
+  const onRoofNow = (P.y || 0) >= 12.6;
+  if(onRoofNow){
+    P.x = HOTEL_POS.x + 2.2;
+    P.z = HOTEL_POS.z;
+    P.y = 0;
+    P.yaw = Math.PI / 2;
+    beep(540, 0.12, 'sine', 0.13);
+    flash('🛗 Otel Çatısından 1. Kat Lobiye indin!', '#7dd3fc');
+  } else {
+    P.x = HOTEL_POS.x - 1.0;
+    P.z = HOTEL_POS.z + 8.5;
+    P.y = 14.55;
+    P.yaw = 0;
+    beep(780, 0.14, 'sine', 0.14);
+    flash('🛗🚁 Otel Çatısındaki Helikopter Pistine çıktın!', '#fde047');
+  }
+};
+if($('heliBtn')) $('heliBtn').onclick = () => {
+  if(!active() || !(S.mk && S.mk.helikopter)) return;
+  if(HELI.flying){
+    HELI.flying = false;
+    HELI.v = 0; HELI.vy = 0; HELI.upHeld = false; HELI.downHeld = false;
+    const overRoof = (HELI.x >= HOTEL_POS.x - 10.2 && HELI.x <= HOTEL_POS.x + 2.5 && HELI.z >= HOTEL_POS.z - 23.0 && HELI.z <= HOTEL_POS.z + 23.0);
+    if(overRoof || HELI.y >= 11.5){
+      HELI.x = HELI_PAD_POS.x; HELI.y = HELI_PAD_POS.y; HELI.z = HELI_PAD_POS.z;
+      P.x = HELI.x + 2.6; P.y = 14.55; P.z = HELI.z;
+    } else {
+      HELI.y = 0.05;
+      P.x = HELI.x + 2.6; P.y = 0; P.z = HELI.z;
+    }
+    heliMesh.position.set(HELI.x, HELI.y, HELI.z);
+    heliMesh.rotation.set(0, HELI.h, 0);
+    stopEngine();
+    beep(520, 0.12, 'sine', 0.14);
+    flash('🚁 Helikopteri indirdin ve dışarı çıktın!', '#7dd3fc');
+  } else {
+    passengerOf = null;
+    C.driving = false; D.driving = false; CM.driving = false;
+    HELI.flying = true;
+    HELI.v = 0; HELI.vy = 0;
+    startEngine();
+    beep(840, 0.16, 'triangle', 0.15);
+    flash('🚁 VIP Helikoptere bindin! ⬆️ Yüksel / ⬇️ Alçal düğmeleriyle veya Boşluk/Shift ile uç!', '#4ade80');
+  }
+  renderAll();
+};
+if($('heliUpBtn')){
+  const ub = $('heliUpBtn');
+  ub.onpointerdown = e => { e.preventDefault(); HELI.upHeld = true; };
+  ub.onpointerup = () => { HELI.upHeld = false; };
+  ub.onpointercancel = () => { HELI.upHeld = false; };
+  ub.onpointerleave = () => { HELI.upHeld = false; };
+}
+if($('heliDownBtn')){
+  const db = $('heliDownBtn');
+  db.onpointerdown = e => { e.preventDefault(); HELI.downHeld = true; };
+  db.onpointerup = () => { HELI.downHeld = false; };
+  db.onpointercancel = () => { HELI.downHeld = false; };
+  db.onpointerleave = () => { HELI.downHeld = false; };
+}
 
 // 🧳🏨 OTEL MÜŞTERİLERİ SİSTEMİ (Oteli satın alınca yürüyerek otele gelirler, resepsiyonda normal oda için 10.000₺, 4. Kat VIP oda için 30.000₺ ödeyip merdivenden odalara çıkarlar!)
 const hotelGuests = [];
@@ -10316,16 +10521,33 @@ function updateShopSpeakerAndScratch(dt){
     disp('hotelRoomExitBtn', 'block');
   } else {
     disp('hotelRoomExitBtn', 'none');
-    const nearHotel = !C.driving && !D.driving && !CM.driving && !policeChase.inPrison &&
+    const nearHotel = !C.driving && !D.driving && !CM.driving && !(typeof HELI !== 'undefined' && HELI.flying) && !policeChase.inPrison &&
       (Math.hypot(P.x - HOTEL_POS.doorX, P.z - HOTEL_POS.doorZ) < 10.5 ||
        (P.x >= -48 && P.x <= -13 && P.z >= -163 && P.z <= -107));
     disp('hotelBtn', nearHotel ? 'block' : 'none');
+    disp('hotelRoofBtn', nearHotel ? 'block' : 'none');
     if(nearHotel){
       const py = P.y || 0;
-      const floorHint = py >= 9.0 ? '👑 4. Kat 20 VIP Oda (30.000₺)' : (py >= 5.4 ? '🚪 3. Kat Odaları (126–250)' : (py >= 2.1 ? '🚪 2. Kat Odaları (1–125)' : '🏨 Grand Otel'));
+      txt('hotelRoofBtn', py >= 12.6 ? '🛗 Otel Çatısından Lobiye İn' : '🛗 Otel Çatısına Çık (Helikopter Pisti)');
+      const floorHint = py >= 12.6 ? '🚁 Çatı Helikopter Pisti' : (py >= 9.0 ? '👑 4. Kat 20 VIP Oda (30.000₺)' : (py >= 5.4 ? '🚪 3. Kat Odaları (126–250)' : (py >= 2.1 ? '🚪 2. Kat Odaları (1–125)' : '🏨 Grand Otel')));
       txt('hotelBtn', S.hotelOwned
         ? `${floorHint} · Kasa: ${(S.hotelVault || 0).toLocaleString('tr-TR')}₺`
         : `${floorHint} (250+20 VIP Oda · Satılık 10M₺)`);
+    }
+  }
+  if(typeof heliMesh !== 'undefined'){
+    const hasHeli = !!(S.mk && S.mk.helikopter);
+    heliMesh.visible = hasHeli;
+    if(hasHeli){
+      const nearHeli = !HELI.flying && !C.driving && !D.driving && !CM.driving && Math.hypot(P.x - HELI.x, P.z - HELI.z) < 5.6 && Math.abs((P.y || 0) - HELI.y) < 3.2;
+      disp('heliBtn', (HELI.flying || nearHeli) ? 'block' : 'none');
+      if(HELI.flying || nearHeli) txt('heliBtn', HELI.flying ? '🚪 Helikopterden İn (E)' : '🚁 Helikoptere Bin (E)');
+      disp('heliUpBtn', HELI.flying ? 'block' : 'none');
+      disp('heliDownBtn', HELI.flying ? 'block' : 'none');
+    } else {
+      disp('heliBtn', 'none');
+      disp('heliUpBtn', 'none');
+      disp('heliDownBtn', 'none');
     }
   }
   if((S.hotelOwned || (S.mk && S.mk.otel)) && !escPaused){
@@ -12167,7 +12389,11 @@ function frame(now){
   if(!escPaused) updateFriendCompanion(dt);
   walkerHit(dt);
   if(!escPaused){ smokeUpdate(dt); smashUpdate(dt); engineUpdate(dt); }
-  if(CM.driving){
+  if(typeof HELI !== 'undefined' && HELI.flying){
+    playerMesh.visible = false;
+    camera.position.set(HELI.x - Math.sin(HELI.h) * 8.4, HELI.y + 3.8, HELI.z - Math.cos(HELI.h) * 8.4);
+    camera.rotation.set(P.pitch - 0.18, HELI.h + Math.PI + (P.yaw + Math.PI / 2), 0);
+  } else if(CM.driving){
     playerMesh.visible = false;
     camera.position.set(CM.x - Math.sin(CM.h) * 4.5, 2.6, CM.z - Math.cos(CM.h) * 4.5);
     camera.rotation.set(P.pitch - 0.15, CM.h + Math.PI + (P.yaw + Math.PI / 2), 0);
@@ -13481,7 +13707,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-225502';
+const APP_VERSION = '2026-10-29-235038';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
