@@ -666,7 +666,7 @@ const DEF = {
   unlock:{porsiyon:false, buzdolabi:false, fritoz:false},
   kar:{motor:false, tampon:false, ocak:false, led:false, staff:false, masa:false, garson:false, kurye:false, restoran:false},
   settings:{sens:1, invY:false, left:false, carMusic:true},
-  mk:{kahve:false, hali:false, robot:false, pc:false, toys:false, guard:false, cam:false, klima:false, comogene:false, comoStaff:false, masa:false, garson:false, kurye:false, restoran:false, villa:false, garaj:false},
+  mk:{kahve:false, hali:false, robot:false, pc:false, toys:false, guard:false, cam:false, klima:false, comogene:false, comoStaff:false, masa:false, garson:false, kurye:false, restoran:false, villa:false, garaj:false, otel:false},
   wageDue:0,
   fuel:100,
   look:{shirt:'#3a6ea5', pants:'#2a2a2a', skin:'#f1c27d', hair:'#1b1b1b'},
@@ -699,7 +699,8 @@ function normalizeState(o){
   }
   if(!Array.isArray(out.inv) || out.inv.length !== 10) out.inv = Array(10).fill(null);
   if(!Array.isArray(out.fridge)) out.fridge = [];
-  out.hotelOwned = !!out.hotelOwned;
+  out.hotelOwned = !!(out.hotelOwned || (out.mk && out.mk.otel));
+  if(out.mk) out.mk.otel = out.hotelOwned;
   out.hotelVault = Math.max(0, Math.floor(out.hotelVault || 0));
   out.hotelRoom = Math.max(0, Math.min(250, Math.floor(out.hotelRoom || 0)));
   if(!('hand' in out)) out.hand = null;
@@ -1123,6 +1124,11 @@ for(let x = -3.4; x <= 3.4; x += 0.9){
 for(let x = -3.4; x <= 3.4; x += 0.9){
   const z = new THREE.Mesh(B(0.45,0.012,4), zebraMat);
   z.position.set(x, 0.012, -1); scene.add(z);
+}
+// 🏨 Grand Otelin önündeki yaya geçidi (z = -135 hizasında karşıdan karşıya geçiş)
+for(let x = -3.4; x <= 3.4; x += 0.9){
+  const z = new THREE.Mesh(B(0.45,0.012,8), zebraMat);
+  z.position.set(x, 0.012, -135); scene.add(z);
 }
 
 // tünel ağzı (yolun en ucunda: z = -196)
@@ -2564,11 +2570,45 @@ scene.add(grandHotelGroup);
 
 // Otel avlu mermer/taş zemini (x: -11..+22, z: -26..+26 -> world x: -47..-14, z: -161..-109)
 addTo(grandHotelGroup, B(33, 0.14, 52), M(0xe2e8f0), 5.5, 0.07, 0);
-addTo(grandHotelGroup, B(6.5, 0.16, 8.0), M(0xb91c1c), 18.5, 0.08, 0); // Giriş kırmızı halısı
+// Yaya geçidinden otel lobisinin içine kadar uzanan kırmızı kraliyet halısı (ortadaki havuz kaldırıldı, yol tamamen açık!)
+addTo(grandHotelGroup, B(25.0, 0.16, 6.2), M(0xb91c1c), 9.5, 0.08, 0);
+addTo(grandHotelGroup, B(25.0, 0.17, 0.25), M(0xfacc15), 9.5, 0.085, -3.0);
+addTo(grandHotelGroup, B(25.0, 0.17, 0.25), M(0xfacc15), 9.5, 0.085, 3.0);
 
-// 3 Katlı Devasa Otel Binası (local x: -10..+2, y: 0..10.8, z: -23..+23)
+// 3 Katlı Devasa Otel Binası (local x: -10..+2, y: 0..10.8, z: -23..+23 — İçi Yürünebilir Lüks Lobi!)
 addRectShadow(grandHotelGroup, 13.5, 48.0, -4.0, 0, 0.16);
-addTo(grandHotelGroup, B(12.0, 10.8, 46.0), M(0xfef9c3), -4.0, 5.4, 0); // Ana 3 katlı otel gövdesi
+addTo(grandHotelGroup, B(0.45, 10.8, 46.0), M(0xfef9c3), -9.8, 5.4, 0); // Arka duvar
+addTo(grandHotelGroup, B(12.0, 10.8, 0.45), M(0xfef9c3), -4.0, 5.4, -22.8); // Sol yan duvar
+addTo(grandHotelGroup, B(12.0, 10.8, 0.45), M(0xfef9c3), -4.0, 5.4, 22.8);  // Sağ yan duvar
+// Ön duvar: Zemin katta ortası (z: -3.8..+3.8) yürüyerek içeri girmek için tamamen açık!
+addTo(grandHotelGroup, B(0.45, 3.6, 19.2), M(0xfef9c3), 1.8, 1.8, -13.4); // Zemin kat sol ön duvar
+addTo(grandHotelGroup, B(0.45, 3.6, 19.2), M(0xfef9c3), 1.8, 1.8, 13.4);  // Zemin kat sağ ön duvar
+addTo(grandHotelGroup, B(0.45, 7.2, 46.0), M(0xfef9c3), 1.8, 7.2, 0);     // 2. ve 3. kat ön cephe duvarı
+addTo(grandHotelGroup, B(11.6, 0.28, 45.6), M(0xfef3c7), -4.0, 3.55, 0);  // Lobi tavanı / 2. kat tabanı
+addTo(grandHotelGroup, B(12.0, 0.30, 46.0), M(0xfef9c3), -4.0, 10.75, 0); // 3. kat çatı tavanı
+
+// 🏨 LOBİ İÇ MEKÂNI (Otelin içine yürüyerek girince görünen Altın Resepsiyon, Koltuklar, Asansör Kapıları ve Oda Kapıları)
+addTo(grandHotelGroup, B(11.2, 0.16, 45.0), M(0xfef9c3), -4.0, 0.08, 0); // Lobi parlak mermer iç zemin
+// Lobi içi Büyük Resepsiyon Bankosu (tam girişin karşısında, local x: -6.8, z: 0)
+addTo(grandHotelGroup, B(1.6, 1.15, 7.5), M(0x78350f), -6.8, 0.58, 0);
+addTo(grandHotelGroup, B(1.8, 0.14, 7.8), M(0xfacc15), -6.8, 1.20, 0);
+const lobbyManagerNPC = human(0x1e3a8a, 0x111827, pick(SKINS), pick(HAIRS));
+lobbyManagerNPC.position.set(-8.1, 0.16, 0);
+lobbyManagerNPC.rotation.y = Math.PI / 2;
+grandHotelGroup.add(lobbyManagerNPC);
+// Lobi içi altın avize ve oturma grupları (kuzey ve güney lobi salonları)
+[-11, 11].forEach(lz => {
+  addTo(grandHotelGroup, B(5.5, 0.05, 5.5), M(0x991b1b), -3.5, 0.17, lz); // Lobi halısı
+  addTo(grandHotelGroup, B(3.2, 0.55, 1.1), M(0x1e3a8a), -3.5, 0.42, lz - 1.8); // Lüks kanepe 1
+  addTo(grandHotelGroup, B(3.2, 0.55, 1.1), M(0x1e3a8a), -3.5, 0.42, lz + 1.8); // Lüks kanepe 2
+  addTo(grandHotelGroup, B(1.8, 0.42, 1.2), M(0xd97706), -3.5, 0.35, lz);       // Altın sehpa
+  addTo(grandHotelGroup, new THREE.CylinderGeometry(0.9, 1.2, 0.45, 10), M(0xfef08a), -3.5, 3.25, lz); // Tavan avizesi
+});
+// Lobi arka duvarında Altın Asansör Kapıları ve Kat Oda Kapıları (dokununca veya yanına gidince 250 odadan istediğine girersin!)
+[-18, -14, -6, 6, 14, 18].forEach((dz, idx) => {
+  addTo(grandHotelGroup, B(0.18, 2.4, 1.5), M(idx === 2 || idx === 3 ? 0xfacc15 : 0x78350f), -9.45, 1.35, dz);
+});
+
 // Kat ayırıcı altın ve mermer kuşaklar (1. Kat, 2. Kat, 3. Kat ve Çatı)
 [3.6, 7.2, 10.8].forEach(fy => {
   addTo(grandHotelGroup, B(12.5, 0.34, 46.6), M(0xd97706), -4.0, fy, 0);
@@ -2587,23 +2627,25 @@ addTo(grandHotelGroup, B(9.0, 0.36, 18.6), M(0xb45309), -4.0, 13.3, 0);
 for(let floor = 0; floor < 3; floor++){
   const wy = 1.85 + floor * 3.6;
   for(let wz = -20; wz <= 20; wz += 4){
-    if(floor === 0 && Math.abs(wz) <= 4) continue; // Zemin kat orta kısım lobi girişi
-    addTo(grandHotelGroup, B(0.14, 2.1, 2.3), M(0x0284c7), 2.02, wy, wz); // Balkon cam kapısı
-    addTo(grandHotelGroup, B(0.18, 2.25, 0.16), M(0xb45309), 2.02, wy, wz - 1.2); // Çerçeve
-    addTo(grandHotelGroup, B(0.18, 2.25, 0.16), M(0xb45309), 2.02, wy, wz + 1.2);
+    if(floor === 0 && Math.abs(wz) <= 4) continue; // Zemin kat orta kısım açık lobi girişi
+    addTo(grandHotelGroup, B(0.14, 2.1, 2.3), M(0x0284c7), 2.08, wy, wz); // Balkon cam kapısı
+    addTo(grandHotelGroup, B(0.18, 2.25, 0.16), M(0xb45309), 2.08, wy, wz - 1.2); // Çerçeve
+    addTo(grandHotelGroup, B(0.18, 2.25, 0.16), M(0xb45309), 2.08, wy, wz + 1.2);
   }
 }
 
-// Lüks Lobi Girişi, Altın Sütunlar, Döner Cam Kapı ve Resepsiyon
+// Lüks Lobi Girişi, Altın Sütunlar, Açık Kemer Kapı ve Vale Resepsiyonu
 addTo(grandHotelGroup, B(4.8, 0.38, 10.5), M(0xb45309), 4.2, 3.85, 0); // Lobi sundurma çatısı
 [-4.4, 4.4].forEach(cz => {
   addTo(grandHotelGroup, new THREE.CylinderGeometry(0.36, 0.42, 3.7, 10), M(0xfde047), 6.1, 1.85, cz); // Altın sütunlar
 });
-addTo(grandHotelGroup, B(0.18, 2.9, 4.2), M(0x38bdf8), 2.04, 1.45, 0); // Büyük lobi cam giriş kapısı
-addTo(grandHotelGroup, B(1.2, 1.1, 3.4), M(0x78350f), 3.6, 0.55, -2.6); // Dış resepsiyon/vale bankosu
-addTo(grandHotelGroup, B(1.3, 0.12, 3.5), M(0xfef08a), 3.6, 1.15, -2.6);
+// Kapı camları iki yana açık (ortadan yürüyerek doğrudan lobiye girilir!)
+addTo(grandHotelGroup, B(0.18, 2.9, 1.2), M(0x38bdf8), 2.04, 1.45, -3.2);
+addTo(grandHotelGroup, B(0.18, 2.9, 1.2), M(0x38bdf8), 2.04, 1.45, 3.2);
+addTo(grandHotelGroup, B(1.2, 1.1, 2.8), M(0x78350f), 3.6, 0.55, -4.6); // Dış resepsiyon/vale bankosu
+addTo(grandHotelGroup, B(1.3, 0.12, 2.9), M(0xfef08a), 3.6, 1.15, -4.6);
 const hotelReceptionist = human(0xb91c1c, 0x111827, pick(SKINS), pick(HAIRS));
-hotelReceptionist.position.set(4.5, 0.14, -2.6);
+hotelReceptionist.position.set(4.5, 0.14, -4.6);
 hotelReceptionist.rotation.y = Math.PI / 2;
 grandHotelGroup.add(hotelReceptionist);
 
@@ -2615,28 +2657,26 @@ const hotelSignTex = tex(512, 128, (g, w, h) => {
   g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillText('⭐⭐⭐⭐⭐ GRAND OTEL', w / 2, 44);
   g.fillStyle = '#ffffff'; g.font = 'bold 24px sans-serif';
-  g.fillText('3 KATLI · 250 LÜKS ODA · 3 HAVUZ', w / 2, 92);
+  g.fillText('3 KATLI · 250 LÜKS ODA · 10M₺', w / 2, 92);
 });
 const hotelMainSign = new THREE.Mesh(new THREE.PlaneGeometry(11.5, 2.8), new THREE.MeshBasicMaterial({map: hotelSignTex, side: THREE.DoubleSide}));
 hotelMainSign.position.set(0.6, 12.2, 0);
 hotelMainSign.rotation.y = Math.PI / 2;
 grandHotelGroup.add(hotelMainSign);
 
-// Yol kenarında Yönlendirme & Satılık/Resepsiyon Tabelası (doorX=-14.2, doorZ=-135)
+// Yol kenarında Yönlendirme & Satılık/Resepsiyon Tabelası (yaya geçidinin hemen yanında, giriş yolunu kapatmaz)
 const hotelEntranceSign = new THREE.Mesh(new THREE.PlaneGeometry(4.8, 1.25), new THREE.MeshBasicMaterial({map: hotelSignTex, side: THREE.DoubleSide}));
-hotelEntranceSign.position.set(21.2, 3.2, 0);
+hotelEntranceSign.position.set(21.2, 3.2, -6.5);
 hotelEntranceSign.rotation.y = Math.PI / 2;
 grandHotelGroup.add(hotelEntranceSign);
-addTo(grandHotelGroup, new THREE.CylinderGeometry(0.14, 0.14, 3.2, 8), M(0xb45309), 21.2, 1.6, -2.0);
-addTo(grandHotelGroup, new THREE.CylinderGeometry(0.14, 0.14, 3.2, 8), M(0xb45309), 21.2, 1.6, 2.0);
+addTo(grandHotelGroup, new THREE.CylinderGeometry(0.14, 0.14, 3.2, 8), M(0xb45309), 21.2, 1.6, -8.5);
+addTo(grandHotelGroup, new THREE.CylinderGeometry(0.14, 0.14, 3.2, 8), M(0xb45309), 21.2, 1.6, -4.5);
 
-// 🏊 3 ADET YÜZME HAVUZU (Otelin geniş bahçesinde, oyuncu içine girip yüzebilir!)
+// 🏊 YAN TARAFLARDAKİ 2 BÜYÜK YÜZME HAVUZU (Ortadaki havuz kaldırıldı, otel kapısının önü tamamen açıldı!)
 const HOTEL_POOLS = [
-  // Havuz 1: Olimpik Büyük Yüzme Havuzu (local x: 11.5, z: -15.5 -> world x: -24.5, z: -150.5)
-  {name: '🏊 Olimpik Yüzme Havuzu', lx: 11.5, lz: -15.5, wx: HOTEL_POS.x + 11.5, wz: HOTEL_POS.z - 15.5, hw: 4.8, hd: 6.8, col: 0x0ea5e9},
-  // Havuz 2: Aquapark Su Kaydıraklı Eğlence Havuzu (local x: 11.5, z: 0 -> world x: -24.5, z: -135)
-  {name: '🎢 Aquapark Kaydıraklı Havuz', lx: 11.5, lz: 0.0, wx: HOTEL_POS.x + 11.5, wz: HOTEL_POS.z, hw: 4.5, hd: 5.5, col: 0x38bdf8},
-  // Havuz 3: VIP Sıcak Jakuzi & Sonsuzluk Havuzu (local x: 11.5, z: 15.5 -> world x: -24.5, z: -119.5)
+  // Havuz 1: Kuzey Olimpik & Su Kaydıraklı Yüzme Havuzu (local x: 11.5, z: -15.5 -> world x: -24.5, z: -150.5)
+  {name: '🏊 Olimpik & Kaydıraklı Yüzme Havuzu', lx: 11.5, lz: -15.5, wx: HOTEL_POS.x + 11.5, wz: HOTEL_POS.z - 15.5, hw: 4.8, hd: 6.8, col: 0x0ea5e9},
+  // Havuz 2: Güney VIP Sıcak Jakuzi & Sonsuzluk Havuzu (local x: 11.5, z: 15.5 -> world x: -24.5, z: +15.5)
   {name: '♨️ VIP Sıcak Jakuzi Havuzu', lx: 11.5, lz: 15.5, wx: HOTEL_POS.x + 11.5, wz: HOTEL_POS.z + 15.5, hw: 4.4, hd: 5.8, col: 0x22d3ee}
 ];
 HOTEL_POOLS.forEach((pl, idx) => {
@@ -2660,10 +2700,10 @@ HOTEL_POOLS.forEach((pl, idx) => {
     }
   });
 });
-// Havuz 2'ye özel 3B Su Kaydırağı Kulesi (Aquapark)
-addTo(grandHotelGroup, B(1.8, 3.8, 1.8), M(0xe11d48), 7.2, 1.9, -3.2); // Kaydırak kulesi
-addTo(grandHotelGroup, B(4.2, 0.22, 1.1), M(0xfacc15), 9.2, 2.2, -2.2).rotation.z = -0.46; // Sarı su kaydırağı oluğu
-addTo(grandHotelGroup, B(4.2, 0.22, 1.1), M(0xec4899), 9.2, 1.6, 2.2).rotation.z = -0.35;  // Pembe su kaydırağı oluğu
+// Kuzey Havuzuna özel 3B Su Kaydırağı Kulesi (Aquapark)
+addTo(grandHotelGroup, B(1.8, 3.8, 1.8), M(0xe11d48), 7.2, 1.9, -18.5); // Kaydırak kulesi
+addTo(grandHotelGroup, B(4.2, 0.22, 1.1), M(0xfacc15), 9.2, 2.2, -17.5).rotation.z = -0.46; // Sarı su kaydırağı oluğu
+addTo(grandHotelGroup, B(4.2, 0.22, 1.1), M(0xec4899), 9.2, 1.6, -13.5).rotation.z = -0.35; // Pembe su kaydırağı oluğu
 
 // 🛏️🚽🍳 3B LÜKS OTEL ODASI İÇ MEKÂNI (250 Odanın tamamına girilebilir! Y=12 katında, 2 Güzel Yatak + Tuvalet/Banyo + Mutfak + Salon + Balkon)
 let inHotelRoomState = 0; // 0 = dışarıda/lobide, 1..250 = girilen oda numarası
@@ -4169,7 +4209,13 @@ function free(x, z){
     const atDoor = x <= 11.5 && z > -4.8 && z < 1.2;
     if(!inRest && !atDoor) return false;
   }
-  if(Math.abs(x) < 4.3 && !((z > -64 && z < -56) || (z > -2.5 && z < 0.5))) return false; // yaya geçitleri
+  // 🏨 3 Katlı Grand Otel binası (x: -46.2..-33.8, z: -158.2..-111.8): ön lobi kapısından (z: -138.8..-131.2) yürüyerek içeri girilebilir!
+  if(x >= -46.3 && x <= -33.7 && z >= -158.3 && z <= -111.7){
+    const inHotelLobby = x > -45.7 && x < -34.2 && z > -157.6 && z < -112.4;
+    const atHotelDoor = x >= -34.5 && z > -138.8 && z < -131.2;
+    if(!inHotelLobby && !atHotelDoor) return false;
+  }
+  if(Math.abs(x) < 4.3 && !((z > -64 && z < -56) || (z > -2.5 && z < 0.5) || (z > -139.5 && z < -130.5))) return false; // yaya geçitleri
   // karavan: içi (kapıdan girilir) dışında duvar; döner ocağı engel
   const L = truckLocal(x, z);
   if(L.x > -1.4 && L.x < 2.6 && L.z > -2.7 && L.z < 2.7){
@@ -6845,26 +6891,32 @@ const MKT = [
   {id:'kurye', name:'🛵 Kurye & Telefon Siparişi', desc:'Telefonla paket sipariş gelir, kuryeye teslim edince 2 katı ücret alırsın', price:600},
   {id:'hoparlor', name:'📻 Dükkân Hoparlörü & Müzik Yayını', desc:'Dükkânın üstüne hoparlör takılır; müzik çaldıkça müşteriler %25 daha hızlı gelir, sabır ve bahşiş +%15 artar!', price:550},
   {id:'restoran', name:'🏪 Büyük Döner Restoranı Binası', desc:'Karavandan 2 katlı lüks restorana geç! Kapasite +60 artar, tüm kazançlar +%35 yükselir!', price:15000},
-  {id:'villa', name:'🏡 Garajlı Lüks Villa (2 Katlı Malikâne)', desc:'Evin 2 katlı, teraslı, büyük havuzlu ve otomatik garajlı lüks villaya dönüşür!', price:20000}
+  {id:'villa', name:'🏡 Garajlı Lüks Villa (2 Katlı Malikâne)', desc:'Evin 2 katlı, teraslı, büyük havuzlu ve otomatik garajlı lüks villaya dönüşür!', price:20000},
+  {id:'otel', name:'🏨 5 Yıldızlı Grand Otel (3 Kat · 250 Oda)', desc:'3 katlı, 250 odalı dev otelin sahibi ol! Her oda 10.000₺ kira kazandırır ve tüm odalara ücretsiz girersin!', price:10000000}
 ];
 function renderMarket(){
   const box = $('mktBody');
   box.innerHTML = '';
   MKT.forEach(k => {
-    const owned = !!(S.mk[k.id] || (k.id === 'restoran' && S.kar.restoran) || (k.id === 'garaj' && S.mk.villa));
+    const owned = !!(S.mk[k.id] || (k.id === 'restoran' && S.kar.restoran) || (k.id === 'garaj' && S.mk.villa) || (k.id === 'otel' && S.hotelOwned));
     const d = document.createElement('div');
     d.className = 'row';
     d.innerHTML = `<span>${k.name}<small>${k.desc}</small></span>`;
     const b = document.createElement('button');
-    b.textContent = owned ? 'Sahip' : `${k.price}₺`;
+    b.textContent = owned ? 'Sahip' : `${k.price.toLocaleString('tr-TR')}₺`;
     b.disabled = owned || S.money < k.price;
     b.onclick = () => {
       if(owned || S.money < k.price) return;
       S.money -= k.price; S.mk[k.id] = true;
       if(k.id === 'restoran') S.kar.restoran = true;
       if(k.id === 'villa') S.mk.garaj = true;
+      if(k.id === 'otel'){
+        S.hotelOwned = true;
+        S.hotelVault = (S.hotelVault || 0) + 250000;
+      }
+      save();
       beep(700, 0.1);
-      flash(`${k.name} alındı`, '#4ade80');
+      flash(`${k.name} alındı!`, '#4ade80');
       renderMarket(); renderAll();
     };
     d.appendChild(b);
@@ -9604,12 +9656,12 @@ function exitHotelRoom(){
   const oldRoom = inHotelRoomState;
   inHotelRoomState = 0;
   hotelRoomInteriorGroup.visible = false;
-  P.x = HOTEL_POS.doorX + 1.4;
-  P.z = HOTEL_POS.doorZ;
+  P.x = HOTEL_POS.x - 1.5; // Otel lobisinin içine (resepsiyonun önüne) çıkar
+  P.z = HOTEL_POS.z;
   P.y = 0;
   P.yaw = Math.PI / 2;
   beep(480, 0.10, 'sine', 0.12);
-  flash(`🚪 Oda #${oldRoom} içinden otel lobisine/bahçesine çıktın.`, '#7dd3fc');
+  flash(`🚪 Oda #${oldRoom} içinden otelin lobisine çıktın.`, '#7dd3fc');
 }
 
 function openHotelModal(){
@@ -9701,6 +9753,7 @@ function openHotelModal(){
       }
       S.money -= HOTEL_PRICE;
       S.hotelOwned = true;
+      S.mk.otel = true;
       S.hotelVault = (S.hotelVault || 0) + 250000; // Hoş geldin kasa açılış bonusu
       save(); renderAll();
       beep(880, 0.22, 'triangle', 0.18);
@@ -12927,7 +12980,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-174823';
+const APP_VERSION = '2026-10-29-181250';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
