@@ -136,21 +136,23 @@ button small{font-size:9px;margin-top:0}
 #fps{right:auto!important;left:calc(50% - 90px)!important;top:auto!important;bottom:max(3px,env(safe-area-inset-bottom))!important;font-size:10px!important;padding:1px 4px!important}
 @media (max-height:340px){#stats{font-size:10px;line-height:1.2}#pad{width:clamp(70px,22vh,100px)}}
 @media (max-height:520px){#bottom{max-height:62vh}}
-/* Telefona özel: sağ ve soldaki panelleri/kontrolleri küçült */
+/* Telefona özel: sağ ve soldaki panelleri/kontrolleri küçült ve ekranın içine al */
 @media (max-width:899px), (max-height:520px){
-  #stats{padding:4px 6px;font-size:9px;line-height:1.22;max-width:122px;border-radius:8px}
-  #stats #eat{margin-top:3px!important;padding:3px 6px!important;font-size:9px!important}
-  #rightCol{width:min(116px,28vw);gap:3px}
-  #rightCol #board{padding:4px 6px;font-size:8.5px;border-radius:8px}
-  #board h4{font-size:8px;margin:0 0 1px}
-  #boardBody ol{margin:2px 0 0;padding-left:13px;line-height:1.25}
+  #stats{top:max(10px,calc(env(safe-area-inset-top) + 4px))!important;left:max(18px,calc(env(safe-area-inset-left) + 12px))!important;padding:4px 6px;font-size:8.5px;line-height:1.18;max-width:112px;border-radius:8px}
+  #stats #eat{margin-top:3px!important;padding:3px 5px!important;font-size:8.5px!important}
+  #rightCol{top:max(10px,calc(env(safe-area-inset-top) + 4px))!important;right:max(18px,calc(env(safe-area-inset-right) + 12px))!important;width:min(108px,26vw);gap:3px}
+  #rightCol #board{padding:4px 6px;font-size:8px;border-radius:8px}
+  #board h4{font-size:7.5px;margin:0 0 1px}
+  #boardBody ol{margin:2px 0 0;padding-left:12px;line-height:1.2}
   .pbar{height:3px;margin-top:3px}
-  #future{margin-top:3px;padding-top:2px;font-size:8px;line-height:1.2}
-  #future .fl{font-size:8px}
-  #pad{width:clamp(68px,19vh,92px);gap:3px}
-  #rightPad{width:clamp(88px,23vh,116px);gap:3px}
-  #rightPad button{padding:4px 3px;font-size:9.5px}
-  #bottom{width:min(256px,calc(100% - 12px));padding:4px;border-radius:8px}
+  #future{margin-top:3px;padding-top:2px;font-size:7.5px;line-height:1.18}
+  #future .fl{font-size:7.5px}
+  #pad{left:max(18px,calc(env(safe-area-inset-left) + 12px))!important;bottom:max(12px,calc(env(safe-area-inset-bottom) + 6px))!important;width:clamp(64px,17vh,86px);gap:3px}
+  #rightPad{right:max(18px,calc(env(safe-area-inset-right) + 12px))!important;bottom:max(12px,calc(env(safe-area-inset-bottom) + 6px))!important;width:clamp(82px,21vh,108px);gap:3px}
+  body.lefty #pad{left:auto!important;right:max(18px,calc(env(safe-area-inset-right) + 12px))!important}
+  body.lefty #rightPad{right:auto!important;left:max(18px,calc(env(safe-area-inset-left) + 12px))!important}
+  #rightPad button{padding:3.5px 3px;font-size:9px}
+  #bottom{right:max(18px,calc(env(safe-area-inset-right) + 12px))!important;bottom:max(10px,calc(env(safe-area-inset-bottom) + 4px))!important;width:min(242px,calc(100% - 36px));padding:4px;border-radius:8px}
   #plate{min-height:14px;gap:2px;margin-bottom:3px;font-size:8.5px}
   .chip{padding:1px 4px}
   #bottom button{padding:3px 2px;font-size:8.5px;border-radius:6px}
@@ -158,7 +160,8 @@ button small{font-size:9px;margin-top:0}
   #bottom #serve{font-size:10px}
   #clear{margin-top:3px!important;padding:2px!important;font-size:8.5px!important}
   #meter{height:13px;margin-bottom:4px}
-  #toolbar{max-width:calc(100vw - 255px)}
+  #toolbar{top:max(8px,calc(env(safe-area-inset-top) + 2px))!important;max-width:calc(100vw - 265px)}
+  #toolbar button{padding:4px 6px!important;font-size:10.5px!important}
   #driftBtn{left:140px!important}
   #camBtn{left:140px!important}
   #hornBtn{left:215px!important}
@@ -832,7 +835,7 @@ const CARS = [
 // COMOGENE dükkânı: sürülebilir (konumu ve yönü burada tutulur)
 const CM = {x:9.4, z:-12, h:0, v:0, driving:false};
 // oyuncunun arabası ve motoru: ikisi ayrı park edilir, hangisine yakınsan ona binip sürersin
-const C = {x:-6.5, z:-30, h:0, v:0, driving:false, maxV:6, driftOn:true, drifting:false, camDist:3.6, nitro:100, hazard:false, activeVeh:'car'};
+const C = {x:-6.5, z:-30, h:0, v:0, driving:false, maxV:6, driftOn:true, drifting:false, camDist:4.5, nitro:100, hazard:false, activeVeh:'car'};
 const CAR_STATE = {x:-6.5, z:-30, h:0};
 const MOTO_STATE = {x:-6.5, z:-25.5, h:0};
 let ownedCarMesh = null, ownedMotoMesh = null;
@@ -902,7 +905,8 @@ function resize(){
   renderer.setPixelRatio(DPR_MAX * renderScale); // çizim yoğunluğu: cihaz keskinliği × uyarlanabilir kalite
   renderer.setSize(w, h, false);
   camera.aspect = w / h;
-  camera.fov = (w / h) < 0.9 ? 72 : 60;
+  const isMobileScreen = w < 920 || h < 540;
+  camera.fov = (w / h) < 0.9 ? 82 : (isMobileScreen ? 74 : 66);
   camera.updateProjectionMatrix();
 }
 window.addEventListener('resize', resize);
@@ -1234,9 +1238,22 @@ function makeNaturalFlowerCluster(x, z, colHex = 0xe74c3c){
   swayFlowerClusters.push({pivot: swayPivot, phase: x * 0.45 + z * 0.35, x, z});
   return fg;
 }
-// sokak lambalarının altındaki ışık havuzları (geceleri görünür)
-const lampPoolMat = new THREE.MeshBasicMaterial({color: 0xffe08a, transparent: true, opacity: 0, depthWrite: false});
-for(let z = -80; z < 10; z += 16){
+// sokak lambalarının altındaki ışık havuzları ve 3B ışık huzmesi (geceleri parlar ve etrafa ışık yayar)
+const lampPoolTex = tex(64, 64, (g, w, h) => {
+  const gr = g.createRadialGradient(w/2, h/2, 0, w/2, h/2, w/2);
+  gr.addColorStop(0, 'rgba(255, 232, 130, 0.95)');
+  gr.addColorStop(0.45, 'rgba(255, 210, 90, 0.55)');
+  gr.addColorStop(0.78, 'rgba(255, 190, 60, 0.18)');
+  gr.addColorStop(1, 'rgba(255, 180, 40, 0)');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+});
+const lampPoolMat = new THREE.MeshBasicMaterial({map: lampPoolTex, transparent: true, opacity: 0, depthWrite: false, fog: false});
+const lampConeGeo = new THREE.ConeGeometry(2.15, 3.1, 10, 1, true);
+const lampConeMat = new THREE.MeshBasicMaterial({color: 0xffe484, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, fog: false});
+const lampHaloGeo = new THREE.SphereGeometry(0.36, 8, 6);
+const lampHaloMat = new THREE.MeshBasicMaterial({color: 0xfff099, transparent: true, opacity: 0, depthWrite: false, fog: false});
+const lampPoolCircleGeo = new THREE.CircleGeometry(3.8, 14);
+for(let z = -128; z < 10; z += 16){
   [-4.6, 4.6].forEach(x => {
     const lampG = new THREE.Group();
     lampG.position.set(x, 0, z);
@@ -1246,12 +1263,17 @@ for(let z = -80; z < 10; z += 16){
     pole.position.set(0, 1.6, 0); lampG.add(pole);
     const head = new THREE.Mesh(GEO.lampHead, poleMat);
     head.position.set(x>0?-0.25:0.25, 3.2, 0); lampG.add(head);
+    const lx = x > 0 ? -0.5 : 0.5;
     const g = new THREE.Mesh(GEO.glow, glowMat);
-    g.position.set(x>0?-0.5:0.5, 3.1, 0); lampG.add(g);
+    g.position.set(lx, 3.1, 0); lampG.add(g);
+    const halo = new THREE.Mesh(lampHaloGeo, lampHaloMat);
+    halo.position.set(lx, 3.08, 0); lampG.add(halo);
+    const beam = new THREE.Mesh(lampConeGeo, lampConeMat);
+    beam.position.set(lx, 1.55, 0); lampG.add(beam);
     addSmashable(lampG, x, z, 0.85, 0x333333, 0xffe08a);
-    const pool = new THREE.Mesh(new THREE.CircleGeometry(2.2, 20), lampPoolMat);
+    const pool = new THREE.Mesh(lampPoolCircleGeo, lampPoolMat);
     pool.rotation.x = -Math.PI / 2;
-    pool.position.set(x + (x > 0 ? -0.6 : 0.6), 0.05, z);
+    pool.position.set(x + (x > 0 ? -0.75 : 0.75), 0.06, z);
     scene.add(pool);
   });
 }
@@ -6118,40 +6140,40 @@ const nearHome = () => Math.hypot(P.x - 9.9, P.z + 22) < 2.5;
 const inHouse = () => P.x > 10.72 && P.x < 15.28 && P.z > -24.88 && P.z < -19.12;
 function sleepAtHome(){
   if(!active() || D.driving) return;
+  const h = typeof gameHour === 'function' ? gameHour() : 12;
+  const isNightTime = nightMode || h >= 19 || shiftT <= 35;
+  if(!isNightTime){
+    beep(320, 0.12, 'triangle', 0.11);
+    flash('🌙 Henüz gece olmadı! Sadece gece olunca uyuyup sabahı başlatabilirsin.', '#ffd54a');
+    return;
+  }
   can = MAX_LIVES;
   tamponUsed = false;
-  const h = typeof gameHour === 'function' ? gameHour() : 12;
-  const isEveningOrNight = nightMode || h >= 17 || shiftT <= 55;
-  if(isEveningOrNight){
-    S.day = (S.day || 1) + 1;
-    shiftT = SHIFT_LEN;
-    shiftEnded = false;
-    over = false;
-    nightMode = false;
-    if($('nightBtn')) $('nightBtn').innerHTML = '🌙<span class="t"> Gece</span>';
-    wheelSpinsLeft = 3;
-    beggarGave = false;
-    gamePlayed = false;
-    if(typeof resetMineForNewShift === 'function') resetMineForNewShift();
-    let interestMsg = '';
-    if((S.bank || 0) > 0){
-      const interest = Math.max(1, Math.round(S.bank * 0.15));
-      S.bank += interest;
-      interestMsg = ` · 🏦 Faiz +${interest.toLocaleString('tr-TR')}₺`;
-    }
-    if(S.kar.staff){
-      S.wageDue = (S.wageDue || 0) + 5;
-    }
-    skyPeriod = '';
-    if(skyNow){ skyNow.hemi = 1.0; skyNow.sun = 0.9; }
-    updateSky();
-    drawClock();
-    beep(580, 0.18, 'sine', 0.14);
-    flash(`☀️ Mışıl mışıl uyudun ve sabah oldu! Gün ${S.day} başladı!${interestMsg}`, '#ffd54a');
-  } else {
-    beep(520, 0.12, 'sine', 0.11);
-    flash('🛏 Evde dinlendin, canların doldu! (Gündüz olması için akşam/gece olunca uyu)', '#4ade80');
+  S.day = (S.day || 1) + 1;
+  shiftT = SHIFT_LEN;
+  shiftEnded = false;
+  over = false;
+  nightMode = false;
+  if($('nightBtn')) $('nightBtn').innerHTML = '🌙<span class="t"> Gece</span>';
+  wheelSpinsLeft = 3;
+  beggarGave = false;
+  gamePlayed = false;
+  if(typeof resetMineForNewShift === 'function') resetMineForNewShift();
+  let interestMsg = '';
+  if((S.bank || 0) > 0){
+    const interest = Math.max(1, Math.round(S.bank * 0.15));
+    S.bank += interest;
+    interestMsg = ` · 🏦 Faiz +${interest.toLocaleString('tr-TR')}₺`;
   }
+  if(S.kar.staff){
+    S.wageDue = (S.wageDue || 0) + 5;
+  }
+  skyPeriod = '';
+  if(skyNow){ skyNow.hemi = 1.0; skyNow.sun = 0.9; }
+  updateSky();
+  drawClock();
+  beep(580, 0.18, 'sine', 0.14);
+  flash(`☀️ Gece uyudun ve sabah oldu! Gün ${S.day} başladı!${interestMsg}`, '#ffd54a');
   save();
   renderAll();
 }
@@ -6774,7 +6796,7 @@ canvas.addEventListener('pointerup', e => {
     return;
   }
   if(typeof hospitalGroup !== 'undefined' && ray.intersectObject(hospitalGroup, true).length){
-    flash('🏥 Şehir Hastanesi: Yemek veya su barın sıfırlanırsa 5.000₺ acil tedavi uygulanır!', '#38bdf8');
+    flash('🏥 Şehir Hastanesi: Yemek veya su barın sıfırlanırsa 500₺ acil tedavi uygulanır!', '#38bdf8');
     return;
   }
   if(!C.driving && ray.intersectObject(policeCarMesh, true).length){
@@ -6973,8 +6995,11 @@ function updateSky(){
     const litNow = p === 'night' || p === 'eve' || p === 'rain';
     HEAD_M.color.set(litNow ? 0xfff6c8 : 0x666666);
     TAIL_M.color.set(litNow ? 0xe0283f : 0x5a1a1a);
-    lampPoolMat.opacity = litNow ? 0.3 : 0; // sokak lambalarının ışığı
-    carSpotMat.opacity = litNow ? 0.22 : 0; // trafik arabalarının far ışığı
+    lampPoolMat.opacity = p === 'night' ? 0.88 : (litNow ? 0.52 : 0); // sokak lambalarının yerde yaydığı parlak ışık
+    if(typeof lampConeMat !== 'undefined') lampConeMat.opacity = p === 'night' ? 0.24 : (litNow ? 0.12 : 0); // 3B ışık huzmesi
+    if(typeof lampHaloMat !== 'undefined') lampHaloMat.opacity = p === 'night' ? 0.72 : (litNow ? 0.38 : 0); // lamba başlığı parlak hale
+    glowMat.color.set(litNow ? 0xfff3a1 : 0x8a8270);
+    carSpotMat.opacity = litNow ? 0.25 : 0; // trafik arabalarının far ışığı
     scene.background = cfg.sky;
     skyFx.visible = p === 'night';
   }
@@ -9231,7 +9256,7 @@ function openFridgeModal(){
 function triggerHospitalEmergency(reasonText){
   if(hospitalFeeCD > 0) return;
   hospitalFeeCD = 8;
-  const FEE = 5000;
+  const FEE = 500;
   let cashPaid = 0;
   let loanAdded = 0;
   if((S.money || 0) >= FEE){
@@ -9256,8 +9281,8 @@ function triggerHospitalEmergency(reasonText){
   P.yaw = -Math.PI / 2;
   beep(240, 0.35, 'sawtooth', 0.18);
   const payMsg = loanAdded > 0
-    ? (cashPaid > 0 ? `${cashPaid}₺ nakit + ${loanAdded}₺ Banka Kredisi ile ödendi!` : `Paran yetmediği için 5.000₺ Banka Kredisi borcuna eklendi!`)
-    : `5.000₺ hastane masrafı nakit ödendi!`;
+    ? (cashPaid > 0 ? `${cashPaid}₺ nakit + ${loanAdded}₺ Banka Kredisi ile ödendi!` : `Paran yetmediği için 500₺ Banka Kredisi borcuna eklendi!`)
+    : `500₺ hastane masrafı nakit ödendi!`;
   flash(`🚑 ${reasonText} Şehir Hastanesine kaldırıldın! (${payMsg})`, '#f87171');
   save(); renderAll();
 }
@@ -11098,11 +11123,11 @@ function frame(now){
     const mineFloorY = getMineFloorY(P.x, P.z);
     P.y = ((P.y || 0) + (mineFloorY - (P.y || 0)) * Math.min(1, dt * 14));
     if(thirdPerson){
-      // dış görüş: karakterin arkasından
-      camera.position.set(P.x + Math.sin(P.yaw) * 3, P.y + (inPondWater ? 1.55 : 2.4) + swimBob, P.z + Math.cos(P.yaw) * 3);
-      camera.rotation.set(P.pitch - 0.2, P.yaw, 0);
+      // dış görüş: karakterin arkasından (telefonda daha geniş ve uzaktan görüş)
+      camera.position.set(P.x + Math.sin(P.yaw) * 4.2, P.y + (inPondWater ? 1.75 : 2.75) + swimBob, P.z + Math.cos(P.yaw) * 4.2);
+      camera.rotation.set(P.pitch - 0.22, P.yaw, 0);
     } else {
-      camera.position.set(P.x, P.y + (inPondWater ? 0.65 : 1.65) + swimBob, P.z);
+      camera.position.set(P.x + Math.sin(P.yaw) * 0.25, P.y + (inPondWater ? 0.68 : 1.68) + swimBob, P.z + Math.cos(P.yaw) * 0.25);
       camera.rotation.set(P.pitch, P.yaw, 0);
     }
     playerMesh.visible = thirdPerson;
@@ -11315,8 +11340,8 @@ function frame(now){
   if(hasKurye && phoneOrder && nearKurye) txt('kuryeBtn', `🛵 Kurye Teslim (${Math.ceil(phoneOrder.t)}s)`);
   const hIn = inHouse(), hNear = nearHome() && !D.driving;
   disp('home', (hIn || hNear) && !D.driving ? 'block' : 'none');
-  const isEveNow = nightMode || gameHour() >= 17 || shiftT <= 55;
-  txt('home', hIn ? (isEveNow ? '🛏 Uyu (Sabah Olur)' : '🛏 Dinlen / Uyu') : '🏠 Eve Git');
+  const isEveNow = nightMode || gameHour() >= 19 || shiftT <= 35;
+  txt('home', hIn ? (isEveNow ? '🛏 Uyu (Sabah Olur)' : '🌙 Gece Olunca Uyu') : '🏠 Eve Git');
   disp('homeOut', hIn && !D.driving ? 'block' : 'none');
   if(bubbleT > 0){
     bubbleT -= dt;
@@ -12368,7 +12393,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-124931';
+const APP_VERSION = '2026-10-29-133204';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
