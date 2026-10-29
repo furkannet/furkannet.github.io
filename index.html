@@ -2575,7 +2575,7 @@ addTo(grandHotelGroup, B(25.0, 0.16, 6.2), M(0xb91c1c), 9.5, 0.08, 0);
 addTo(grandHotelGroup, B(25.0, 0.17, 0.25), M(0xfacc15), 9.5, 0.085, -3.0);
 addTo(grandHotelGroup, B(25.0, 0.17, 0.25), M(0xfacc15), 9.5, 0.085, 3.0);
 
-// 3 Katlı Devasa Otel Binası (local x: -10..+2, y: 0..10.8, z: -23..+23 — İçi Yürünebilir Lüks Lobi!)
+// 3 Katlı Devasa Otel Binası (local x: -10..+2, y: 0..10.8, z: -23..+23 — 1. Kat: Kapalı Havuz + Büyük Merdiven + Bekleme Odası, 2. ve 3. Kat: Sadece Odalar!)
 addRectShadow(grandHotelGroup, 13.5, 48.0, -4.0, 0, 0.16);
 addTo(grandHotelGroup, B(0.45, 10.8, 46.0), M(0xfef9c3), -9.8, 5.4, 0); // Arka duvar
 addTo(grandHotelGroup, B(12.0, 10.8, 0.45), M(0xfef9c3), -4.0, 5.4, -22.8); // Sol yan duvar
@@ -2583,30 +2583,121 @@ addTo(grandHotelGroup, B(12.0, 10.8, 0.45), M(0xfef9c3), -4.0, 5.4, 22.8);  // S
 // Ön duvar: Zemin katta ortası (z: -3.8..+3.8) yürüyerek içeri girmek için tamamen açık!
 addTo(grandHotelGroup, B(0.45, 3.6, 19.2), M(0xfef9c3), 1.8, 1.8, -13.4); // Zemin kat sol ön duvar
 addTo(grandHotelGroup, B(0.45, 3.6, 19.2), M(0xfef9c3), 1.8, 1.8, 13.4);  // Zemin kat sağ ön duvar
-addTo(grandHotelGroup, B(0.45, 7.2, 46.0), M(0xfef9c3), 1.8, 7.2, 0);     // 2. ve 3. kat ön cephe duvarı
-addTo(grandHotelGroup, B(11.6, 0.28, 45.6), M(0xfef3c7), -4.0, 3.55, 0);  // Lobi tavanı / 2. kat tabanı
+addTo(grandHotelGroup, B(0.45, 3.6, 19.2), M(0xfef9c3), 1.8, 5.4, -13.4); // 2. kat sol ön duvar
+addTo(grandHotelGroup, B(0.45, 3.6, 19.2), M(0xfef9c3), 1.8, 5.4, 13.4);  // 2. kat sağ ön duvar
+addTo(grandHotelGroup, B(0.45, 3.6, 19.2), M(0xfef9c3), 1.8, 9.0, -13.4); // 3. kat sol ön duvar
+addTo(grandHotelGroup, B(0.45, 3.6, 19.2), M(0xfef9c3), 1.8, 9.0, 13.4);  // 3. kat sağ ön duvar
 addTo(grandHotelGroup, B(12.0, 0.30, 46.0), M(0xfef9c3), -4.0, 10.75, 0); // 3. kat çatı tavanı
 
-// 🏨 LOBİ İÇ MEKÂNI (Otelin içine yürüyerek girince görünen Altın Resepsiyon, Koltuklar, Asansör Kapıları ve Oda Kapıları)
-addTo(grandHotelGroup, B(11.2, 0.16, 45.0), M(0xfef9c3), -4.0, 0.08, 0); // Lobi parlak mermer iç zemin
-// Lobi içi Büyük Resepsiyon Bankosu (tam girişin karşısında, local x: -6.8, z: 0)
-addTo(grandHotelGroup, B(1.6, 1.15, 7.5), M(0x78350f), -6.8, 0.58, 0);
-addTo(grandHotelGroup, B(1.8, 0.14, 7.8), M(0xfacc15), -6.8, 1.20, 0);
+// 2. KAT ZEMİNİ (Y = 3.6, ortada merdiven boşluğu z: -4.9..+4.9, x: -7.2..-1.2 açık!)
+addTo(grandHotelGroup, B(11.6, 0.24, 17.8), M(0xfef3c7), -4.0, 3.52, -13.8); // 2. kat sol kanat tabanı
+addTo(grandHotelGroup, B(11.6, 0.24, 17.8), M(0xfef3c7), -4.0, 3.52, 13.8);  // 2. kat sağ kanat tabanı
+addTo(grandHotelGroup, B(2.6, 0.24, 9.8), M(0xfef3c7), -8.5, 3.52, 0);       // 2. kat arka sahanlık
+addTo(grandHotelGroup, B(3.0, 0.24, 9.8), M(0xfef3c7), 0.3, 3.52, 0);        // 2. kat ön balkon köprüsü
+
+// 3. KAT ZEMİNİ (Y = 7.2, ortada merdiven boşluğu z: -4.9..+4.9, x: -7.2..-1.2 açık!)
+addTo(grandHotelGroup, B(11.6, 0.24, 17.8), M(0xfef3c7), -4.0, 7.12, -13.8); // 3. kat sol kanat tabanı
+addTo(grandHotelGroup, B(11.6, 0.24, 17.8), M(0xfef3c7), -4.0, 7.12, 13.8);  // 3. kat sağ kanat tabanı
+addTo(grandHotelGroup, B(2.6, 0.24, 9.8), M(0xfef3c7), -8.5, 7.12, 0);       // 3. kat arka koridor
+addTo(grandHotelGroup, B(3.0, 0.24, 9.8), M(0xfef3c7), 0.3, 7.12, 0);        // 3. kat ön sahanlık
+
+// 🏨 1. KAT (ZEMİN): ORTADA BÜYÜK MERDİVEN & RESEPSİYON, SOLDA KAPALI HAVUZ, SAĞDA BEKLEME ODASI (1. Katta oda yok!)
+addTo(grandHotelGroup, B(11.2, 0.16, 45.0), M(0xfef9c3), -4.0, 0.08, 0); // 1. kat parlak mermer iç zemin
+
+// İçerideki Resepsiyon Görevlisi (kapıya doğru +X yönüne bakıyor: bakışına göre SOL = -Z Kapalı Havuz, SAĞ = +Z Bekleme Odası, ORTA = Büyük Merdiven)
+addTo(grandHotelGroup, B(1.5, 1.15, 3.6), M(0x78350f), -0.4, 0.58, -4.4);
+addTo(grandHotelGroup, B(1.7, 0.14, 3.8), M(0xfacc15), -0.4, 1.20, -4.4);
 const lobbyManagerNPC = human(0x1e3a8a, 0x111827, pick(SKINS), pick(HAIRS));
-lobbyManagerNPC.position.set(-8.1, 0.16, 0);
-lobbyManagerNPC.rotation.y = Math.PI / 2;
+lobbyManagerNPC.position.set(-1.35, 0.16, -4.4);
+lobbyManagerNPC.rotation.y = Math.PI / 2; // +X yönüne bakar (solu = -Z, sağı = +Z)
 grandHotelGroup.add(lobbyManagerNPC);
-// Lobi içi altın avize ve oturma grupları (kuzey ve güney lobi salonları)
-[-11, 11].forEach(lz => {
-  addTo(grandHotelGroup, B(5.5, 0.05, 5.5), M(0x991b1b), -3.5, 0.17, lz); // Lobi halısı
-  addTo(grandHotelGroup, B(3.2, 0.55, 1.1), M(0x1e3a8a), -3.5, 0.42, lz - 1.8); // Lüks kanepe 1
-  addTo(grandHotelGroup, B(3.2, 0.55, 1.1), M(0x1e3a8a), -3.5, 0.42, lz + 1.8); // Lüks kanepe 2
-  addTo(grandHotelGroup, B(1.8, 0.42, 1.2), M(0xd97706), -3.5, 0.35, lz);       // Altın sehpa
-  addTo(grandHotelGroup, new THREE.CylinderGeometry(0.9, 1.2, 0.45, 10), M(0xfef08a), -3.5, 3.25, lz); // Tavan avizesi
+
+// 🪜 ORTADA DEVASA KRALİYET MERDİVENİ (1. Kat -> 2. Kat orta kol, 2. Kat -> 3. Kat sağ ve sol kollar)
+for(let st = 0; st < 12; st++){
+  const sx1 = -1.45 - st * 0.50;
+  const sy1 = 0.15 + st * 0.30;
+  addTo(grandHotelGroup, B(0.55, 0.28, 4.0), M(0xfef08a), sx1, sy1, 0); // 1->2 Mermer basamak
+  addTo(grandHotelGroup, B(0.56, 0.30, 2.6), M(0xb91c1c), sx1, sy1 + 0.01, 0); // Kırmızı kraliyet halısı
+  // 2. Kattan 3. Kata çıkan çift kollu büyük merdiven (z = -3.5 ve z = +3.5)
+  const sx2 = -6.95 + st * 0.50;
+  const sy2 = 3.75 + st * 0.30;
+  [-3.5, 3.5].forEach(sz2 => {
+    addTo(grandHotelGroup, B(0.55, 0.28, 2.4), M(0xfef08a), sx2, sy2, sz2);
+    addTo(grandHotelGroup, B(0.56, 0.30, 1.5), M(0xb91c1c), sx2, sy2 + 0.01, sz2);
+  });
+}
+// Merdiven altın korkulukları
+[-2.05, 2.05].forEach(rz => {
+  addTo(grandHotelGroup, B(6.2, 0.12, 0.12), M(0xfacc15), -4.2, 2.5, rz).rotation.z = -0.52;
 });
-// Lobi arka duvarında Altın Asansör Kapıları ve Kat Oda Kapıları (dokununca veya yanına gidince 250 odadan istediğine girersin!)
-[-18, -14, -6, 6, 14, 18].forEach((dz, idx) => {
-  addTo(grandHotelGroup, B(0.18, 2.4, 1.5), M(idx === 2 || idx === 3 ? 0xfacc15 : 0x78350f), -9.45, 1.35, dz);
+[-4.75, 4.75].forEach(rz => {
+  addTo(grandHotelGroup, B(6.2, 0.12, 0.12), M(0xfacc15), -4.2, 6.1, rz).rotation.z = 0.52;
+});
+
+// 🏊 1. KAT SOL TARAF (İçerideki adamın bakışına göre SOL = -Z): KAPALI YÜZME HAVUZU!
+addTo(grandHotelGroup, B(7.8, 0.38, 12.8), M(0xf8fafc), -4.0, 0.20, -14.5); // Kapalı havuz beyaz mermer çerçeve
+addTo(grandHotelGroup, B(7.2, 0.40, 12.2), M(0x0284c7), -4.0, 0.21, -14.5); // Havuz iç çini
+const indoorPoolWater = new THREE.Mesh(B(6.8, 0.34, 11.8), new THREE.MeshBasicMaterial({color: 0x38bdf8, transparent: true, opacity: 0.86}));
+indoorPoolWater.position.set(-4.0, 0.26, -14.5);
+grandHotelGroup.add(indoorPoolWater);
+[-18.0, -14.5, -11.0].forEach(sz => {
+  addTo(grandHotelGroup, B(1.4, 0.20, 0.72), M(0xfef08a), 0.6, 0.26, sz); // Kapalı havuz şezlongları
+  addTo(grandHotelGroup, B(0.40, 0.32, 0.70), M(0xf97316), 0.15, 0.38, sz);
+});
+const indoorPoolSignTex = tex(256, 64, (g, w, h) => {
+  g.fillStyle = '#0c4a6e'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#38bdf8'; g.lineWidth = 4; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#ffffff'; g.font = 'bold 22px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🏊 KAPALI YÜZME HAVUZU', w / 2, h / 2);
+});
+const indoorPoolSign = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 0.85), new THREE.MeshBasicMaterial({map: indoorPoolSignTex, side: THREE.DoubleSide}));
+indoorPoolSign.position.set(-4.0, 2.85, -7.2);
+grandHotelGroup.add(indoorPoolSign);
+
+// 🛋️ 1. KAT SAĞ TARAF (İçerideki adamın bakışına göre SAĞ = +Z): LÜKS BEKLEME ODASI!
+addTo(grandHotelGroup, B(8.4, 0.05, 13.6), M(0x991b1b), -4.0, 0.17, 14.5); // Bekleme odası dev bordo halı
+[10.8, 17.8].forEach(lz => {
+  addTo(grandHotelGroup, B(3.6, 0.58, 1.15), M(0x1e3a8a), -4.0, 0.44, lz - 1.9); // Lüks bekleme kanepesi 1
+  addTo(grandHotelGroup, B(3.6, 0.58, 1.15), M(0x1e3a8a), -4.0, 0.44, lz + 1.9); // Lüks bekleme kanepesi 2
+  addTo(grandHotelGroup, B(1.1, 0.62, 1.8), M(0x1e40af), -6.8, 0.46, lz);        // VIP berjer koltuk
+  addTo(grandHotelGroup, B(2.2, 0.42, 1.25), M(0xd97706), -4.0, 0.36, lz);       // Altın sehpa
+  addTo(grandHotelGroup, new THREE.CylinderGeometry(0.9, 1.2, 0.45, 10), M(0xfef08a), -4.0, 3.25, lz); // Tavan avizesi
+});
+addTo(grandHotelGroup, B(0.18, 1.6, 3.2), M(0x0f172a), -9.45, 1.85, 14.5); // Bekleme odası dev duvar TV'si
+addTo(grandHotelGroup, B(1.2, 0.95, 3.4), M(0x78350f), 0.6, 0.62, 14.5);   // Çay/kahve ikram masası
+const waitRoomSignTex = tex(256, 64, (g, w, h) => {
+  g.fillStyle = '#451a03'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#facc15'; g.lineWidth = 4; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#fde047'; g.font = 'bold 22px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🛋️ VIP BEKLEME ODASI', w / 2, h / 2);
+});
+const waitRoomSign = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 0.85), new THREE.MeshBasicMaterial({map: waitRoomSignTex, side: THREE.DoubleSide}));
+waitRoomSign.position.set(-4.0, 2.85, 7.2);
+grandHotelGroup.add(waitRoomSign);
+
+// 🚪 2. KAT (Y = 3.6, ODA 1–125) VE 3. KAT (Y = 7.2, ODA 126–250): SADECE ODALAR!
+[
+  {fy: 3.6, label: '🔑 2. KAT — ODALAR (1 – 125)', col: 0x1e3a8a},
+  {fy: 7.2, label: '🔑 3. KAT — ODALAR (126 – 250)', col: 0x7c2d12}
+].forEach(fl => {
+  // Kuzey ve Güney oda koridor halıları
+  addTo(grandHotelGroup, B(3.2, 0.04, 16.8), M(0x991b1b), -4.0, fl.fy + 0.15, -13.8);
+  addTo(grandHotelGroup, B(3.2, 0.04, 16.8), M(0x991b1b), -4.0, fl.fy + 0.15, 13.8);
+  // Sıralı lüks oda kapıları (arka duvarda ve iç koridorda)
+  [-20.5, -17.0, -13.5, -10.0, -6.5, 6.5, 10.0, 13.5, 17.0, 20.5].forEach(dz => {
+    addTo(grandHotelGroup, B(0.20, 2.35, 1.45), M(0x78350f), -9.45, fl.fy + 1.32, dz); // Oda kapısı
+    addTo(grandHotelGroup, B(0.24, 0.35, 0.65), M(0xfacc15), -9.42, fl.fy + 2.15, dz); // Altın oda numarası plakası
+  });
+  const flSignTex = tex(256, 64, (g, w, h) => {
+    g.fillStyle = '#1e293b'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#facc15'; g.lineWidth = 4; g.strokeRect(3, 3, w - 6, h - 6);
+    g.fillStyle = '#fde047'; g.font = 'bold 20px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(fl.label, w / 2, h / 2);
+  });
+  const flSign = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 0.80), new THREE.MeshBasicMaterial({map: flSignTex, side: THREE.DoubleSide}));
+  flSign.position.set(-9.40, fl.fy + 2.75, 0);
+  flSign.rotation.y = Math.PI / 2;
+  grandHotelGroup.add(flSign);
 });
 
 // Kat ayırıcı altın ve mermer kuşaklar (1. Kat, 2. Kat, 3. Kat ve Çatı)
@@ -2672,14 +2763,17 @@ grandHotelGroup.add(hotelEntranceSign);
 addTo(grandHotelGroup, new THREE.CylinderGeometry(0.14, 0.14, 3.2, 8), M(0xb45309), 21.2, 1.6, -8.5);
 addTo(grandHotelGroup, new THREE.CylinderGeometry(0.14, 0.14, 3.2, 8), M(0xb45309), 21.2, 1.6, -4.5);
 
-// 🏊 YAN TARAFLARDAKİ 2 BÜYÜK YÜZME HAVUZU (Ortadaki havuz kaldırıldı, otel kapısının önü tamamen açıldı!)
+// 🏊 YAN TARAFLARDAKİ 2 BÜYÜK AÇIK YÜZME HAVUZU + 1. KAT İÇERİDEKİ KAPALI YÜZME HAVUZU
 const HOTEL_POOLS = [
   // Havuz 1: Kuzey Olimpik & Su Kaydıraklı Yüzme Havuzu (local x: 11.5, z: -15.5 -> world x: -24.5, z: -150.5)
   {name: '🏊 Olimpik & Kaydıraklı Yüzme Havuzu', lx: 11.5, lz: -15.5, wx: HOTEL_POS.x + 11.5, wz: HOTEL_POS.z - 15.5, hw: 4.8, hd: 6.8, col: 0x0ea5e9},
   // Havuz 2: Güney VIP Sıcak Jakuzi & Sonsuzluk Havuzu (local x: 11.5, z: 15.5 -> world x: -24.5, z: +15.5)
-  {name: '♨️ VIP Sıcak Jakuzi Havuzu', lx: 11.5, lz: 15.5, wx: HOTEL_POS.x + 11.5, wz: HOTEL_POS.z + 15.5, hw: 4.4, hd: 5.8, col: 0x22d3ee}
+  {name: '♨️ VIP Sıcak Jakuzi Havuzu', lx: 11.5, lz: 15.5, wx: HOTEL_POS.x + 11.5, wz: HOTEL_POS.z + 15.5, hw: 4.4, hd: 5.8, col: 0x22d3ee},
+  // Havuz 3: 1. Kat Sol Salondaki Kapalı Sıcak Yüzme Havuzu (local x: -4.0, z: -14.5 -> world x: -40.0, z: -149.5)
+  {name: '🏊 Otel İçi Kapalı Yüzme Havuzu', lx: -4.0, lz: -14.5, wx: HOTEL_POS.x - 4.0, wz: HOTEL_POS.z - 14.5, hw: 3.4, hd: 5.9, col: 0x38bdf8, indoor: true}
 ];
 HOTEL_POOLS.forEach((pl, idx) => {
+  if(pl.indoor) return; // Kapalı havuz 1. kat iç mekânda çizildi
   const w = pl.hw * 2, d = pl.hd * 2;
   // Beyaz mermer havuz kenar duvarları
   addTo(grandHotelGroup, B(w + 0.9, 0.42, d + 0.9), M(0xf8fafc), pl.lx, 0.21, pl.lz);
@@ -2705,9 +2799,9 @@ addTo(grandHotelGroup, B(1.8, 3.8, 1.8), M(0xe11d48), 7.2, 1.9, -18.5); // Kayd�
 addTo(grandHotelGroup, B(4.2, 0.22, 1.1), M(0xfacc15), 9.2, 2.2, -17.5).rotation.z = -0.46; // Sarı su kaydırağı oluğu
 addTo(grandHotelGroup, B(4.2, 0.22, 1.1), M(0xec4899), 9.2, 1.6, -13.5).rotation.z = -0.35; // Pembe su kaydırağı oluğu
 
-// 🛏️🚽🍳 3B LÜKS OTEL ODASI İÇ MEKÂNI (250 Odanın tamamına girilebilir! Y=12 katında, 2 Güzel Yatak + Tuvalet/Banyo + Mutfak + Salon + Balkon)
+// 🛏️🚽🍳 3B LÜKS OTEL ODASI İÇ MEKÂNI (250 Odanın tamamına girilebilir! Y=16 katında, 2 Güzel Yatak + Tuvalet/Banyo + Mutfak + Salon + Balkon)
 let inHotelRoomState = 0; // 0 = dışarıda/lobide, 1..250 = girilen oda numarası
-const HOTEL_ROOM_ORIGIN = {x: -36, y: 12.0, z: -135};
+const HOTEL_ROOM_ORIGIN = {x: -36, y: 16.0, z: -135};
 const hotelRoomInteriorGroup = new THREE.Group();
 hotelRoomInteriorGroup.position.set(HOTEL_ROOM_ORIGIN.x, HOTEL_ROOM_ORIGIN.y, HOTEL_ROOM_ORIGIN.z);
 hotelRoomInteriorGroup.visible = false;
@@ -4209,8 +4303,11 @@ function free(x, z){
     const atDoor = x <= 11.5 && z > -4.8 && z < 1.2;
     if(!inRest && !atDoor) return false;
   }
-  // 🏨 3 Katlı Grand Otel binası (x: -46.2..-33.8, z: -158.2..-111.8): ön lobi kapısından (z: -138.8..-131.2) yürüyerek içeri girilebilir!
-  if(x >= -46.3 && x <= -33.7 && z >= -158.3 && z <= -111.7){
+  // 🏨 3 Katlı Grand Otel binası (x: -46.2..-33.8, z: -158.2..-111.8): 1. katta ön kapıdan girilir, 2. ve 3. katta merdivenle çıkılıp balkon ve koridorlarda yürünür!
+  if((P.y || 0) > 1.5 && x >= -48 && x <= -30 && z >= -160 && z <= -110){
+    const inUpperHotel = x > -45.7 && x < -32.6 && z > -157.4 && z < -112.6;
+    if(!inUpperHotel) return false;
+  } else if(x >= -46.3 && x <= -33.7 && z >= -158.3 && z <= -111.7){
     const inHotelLobby = x > -45.7 && x < -34.2 && z > -157.6 && z < -112.4;
     const atHotelDoor = x >= -34.5 && z > -138.8 && z < -131.2;
     if(!inHotelLobby && !atHotelDoor) return false;
@@ -8517,7 +8614,27 @@ function getMineFloorY(px, pz){
   if(inBunkerState) return -6.0;
   if(typeof inHotelRoomState !== 'undefined' && inHotelRoomState > 0) return HOTEL_ROOM_ORIGIN.y;
 
-  // 🏡 Evin 2. Katı, Balkonu ve Merdiveni (home merkezi x=13, z=-22, scale=1.2)
+  // 🏨 3 Katlı Grand Otel: Ortadaki Büyük Merdiven (1. Kat Y=0 -> 2. Kat Y=3.6 -> 3. Kat Y=7.2)
+  const hlx = px - HOTEL_POS.x;
+  const hlz = pz - HOTEL_POS.z;
+  if(hlx >= -9.8 && hlx <= 3.7 && hlz >= -22.8 && hlz <= 22.8){
+    const curY = P.y || 0;
+    // 1. Kattan 2. Kata çıkan Orta Büyük Merdiven (hlz: -2.1 .. +2.1, hlx: -7.5 .. -1.0)
+    if(hlz >= -2.1 && hlz <= 2.1 && hlx >= -7.5 && hlx <= -1.0){
+      const t1 = Math.max(0, Math.min(1, (-1.2 - hlx) / 6.0));
+      const stair1Y = t1 * 3.6;
+      if(curY < 5.2 && curY >= stair1Y - 1.5) return stair1Y;
+    }
+    // 2. Kattan 3. Kata çıkan Yan Büyük Merdivenler (hlz: -4.9 .. -2.1 veya +2.1 .. +4.9, hlx: -7.5 .. -1.0)
+    if(((hlz >= -4.9 && hlz < -2.1) || (hlz > 2.1 && hlz <= 4.9)) && hlx >= -7.5 && hlx <= -1.0 && curY >= 2.1){
+      const t2 = Math.max(0, Math.min(1, (hlx - (-7.2)) / 6.0));
+      const stair2Y = 3.6 + t2 * 3.6;
+      if(curY >= stair2Y - 1.5) return stair2Y;
+    }
+    if(curY >= 5.4) return 7.2; // 3. Kat (Oda 126–250)
+    if(curY >= 2.1) return 3.6; // 2. Kat (Oda 1–125)
+    return 0;                   // 1. Kat (Kapalı Havuz, Büyük Merdiven ve Bekleme Odası)
+  }
   const hx = (px - 13) / 1.2;
   const hz = (pz - (-22)) / 1.2;
   if(hx >= -3.35 && hx <= 2.05 && hz >= -2.75 && hz <= 2.75){
@@ -9619,7 +9736,7 @@ if($('homeFridgeBtn')) $('homeFridgeBtn').onclick = openFridgeModal;
 
 // ================= 🏨 3 KATLI 250 ODALI 5 YILDIZLI GRAND OTEL (10M₺ SATILIK & 10.000₺/ODA) =================
 let hotelPassiveIncomeT = 25;
-let selectedHotelFloor = 1;
+let selectedHotelFloor = 2;
 
 function enterHotelRoom(roomNo){
   roomNo = Math.max(1, Math.min(HOTEL_ROOM_COUNT, Math.floor(roomNo || 1)));
@@ -9647,32 +9764,36 @@ function enterHotelRoom(roomNo){
   setOpen = false;
   invModal.style.display = 'none';
   beep(740, 0.12, 'triangle', 0.14);
-  const fl = roomNo <= 85 ? 1 : (roomNo <= 170 ? 2 : 3);
-  flash(`🏨 Kat ${fl} · Oda #${roomNo} içine girdin! (2 Yatak, Tuvalet/Banyo ve Mutfak hazır)`, '#fde047');
+  const fl = roomNo <= 125 ? 2 : 3;
+  flash(`🏨 ${fl}. Kat · Oda #${roomNo} içine girdin! (2 Yatak, Tuvalet/Banyo ve Mutfak hazır)`, '#fde047');
 }
 
 function exitHotelRoom(){
   if(!inHotelRoomState) return;
   const oldRoom = inHotelRoomState;
+  const fl = oldRoom <= 125 ? 2 : 3;
   inHotelRoomState = 0;
   hotelRoomInteriorGroup.visible = false;
-  P.x = HOTEL_POS.x - 1.5; // Otel lobisinin içine (resepsiyonun önüne) çıkar
-  P.z = HOTEL_POS.z;
-  P.y = 0;
-  P.yaw = Math.PI / 2;
+  P.x = HOTEL_POS.x - (fl === 2 ? 8.2 : 0.2); // İlgili katın oda koridoruna çıkar
+  P.z = HOTEL_POS.z - 9.0;
+  P.y = fl === 2 ? 3.6 : 7.2;
+  P.yaw = 0;
   beep(480, 0.10, 'sine', 0.12);
-  flash(`🚪 Oda #${oldRoom} içinden otelin lobisine çıktın.`, '#7dd3fc');
+  flash(`🚪 Oda #${oldRoom} içinden ${fl}. Kat koridoruna çıktın. Merdivenden alt katlara inebilirsin!`, '#7dd3fc');
 }
 
 function openHotelModal(){
   setOpen = true;
+  if((P.y || 0) >= 5.4) selectedHotelFloor = 3;
+  else if((P.y || 0) >= 2.1) selectedHotelFloor = 2;
+  else if(selectedHotelFloor !== 2 && selectedHotelFloor !== 3) selectedHotelFloor = 2;
   const occEstimate = 210 + ((S.day || 1) * 7) % 41; // 210..250 dolu oda
   const dailyIncome = occEstimate * HOTEL_ROOM_PRICE;
-  const floorStart = selectedHotelFloor === 1 ? 1 : (selectedHotelFloor === 2 ? 86 : 171);
-  const floorEnd = selectedHotelFloor === 1 ? 85 : (selectedHotelFloor === 2 ? 170 : 250);
+  const floorStart = selectedHotelFloor === 2 ? 1 : 126;
+  const floorEnd = selectedHotelFloor === 2 ? 125 : 250;
 
   let roomQuickBtns = '';
-  const sampleRooms = [floorStart, floorStart + 1, floorStart + 2, floorStart + 9, floorStart + 24, floorStart + 49, floorEnd - 1, floorEnd];
+  const sampleRooms = [floorStart, floorStart + 1, floorStart + 2, floorStart + 9, floorStart + 24, floorStart + 59, floorEnd - 1, floorEnd];
   sampleRooms.forEach(rn => {
     if(rn >= floorStart && rn <= floorEnd){
       const isMine = S.hotelOwned || S.hotelRoom === rn;
@@ -9682,15 +9803,15 @@ function openHotelModal(){
 
   let roomActionsHtml = '';
   if(inHotelRoomState > 0){
-    const fl = inHotelRoomState <= 85 ? 1 : (inHotelRoomState <= 170 ? 2 : 3);
+    const fl = inHotelRoomState <= 125 ? 2 : 3;
     roomActionsHtml = `
       <div style="background:rgba(20,83,45,.45);border:2px solid #4ade80;border-radius:10px;padding:10px;margin-bottom:10px">
-        <div style="font-weight:900;color:#fde047;margin-bottom:6px">🔑 Şu An Kat ${fl} · Oda #${inHotelRoomState} İçindesin!</div>
+        <div style="font-weight:900;color:#fde047;margin-bottom:6px">🔑 Şu An ${fl}. Kat · Oda #${inHotelRoomState} İçindesin!</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
           <button id="hotelUseBedBtn" style="padding:8px;font-size:12px;font-weight:900;background:#4f46e5;border-color:#a5b4fc;border-radius:8px">🛏️ Lüks Yatakta Uyu / Dinlen</button>
           <button id="hotelUseKitchenBtn" style="padding:8px;font-size:12px;font-weight:900;background:#16a34a;border-color:#86efac;border-radius:8px">🍳 Oda Mutfağında Yemek & Su İç</button>
           <button id="hotelUseToiletBtn" style="padding:8px;font-size:12px;font-weight:900;background:#0284c7;border-color:#7dd3fc;border-radius:8px">🚽🚿 Tuvalet & Duşu Kullan</button>
-          <button id="hotelModalExitRoomBtn" style="padding:8px;font-size:12px;font-weight:900;background:#dc2626;border-color:#fca5a5;border-radius:8px">🚪 Odadan Lobiye Çık</button>
+          <button id="hotelModalExitRoomBtn" style="padding:8px;font-size:12px;font-weight:900;background:#dc2626;border-color:#fca5a5;border-radius:8px">🚪 Odadan Kat Koridoruna Çık</button>
         </div>
       </div>`;
   }
@@ -9698,11 +9819,12 @@ function openHotelModal(){
   const html = `
     <div style="background:linear-gradient(135deg,rgba(69,26,3,.75),rgba(30,41,59,.9));border:2px solid #facc15;border-radius:12px;padding:10px;margin-bottom:10px">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px">
-        <span style="font-weight:900;color:#fde047;font-size:14px">⭐⭐⭐⭐⭐ 3 KATLI GRAND OTEL (250 ODA · 3 HAVUZ)</span>
+        <span style="font-weight:900;color:#fde047;font-size:14px">⭐⭐⭐⭐⭐ 3 KATLI GRAND OTEL (250 ODA · KAPALI & AÇIK HAVUZLAR)</span>
         <span style="font-weight:900;color:#4ade80;font-size:13px">💵 Cüzdan: ${(S.money || 0).toLocaleString('tr-TR')}₺</span>
       </div>
       <div style="font-size:12px;color:#e2e8f0;line-height:1.45;margin-bottom:8px">
-        • <b>250 Süit Oda:</b> Her odada <b>2 Güzel Yatak</b>, <b>Tuvalet & Duşakabin</b>, <b>Tam Mutfak</b>, <b>Salon & TV</b> ve <b>Havuz Manzaralı Balkon</b> var!<br>
+        • <b>1. Kat (Zemin):</b> Ortada <b>Büyük Merdiven & Resepsiyon</b>, Solda <b>Kapalı Yüzme Havuzu</b>, Sağda <b>VIP Bekleme Odası</b>!<br>
+        • <b>2. ve 3. Kat (250 Oda):</b> Sadece odalar! Her odada <b>2 Güzel Yatak</b>, <b>Tuvalet & Duş</b>, <b>Mutfak</b>, <b>Salon & TV</b> var!<br>
         • <b>Oda Fiyatı:</b> Gecelik <b>10.000₺</b> · Bugün Dolu Oda: <b style="color:#38bdf8">${occEstimate} / 250 Oda</b> (Günlük Ciro: <b style="color:#4ade80">${dailyIncome.toLocaleString('tr-TR')}₺</b>)
       </div>
       ${S.hotelOwned ? `
@@ -9723,11 +9845,10 @@ function openHotelModal(){
     ${roomActionsHtml}
 
     <div style="background:rgba(15,23,42,.85);border:1px solid #334155;border-radius:10px;padding:10px">
-      <div style="font-weight:900;color:#7dd3fc;margin-bottom:6px">🚪 250 ODADAN İSTEDİĞİNE GİR (1 Oda = 10.000₺ · Otel Sahibine Ücretsiz!)</div>
+      <div style="font-weight:900;color:#7dd3fc;margin-bottom:6px">🚪 2. VE 3. KATTAKİ 250 ODADAN İSTEDİĞİNE GİR (1 Oda = 10.000₺ · Otel Sahibine Ücretsiz!)</div>
       <div style="display:flex;gap:6px;margin-bottom:8px">
-        <button data-hfloor="1" style="flex:1;padding:6px;font-weight:900;font-size:12px;background:${selectedHotelFloor===1?'#0284c7':'#1e293b'};border-color:#38bdf8;border-radius:7px">1. Kat (Oda 1–85)</button>
-        <button data-hfloor="2" style="flex:1;padding:6px;font-weight:900;font-size:12px;background:${selectedHotelFloor===2?'#0284c7':'#1e293b'};border-color:#38bdf8;border-radius:7px">2. Kat (Oda 86–170)</button>
-        <button data-hfloor="3" style="flex:1;padding:6px;font-weight:900;font-size:12px;background:${selectedHotelFloor===3?'#0284c7':'#1e293b'};border-color:#38bdf8;border-radius:7px">3. Kat (Oda 171–250)</button>
+        <button data-hfloor="2" style="flex:1;padding:6px;font-weight:900;font-size:12px;background:${selectedHotelFloor===2?'#0284c7':'#1e293b'};border-color:#38bdf8;border-radius:7px">2. Kat — Odalar (Oda 1–125)</button>
+        <button data-hfloor="3" style="flex:1;padding:6px;font-weight:900;font-size:12px;background:${selectedHotelFloor===3?'#0284c7':'#1e293b'};border-color:#38bdf8;border-radius:7px">3. Kat — Odalar (Oda 126–250)</button>
       </div>
       <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">
         <span style="font-size:12px;font-weight:700;color:#cbd5e1">Oda No (1–250):</span>
@@ -9740,7 +9861,7 @@ function openHotelModal(){
     </div>
   `;
 
-  showInvModal('🏨 5 Yıldızlı Grand Otel (3 Kat · 250 Oda · 3 Havuz)', html);
+  showInvModal('🏨 5 Yıldızlı Grand Otel (3 Kat · 250 Oda)', html);
 
   const buyBtn = $('buyGrandHotelBtn');
   if(buyBtn){
@@ -9883,9 +10004,11 @@ function updateShopSpeakerAndScratch(dt){
        (P.x >= -48 && P.x <= -13 && P.z >= -163 && P.z <= -107));
     disp('hotelBtn', nearHotel ? 'block' : 'none');
     if(nearHotel){
+      const py = P.y || 0;
+      const floorHint = py >= 5.4 ? '🚪 3. Kat Odaları (126–250)' : (py >= 2.1 ? '🚪 2. Kat Odaları (1–125)' : '🏨 Grand Otel');
       txt('hotelBtn', S.hotelOwned
-        ? `🏨 Grand Otel Yönetimi (Kasa: ${(S.hotelVault || 0).toLocaleString('tr-TR')}₺)`
-        : `🏨 Grand Otel (250 Oda · Satılık 10M₺)`);
+        ? `${floorHint} · Kasa: ${(S.hotelVault || 0).toLocaleString('tr-TR')}₺`
+        : `${floorHint} (250 Oda · Satılık 10M₺)`);
     }
   }
   if(S.hotelOwned && !escPaused){
@@ -11696,7 +11819,7 @@ function frame(now){
     if(passengerOf) passengerOf = null;
     const onDock = P.x > -27.2 && P.x < -23.0 && Math.abs(P.z + 22) < 1.0;
     const inHotelPool = (!inHotelRoomState && typeof HOTEL_POOLS !== 'undefined')
-      ? HOTEL_POOLS.find(pl => Math.abs(P.x - pl.wx) < pl.hw && Math.abs(P.z - pl.wz) < pl.hd)
+      ? HOTEL_POOLS.find(pl => (!pl.indoor || (P.y || 0) < 1.5) && Math.abs(P.x - pl.wx) < pl.hw && Math.abs(P.z - pl.wz) < pl.hd)
       : null;
     const inPondWater = (!onDock && Math.hypot(P.x - POND_POS.x, P.z - POND_POS.z) < 5.2) || !!inHotelPool;
     const swimBob = inPondWater ? Math.sin(performance.now() * 0.006) * 0.08 : 0;
@@ -12980,7 +13103,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-181250';
+const APP_VERSION = '2026-10-29-183051';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
