@@ -251,22 +251,10 @@ button small{font-size:9px;margin-top:0}
 <button id="policeCarBtn" style="display:none;background:#1d4ed8;border-color:#93c5fd;font-weight:900">🚔 Polis Arabasını Çal (E)</button>
 <button id="sirenBtn" style="display:none;background:#b91c1c;border-color:#60a5fa;font-weight:900">🚨 Siren: Açık</button>
 <button id="shopSpeakerBtn" style="display:none;background:#7c3aed;border-color:#c084fc;font-weight:900">📻 Dükkân Müziği: Açık</button>
-<button id="scratchCardBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">🎟️ Kazı Kazan Al (100₺)</button>
 <button id="bunkerBtn" style="display:none;background:#0f172a;border-color:#38bdf8;font-weight:900">🛡️ Yeraltı Sığınağına İn (E)</button>
 <button id="bunkerActionBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:900">🥫 Sığınak Erzağı & Zırh Al</button>
-</div>
-<div id="scratchModal" style="display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:27;width:min(360px,92vw);background:rgba(20,24,36,.98);border:2px solid #fbbf24;border-radius:14px;padding:14px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.88)">
-  <div style="font-weight:900;font-size:17px;color:#fde047;margin-bottom:4px">🎟️ ŞANSLI KAZI KAZAN KARTI</div>
-  <div id="scratchSub" style="font-size:12px;color:#cbd5e1;margin-bottom:8px">Parmağını veya fareyi gri alanın üstünde sürükleyerek kazı! Aynı 3 ödülü bulursan kazanırsın!</div>
-  <div style="position:relative;width:270px;height:140px;margin:0 auto 10px;border-radius:10px;overflow:hidden;border:2px solid #f59e0b;background:linear-gradient(135deg,#fef08a,#f59e0b);user-select:none">
-    <div id="scratchGrid" style="position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4px;padding:6px;align-items:center;justify-items:center;font-weight:900;font-size:15px;color:#1e293b"></div>
-    <canvas id="scratchCv" width="270" height="140" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:pointer"></canvas>
-  </div>
-  <div id="scratchResultMsg" style="min-height:20px;font-size:14px;font-weight:900;color:#4ade80;margin-bottom:8px"></div>
-  <div style="display:flex;gap:8px">
-    <button id="scratchAgainBtn" style="flex:1;padding:10px;font-size:14px;font-weight:900;background:#ca8a04;border-color:#fde047;border-radius:10px">🎟️ Yeni Kart Al (100₺)</button>
-    <button id="scratchCloseBtn" style="padding:10px 14px;font-size:14px;font-weight:700;border-radius:10px">Kapat</button>
-  </div>
+<button id="grocMarketBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:900">🛒 Gıda Marketi</button>
+<button id="homeFridgeBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:900">🧊 Evin Buzdolabı</button>
 </div>
 <div id="policeChaseHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:24;background:linear-gradient(135deg,rgba(185,28,28,.96),rgba(29,78,216,.96));border:2px solid #fde047;color:#fff;padding:7px 16px;border-radius:999px;font-weight:900;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.75);pointer-events:none;white-space:nowrap">🚨 POLİS KOVALIYOR! Kaç: 10 sn</div>
 <div id="prisonBox" style="display:none;position:fixed;left:50%;top:52%;transform:translate(-50%,-50%);z-index:26;width:min(360px,92vw);background:rgba(15,23,42,.97);border:2px solid #ef4444;border-radius:14px;padding:14px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.88)">
@@ -684,6 +672,7 @@ const DEF = {
   bank:0,
   loan:0,
   rigs:{r1:0, r2:0, r3:0, stored:0},
+  fridge:[],
   seen:false
 };
 let activeFriendAcct = null; // aktif arkadaşın haritasındaysak arkadaşın adı, kendi haritamızdaysak null
@@ -702,6 +691,7 @@ function normalizeState(o){
     }
   }
   if(!Array.isArray(out.inv) || out.inv.length !== 10) out.inv = Array(10).fill(null);
+  if(!Array.isArray(out.fridge)) out.fridge = [];
   if(!('hand' in out)) out.hand = null;
   if(out.car && ['scooter', 'yaris_motor', 'super_motor'].includes(out.car)){
     if(!out.moto) out.moto = out.car;
@@ -815,7 +805,8 @@ function spawnComoWalker(){
 let comoMenuOpen = false; // COMOGENE menüsü (yanına gelince açılır)
 let comoPlate = []; // COMOGENE'nin ayrı tabağı (yanındayken aktif tabak olur) // COMOGENE karavanının gelir zamanlayıcısı
 let pcT = 20, pcOrders = 0; // evdeki bilgisayar: online siparişler
-let hunger = 100, starveT = 20; // açlık (0-100) ve açlıktan can kaybı zamanlayıcısı
+let hunger = 100, thirst = 100, starveT = 20; // yemek (açlık 0-100) ve su (susuzluk 0-100) barları — gün bitince dolmaz!
+let hospitalFeeCD = 0;
 let taxT = 100, taxman = null;
 let lightT = 0, lightRed = false; // trafik ışığı: 10 sn yeşil, 6 sn kırmızı
 let thief = null, thiefT = 90; // hırsız: vardiyada bir kez, pencereden para çalar // Vergi Memuru: karavanın önüne gelip 10₺ alır
@@ -1470,6 +1461,18 @@ home.add(pool);
   m.position.set(x, y, z);
   home.add(m);
 });
+
+// 🧊 EVİN 3B BUZDOLABI (mutfak tezgâhının sol yanında: x=-1.45, z=-2.05 => dünya koordinatı x=11.55, z=-24.05)
+const homeFridgeGroup = new THREE.Group();
+homeFridgeGroup.position.set(-1.45, 0, -2.05);
+home.add(homeFridgeGroup);
+addTo(homeFridgeGroup, B(0.82, 1.95, 0.68), M(0xe2e8f0), 0, 0.975, 0);          // gümüş/beyaz ana gövde
+addTo(homeFridgeGroup, B(0.84, 0.04, 0.70), M(0x64748b), 0, 1.32, 0.01);        // dondurucu ve alt kapak ayrım çizgisi
+addTo(homeFridgeGroup, B(0.05, 0.42, 0.06), M(0x475569), 0.30, 1.62, 0.36);     // üst dondurucu kapı kolu
+addTo(homeFridgeGroup, B(0.05, 0.68, 0.06), M(0x475569), 0.30, 0.82, 0.36);     // alt buzdolabı kapı kolu
+addTo(homeFridgeGroup, B(0.22, 0.26, 0.04), M(0x1e293b), -0.16, 1.02, 0.35);    // soğuk su pınarı yuvası
+addTo(homeFridgeGroup, B(0.14, 0.08, 0.05), M(0x38bdf8), -0.16, 1.10, 0.36);    // mavi su/buz göstergesi
+const HOME_FRIDGE_WORLD = {x: 11.55, z: -24.05};
 
 // 🏡 2 KATLI VE BALKONLU VİLLA + MERDİVEN + 3B GİZLİ YERALTI SIĞINAĞI (BUNKER)
 const villaLuxuryGroup = new THREE.Group();
@@ -2439,6 +2442,73 @@ const washSign = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.85), new THREE.Me
 washSign.position.set(2.35, 3.65, 0);
 washSign.rotation.y = Math.PI / 2;
 carWashGroup.add(washSign);
+
+// 2B) 🛒 3B GIDA MARKETİ (eski kumarhane yerinde: x=-9.8, z=-68) VE 🏥 YANINDA 3B ŞEHİR HASTANESİ (x=-9.8, z=-75.5)
+const GROCERY_POS = {x: -9.8, z: -68, doorX: -7.8, doorZ: -68};
+const groceryMarketGroup = new THREE.Group();
+groceryMarketGroup.position.set(GROCERY_POS.x, 0.3, GROCERY_POS.z);
+scene.add(groceryMarketGroup);
+addRectShadow(groceryMarketGroup, 4.4, 5.8, 0, 0, 0.02);
+addTo(groceryMarketGroup, B(3.6, 3.3, 5.2), M(0xfef9c3), 0, 1.65, 0);        // krem/sarı market binası
+addTo(groceryMarketGroup, B(3.9, 0.35, 5.5), M(0x16a34a), 0, 3.45, 0);       // yeşil market çatısı
+addTo(groceryMarketGroup, B(0.8, 0.22, 5.2), M(0x22c55e), 2.1, 2.75, 0);     // ön tente
+addTo(groceryMarketGroup, B(0.08, 2.1, 1.5), M(0x38bdf8), 1.81, 1.25, -1.4); // sol vitrin camı
+addTo(groceryMarketGroup, B(0.08, 2.1, 1.5), M(0x38bdf8), 1.81, 1.25, 1.4);  // sağ vitrin camı
+addTo(groceryMarketGroup, B(0.08, 2.2, 1.2), M(0x15803d), 1.81, 1.1, 0);     // market giriş kapısı
+// Market önü meyve-sebze ve su kasaları
+addTo(groceryMarketGroup, B(0.55, 0.45, 1.2), M(0x92400e), 2.15, 0.22, -1.4);
+addTo(groceryMarketGroup, B(0.45, 0.18, 0.45), M(0xef4444), 2.15, 0.50, -1.65); // elma kasası
+addTo(groceryMarketGroup, B(0.45, 0.18, 0.45), M(0xfacc15), 2.15, 0.50, -1.15); // muz/limon kasası
+addTo(groceryMarketGroup, B(0.55, 0.45, 1.2), M(0x0284c7), 2.15, 0.22, 1.4);    // su damacana/şişe standı
+addTo(groceryMarketGroup, B(0.42, 0.28, 0.95), M(0x38bdf8), 2.15, 0.55, 1.4);   // su şişeleri
+const grocClerk = human(0x16a34a, 0x1e293b, pick(SKINS), pick(HAIRS));
+grocClerk.position.set(2.35, 0, -0.35);
+grocClerk.rotation.y = Math.PI / 2;
+groceryMarketGroup.add(grocClerk);
+const grocSignTex = tex(256, 80, (g, w, h) => {
+  g.fillStyle = '#14532d'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#4ade80'; g.lineWidth = 6; g.strokeRect(4, 4, w - 8, h - 8);
+  g.fillStyle = '#ffffff'; g.font = 'bold 30px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🛒 GIDA MARKETİ', w / 2, h / 2 + 2);
+});
+const grocSign = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 0.95), new THREE.MeshBasicMaterial({map: grocSignTex, side: THREE.DoubleSide}));
+grocSign.position.set(1.98, 3.85, 0);
+grocSign.rotation.y = Math.PI / 2;
+groceryMarketGroup.add(grocSign);
+
+// 🏥 3B ŞEHİR HASTANESİ (Gıda Marketinin hemen yanında: x=-9.8, z=-75.5)
+const HOSPITAL_POS = {x: -9.8, z: -75.5, doorX: -7.8, doorZ: -75.5};
+const hospitalGroup = new THREE.Group();
+hospitalGroup.position.set(HOSPITAL_POS.x, 0.3, HOSPITAL_POS.z);
+scene.add(hospitalGroup);
+addRectShadow(hospitalGroup, 4.6, 6.2, 0, 0, 0.02);
+addTo(hospitalGroup, B(3.8, 4.4, 5.6), M(0xf8fafc), 0, 2.2, 0);              // beyaz hastane binası
+addTo(hospitalGroup, B(4.0, 0.38, 5.8), M(0xdc2626), 0, 4.55, 0);            // kırmızı hastane çatı bandı
+addTo(hospitalGroup, B(3.84, 0.32, 5.64), M(0xef4444), 0, 2.65, 0);          // kırmızı kat kuşağı
+addTo(hospitalGroup, B(0.08, 2.2, 1.4), M(0x38bdf8), 1.91, 1.1, 0);          // acil servis çift cam kapı
+[-1.6, 1.6].forEach(wz => {
+  addTo(hospitalGroup, B(0.08, 1.0, 1.1), M(0x7dd3fc), 1.91, 1.4, wz);       // alt kat pencereleri
+  addTo(hospitalGroup, B(0.08, 1.0, 1.1), M(0x7dd3fc), 1.91, 3.45, wz);      // üst kat pencereleri
+});
+// 3B Kırmızı Hilal / Artı Acil Sembolü
+addTo(hospitalGroup, B(0.12, 0.85, 0.26), M(0xdc2626), 1.94, 3.55, 0);
+addTo(hospitalGroup, B(0.12, 0.26, 0.85), M(0xdc2626), 1.94, 3.55, 0);
+const doctorNPC = human(0xffffff, 0x0284c7, pick(SKINS), pick(HAIRS));
+doctorNPC.position.set(2.4, 0, 0.85);
+doctorNPC.rotation.y = Math.PI / 2;
+hospitalGroup.add(doctorNPC);
+const hospSignTex = tex(256, 80, (g, w, h) => {
+  g.fillStyle = '#991b1b'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#ffffff'; g.lineWidth = 6; g.strokeRect(4, 4, w - 8, h - 8);
+  g.fillStyle = '#ffffff'; g.font = 'bold 28px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🏥 ŞEHİR HASTANESİ', w / 2, h / 2 + 2);
+});
+const hospSign = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 0.98), new THREE.MeshBasicMaterial({map: hospSignTex, side: THREE.DoubleSide}));
+hospSign.position.set(2.05, 5.05, 0);
+hospSign.rotation.y = Math.PI / 2;
+hospitalGroup.add(hospSign);
 
 // 3) BALIK TUTMA GÖLETİ VE İSKELE (parkta, x=-29, z=-22)
 const POND_POS = {x: -29, z: -22, dockX: -24.5, dockZ: -22};
@@ -3604,10 +3674,14 @@ const qLabel = q => q >= 1 ? 'mükemmel' : q >= 0.6 ? 'iyi' : 'kötü';
 // açlık çubuğu ve yeme düğmesi (para panelinin içinde)
 function hungerHTML(){
   const col = hunger < 30 ? '#f87171' : '#ffb020';
-  return `<div style="margin-top:6px">Açlık</div>` +
-    `<div style="height:10px;border-radius:5px;background:rgba(255,255,255,.12);overflow:hidden">` +
+  const wCol = thirst < 30 ? '#f87171' : '#38bdf8';
+  return `<div style="margin-top:5px;display:flex;justify-content:space-between;font-size:11px"><span>🍗 Yemek</span><b>%${Math.round(hunger)}</b></div>` +
+    `<div style="height:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden">` +
     `<i id="hungerFill" style="display:block;height:100%;width:${hunger}%;background:${col}"></i></div>` +
-    `<button id="eat" style="margin-top:6px;padding:6px 10px;background:#5a3a1e">🥙 Ye</button>` +
+    `<div style="margin-top:4px;display:flex;justify-content:space-between;font-size:11px"><span>💧 Su</span><b>%${Math.round(thirst)}</b></div>` +
+    `<div style="height:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden">` +
+    `<i id="thirstFill" style="display:block;height:100%;width:${thirst}%;background:${wCol}"></i></div>` +
+    `<button id="eat" style="margin-top:5px;padding:5px 9px;background:#15803d;font-size:11px">🎒 Yemek / Su Kullan</button>` +
     (C.driving ? `<div style="margin-top:6px">⛽ Benzin</div>` +
       `<div style="height:10px;border-radius:5px;background:rgba(255,255,255,.12);overflow:hidden">` +
       `<i style="display:block;height:100%;width:${S.fuel}%;background:${S.fuel < 25 ? '#f87171' : '#4ade80'}"></i></div>` +
@@ -3794,6 +3868,8 @@ function free(x, z){
   if(x > -11.4 && x < -8.2 && z > -8.5 && z < -3.5) return false; // market binası
   if(x > -11.4 && x < -8.2 && z > -16.9 && z < -12.1) return false; // banka binası
   if(x > -11.4 && x < -8.2 && z > -26.5 && z < -21.5) return false; // galeri binası
+  if(x > -11.6 && x < -8.0 && z > -70.7 && z < -65.3) return false; // gıda marketi binası
+  if(x > -11.7 && x < -7.9 && z > -78.4 && z < -72.6) return false; // şehir hastanesi binası
   // balık göleti: yürünebilir ve içinde yüzülebilir!
   // çitle çevrili hazine kazı alanı (yalnızca kapıdan girilir: x=-20, z=-64..-60)
   if(z >= -74.2 && z <= -49.8 && x >= -36.2 && x <= -19.8){
@@ -6076,11 +6152,13 @@ function openLevel(){
 $('lvlClose').onclick = () => { setOpen = false; $('lvl').style.display = 'none'; renderAll(); };
 function eatFood(){
   if(!active()) return;
-  if(S.stock.lavas < 1 || S.meat < 1){ flash('Yiyecek yok (lavaş ve et lazım)', '#f87171'); return; }
-  S.stock.lavas--; S.meat--;
-  hunger = 100;
-  flash('Afiyet olsun!', '#4ade80');
-  renderAll();
+  const idx = S.inv.findIndex(sl => sl && typeof GROCERY_ITEMS !== 'undefined' && GROCERY_ITEMS[sl.id]);
+  if(idx >= 0){
+    useSlot(idx);
+    return;
+  }
+  flash('🛒 Envanterinde yemek veya su yok! Gıda Marketine git ya da Evdeki Buzdolabından al!', '#f87171');
+  renderInventory();
 }
 $('pay').onclick = () => {
   if(!active()) return;
@@ -6291,7 +6369,11 @@ function startShift(){
   if(taxman){ scene.remove(taxman.g); taxman = null; }
   taxT = 60 + Math.random() * 60;
   gamePlayed = false;
-  hunger = 100; starveT = 20;
+  // 1. gün başlarken dolu başlar ama 1. gün bittikten sonra (2. gün ve sonrasında) otomatik dolmaz!
+  if((S.day || 1) <= 1 && hunger <= 0 && thirst <= 0){
+    hunger = 100; thirst = 100;
+  }
+  starveT = 20;
   if(thief){ scene.remove(thief.g); thief = null; }
   beggarGave = false;
   wheelSpinsLeft = 3;
@@ -6675,9 +6757,18 @@ canvas.addEventListener('pointerup', e => {
   }
   // terörist: silah kuşanıksa vur, silahcı: dükkânı aç, çark: çevir, polis arabası: çal
   if(ray.intersectObject(wheelGroup, true).length){ spinWheel(); return; }
-  if(ray.intersectObject(scratchStandGroup, true).length){
-    if(Math.hypot(P.x - SCRATCH_STAND_POS.x, P.z - SCRATCH_STAND_POS.z) < 5.5) startNewScratchCard();
-    else flash('🎟️ Kazı Kazan standına biraz yaklaş!', '#f87171');
+  if(typeof groceryMarketGroup !== 'undefined' && ray.intersectObject(groceryMarketGroup, true).length){
+    if(Math.hypot(P.x - GROCERY_POS.doorX, P.z - GROCERY_POS.doorZ) < 6.5) openGroceryModal();
+    else flash('🛒 Gıda Marketine biraz yaklaş!', '#f87171');
+    return;
+  }
+  if(typeof homeFridgeGroup !== 'undefined' && ray.intersectObject(homeFridgeGroup, true).length){
+    if(Math.hypot(P.x - HOME_FRIDGE_WORLD.x, P.z - HOME_FRIDGE_WORLD.z) < 4.5) openFridgeModal();
+    else flash('🧊 Evin içindeki buzdolabına yaklaş!', '#f87171');
+    return;
+  }
+  if(typeof hospitalGroup !== 'undefined' && ray.intersectObject(hospitalGroup, true).length){
+    flash('🏥 Şehir Hastanesi: Yemek veya su barın sıfırlanırsa 5.000₺ acil tedavi uygulanır!', '#38bdf8');
     return;
   }
   if(!C.driving && ray.intersectObject(policeCarMesh, true).length){
@@ -8979,196 +9070,194 @@ function toggleShopSpeakerMusic(){
 }
 if($('shopSpeakerBtn')) $('shopSpeakerBtn').onclick = toggleShopSpeakerMusic;
 
-// ================= 🎟️ Market Önünde Kazı Kazan Standı & Kart Kazıma Oyunu (#23) =================
-const SCRATCH_STAND_POS = {x: -7.8, z: -8.6};
-const scratchStandGroup = new THREE.Group();
-scratchStandGroup.position.set(SCRATCH_STAND_POS.x, 0.3, SCRATCH_STAND_POS.z);
-scratchStandGroup.rotation.y = Math.PI / 2;
-scene.add(scratchStandGroup);
-addRectShadow(scratchStandGroup, 1.35, 1.05, 0, 0, 0.02);
-addTo(scratchStandGroup, B(0.95, 1.05, 0.65), M(0xca8a04), 0, 0.52, 0); // altın sarısı tezgâh
-addTo(scratchStandGroup, B(1.02, 0.10, 0.72), M(0xef4444), 0, 1.08, 0); // kırmızı üst tabla
-// Üstteki renkli kazı kazan bilet desteleri
-[-0.26, 0, 0.26].forEach((bx, idx) => {
-  addTo(scratchStandGroup, B(0.22, 0.06, 0.34), M(idx === 1 ? 0x38bdf8 : 0xfde047), bx, 1.15, 0.05);
-});
-// Şemsiye/tente direği ve tabelası
-addTo(scratchStandGroup, new THREE.CylinderGeometry(0.04, 0.04, 1.2, 6), M(0xe2e8f0), 0, 1.65, -0.22);
-const scratchSignTex = tex(256, 72, (g, w, h) => {
-  g.fillStyle = '#b91c1c'; g.fillRect(0, 0, w, h);
-  g.strokeStyle = '#fde047'; g.lineWidth = 5; g.strokeRect(3, 3, w - 6, h - 6);
-  g.fillStyle = '#fde047'; g.font = 'bold 28px sans-serif';
-  g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText('🎟️ KAZI KAZAN 100₺', w / 2, h / 2 + 2);
-});
-const scratchSign = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.42), new THREE.MeshBasicMaterial({map: scratchSignTex, side: THREE.DoubleSide}));
-scratchSign.position.set(0, 2.22, -0.22);
-scratchStandGroup.add(scratchSign);
-
-const SCRATCH_PRIZE_POOL = [
-  {label: '💎 1.000₺', val: 1000},
-  {label: '👑 500₺',   val: 500},
-  {label: '💵 250₺',   val: 250},
-  {label: '🪙 150₺',   val: 150},
-  {label: '🍀 50₺',    val: 50}
-];
-const scratchState = {
-  open: false,
-  revealed: false,
-  drawing: false,
-  scratchedStrokes: 0,
-  winPrize: 0,
-  cells: []
+// ================= 🛒 GIDA MARKETİ, 🧊 EV BUZDOLABI VE 🏥 ŞEHİR HASTANESİ SİSTEMİ =================
+const GROCERY_ITEMS = {
+  su:        {name: '💧 Su Şişesi',        price: 25,  food: 0,  water: 45},
+  ayranGroc: {name: '🥛 Soğuk Ayran',      price: 35,  food: 10, water: 40},
+  meyvesuyu: {name: '🧃 Meyve Suyu',       price: 45,  food: 12, water: 55},
+  ekmek:     {name: '🥖 Taze Ekmek',       price: 30,  food: 38, water: 0},
+  elma:      {name: '🍎 Kırmızı Elma',     price: 35,  food: 28, water: 18},
+  sandvic:   {name: '🥪 Kaşarlı Sandviç',  price: 65,  food: 55, water: 0},
+  pizza:     {name: '🍕 Dondurulmuş Pizza', price: 110, food: 85, water: 0}
 };
 
-function startNewScratchCard(){
-  const cost = 100;
-  if((S.money || 0) < cost){
-    flash('🎟️ Kazı Kazan kartı almak için 100₺ lazım!', '#f87171');
+function groceryItemDesc(id){
+  const g = GROCERY_ITEMS[id];
+  if(!g) return '';
+  const parts = [];
+  if(g.food > 0) parts.push(`+${g.food} Yemek`);
+  if(g.water > 0) parts.push(`+${g.water} Su`);
+  return `${g.name} (${parts.join(', ')})`;
+}
+
+function consumeGroceryItem(id){
+  const g = GROCERY_ITEMS[id];
+  if(!g) return false;
+  hunger = Math.min(100, (hunger || 0) + (g.food || 0));
+  thirst = Math.min(100, (thirst || 0) + (g.water || 0));
+  beep(620, 0.1, 'triangle', 0.12);
+  flash(`😋 ${g.name} tüketildi! (🍗 %${Math.round(hunger)} · 💧 %${Math.round(thirst)})`, '#4ade80');
+  save(); renderAll();
+  return true;
+}
+
+function openGroceryModal(){
+  if(!Array.isArray(S.fridge)) S.fridge = [];
+  const invCount = S.inv.filter(Boolean).length;
+  const rows = Object.keys(GROCERY_ITEMS).map(id => {
+    const it = GROCERY_ITEMS[id];
+    const stats = [it.food ? `🍗 +${it.food} Yemek` : '', it.water ? `💧 +${it.water} Su` : ''].filter(Boolean).join(' · ');
+    return `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(15,23,42,.75);border:1px solid #334155;border-radius:8px;padding:7px 9px;margin:5px 0">` +
+      `<div><b>${it.name}</b><br><small style="color:#94a3b8">${stats}</small></div>` +
+      `<button data-gbuy="${id}" style="background:#16a34a;border-color:#4ade80;padding:6px 10px;font-weight:bold">${it.price}₺ Al</button>` +
+      `</div>`;
+  }).join('');
+  openModal(
+    `🛒 Gıda Marketi (Envanter: ${invCount}/${INV_SIZE})`,
+    `<p style="margin:2px 0 8px;font-size:12px;color:#cbd5e1">Aldığın yiyecek ve sular <b>🎒 Envanterine</b> gelir. Evdeki <b>🧊 Buzdolabına</b> koyup saklayabilir veya envanterden yiyip içebilirsin.</p>` +
+    rows +
+    `<div style="margin-top:8px;display:flex;gap:6px"><button id="grocOpenInvBtn" style="flex:1;background:#0284c7;padding:7px">🎒 Envanteri Aç</button></div>`
+  );
+  invModal.querySelectorAll('[data-gbuy]').forEach(b => {
+    b.onclick = () => buyGroceryItem(b.dataset.gbuy);
+  });
+  const invB = $('grocOpenInvBtn');
+  if(invB) invB.onclick = () => renderInventory();
+}
+
+function buyGroceryItem(id){
+  const it = GROCERY_ITEMS[id];
+  if(!it) return;
+  const empty = S.inv.indexOf(null);
+  if(empty < 0){
+    flash('🎒 Envanterin dolu! Önce evdeki buzdolabına eşya koy veya tüket!', '#f87171');
     return;
   }
-  S.money -= cost;
+  if((S.money || 0) < it.price){
+    flash(`Paran yetmiyor! (${it.price}₺ lazım)`, '#f87171');
+    return;
+  }
+  S.money -= it.price;
+  S.inv[empty] = {id, foodItem: true};
   save(); renderAll();
-  beep(680, 0.1, 'triangle', 0.12);
-  // %55 ihtimalle 3 aynı sembol eşleşir ve ödül kazandırır!
-  const isWinner = Math.random() < 0.55;
-  let winObj = null;
-  if(isWinner){
-    const r = Math.random();
-    winObj = r < 0.10 ? SCRATCH_PRIZE_POOL[0]
-           : r < 0.28 ? SCRATCH_PRIZE_POOL[1]
-           : r < 0.58 ? SCRATCH_PRIZE_POOL[2]
-           : r < 0.85 ? SCRATCH_PRIZE_POOL[3]
-           : SCRATCH_PRIZE_POOL[4];
-  }
-  const cells = [];
-  if(winObj){
-    cells.push(winObj, winObj, winObj);
-    const others = SCRATCH_PRIZE_POOL.filter(p => p !== winObj);
-    while(cells.length < 6){
-      const op = others[(Math.random() * others.length) | 0];
-      if(cells.filter(c => c === op).length < 2) cells.push(op);
-    }
-  } else {
-    // Hiçbir ödül 3 kez tekrar etmesin (en fazla 2 kez)
-    while(cells.length < 6){
-      const op = SCRATCH_PRIZE_POOL[(Math.random() * SCRATCH_PRIZE_POOL.length) | 0];
-      if(cells.filter(c => c === op).length < 2) cells.push(op);
-    }
-  }
-  // Karıştır
-  for(let i = cells.length - 1; i > 0; i--){
-    const j = (Math.random() * (i + 1)) | 0;
-    [cells[i], cells[j]] = [cells[j], cells[i]];
-  }
-  scratchState.open = true;
-  scratchState.revealed = false;
-  scratchState.drawing = false;
-  scratchState.scratchedStrokes = 0;
-  scratchState.winPrize = winObj ? winObj.val : 0;
-  scratchState.cells = cells;
-  setOpen = true;
-  if($('scratchGrid')){
-    $('scratchGrid').innerHTML = cells.map(c =>
-      `<div style="background:rgba(255,255,255,.78);border-radius:8px;padding:8px 4px;width:100%;text-align:center;box-shadow:inset 0 1px 3px rgba(0,0,0,.25)">${c.label}</div>`
-    ).join('');
-  }
-  if($('scratchResultMsg')){
-    $('scratchResultMsg').style.color = '#fde047';
-    $('scratchResultMsg').textContent = '✨ Parmağınla gri kaplamayı kazı!';
-  }
-  const cv = $('scratchCv');
-  if(cv){
-    const ctx = cv.getContext('2d');
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = '#94a3b8';
-    ctx.fillRect(0, 0, cv.width, cv.height);
-    ctx.strokeStyle = '#64748b';
-    ctx.lineWidth = 2;
-    for(let x = -140; x < 270; x += 18){
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 140, 140); ctx.stroke();
-    }
-    ctx.fillStyle = '#1e293b';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('🪙 BURAYI KAZI! 🪙', cv.width / 2, cv.height / 2);
-  }
-  disp('scratchModal', 'block');
+  beep(740, 0.09, 'sine', 0.11);
+  flash(`🛒 ${it.name} satın alındı ve envantere eklendi!`, '#4ade80');
+  openGroceryModal();
 }
 
-function finishScratchReveal(){
-  if(scratchState.revealed) return;
-  scratchState.revealed = true;
-  const cv = $('scratchCv');
-  if(cv){
-    const ctx = cv.getContext('2d');
-    ctx.clearRect(0, 0, cv.width, cv.height);
-  }
-  const msg = $('scratchResultMsg');
-  if(scratchState.winPrize > 0){
-    S.money = (S.money || 0) + scratchState.winPrize;
-    S.xp = (S.xp || 0) + 40;
-    checkLevelUp();
-    if(scratchState.winPrize >= 500 && typeof spawnFirework === 'function'){
-      spawnFirework(SCRATCH_STAND_POS.x, SCRATCH_STAND_POS.z);
-    }
-    beep(920, 0.24, 'sine', 0.18);
-    if(msg){
-      msg.style.color = '#4ade80';
-      msg.textContent = `🎉 TEBRİKLER! 3 Eşleşme ile +${scratchState.winPrize}₺ Kazandın!`;
-    }
-    flash(`🎟️🎉 Kazı Kazan'dan +${scratchState.winPrize}₺ ikramiye çıktı!`, '#4ade80');
+function openFridgeModal(){
+  if(!Array.isArray(S.fridge)) S.fridge = [];
+  const invFoods = S.inv
+    .map((sl, idx) => (sl && GROCERY_ITEMS[sl.id]) ? {id: sl.id, idx} : null)
+    .filter(Boolean);
+
+  const invHtml = invFoods.length
+    ? invFoods.map(f =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(30,41,59,.75);padding:6px 8px;border-radius:7px;margin:4px 0">` +
+        `<span>${groceryItemDesc(f.id)}</span>` +
+        `<button data-putfridge="${f.idx}" style="background:#0284c7;border-color:#38bdf8;padding:5px 9px;font-size:11px">🧊 Dolaba Koy</button>` +
+        `</div>`
+      ).join('')
+    : `<div style="padding:6px;color:#94a3b8;font-size:12px">Envanterinde dolaba konulacak yemek/su yok.</div>`;
+
+  const fridgeHtml = S.fridge.length
+    ? S.fridge.map((fid, fIdx) =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(15,23,42,.85);border:1px solid #38bdf8;padding:6px 8px;border-radius:7px;margin:4px 0">` +
+        `<span>${groceryItemDesc(fid)}</span>` +
+        `<div style="display:flex;gap:4px">` +
+        `<button data-eatfridge="${fIdx}" style="background:#16a34a;padding:5px 8px;font-size:11px">😋 Ye/İç</button>` +
+        `<button data-takefridge="${fIdx}" style="background:#475569;padding:5px 8px;font-size:11px">🎒 Al</button>` +
+        `</div></div>`
+      ).join('')
+    : `<div style="padding:8px;color:#94a3b8;font-size:12px">Buzdolabı şu an boş. Marketten bir şeyler alıp buraya koyabilirsin!</div>`;
+
+  openModal(
+    `🧊 Evin Buzdolabı (${S.fridge.length}/20)`,
+    `<div style="font-size:12px;margin-bottom:6px;color:#7dd3fc">🍗 Yemek: <b>%${Math.round(hunger)}</b> · 💧 Su: <b>%${Math.round(thirst)}</b></div>` +
+    `<h4 style="margin:6px 0 4px;color:#fde047">🎒 Envanterdekileri Dolaba Koy</h4>` +
+    invHtml +
+    `<h4 style="margin:10px 0 4px;color:#38bdf8">🧊 Buzdolabındakiler</h4>` +
+    fridgeHtml
+  );
+
+  invModal.querySelectorAll('[data-putfridge]').forEach(b => {
+    b.onclick = () => {
+      const idx = +b.dataset.putfridge;
+      const sl = S.inv[idx];
+      if(!sl || !GROCERY_ITEMS[sl.id]) return;
+      if(S.fridge.length >= 20){ flash('🧊 Buzdolabı tamamen dolu (20/20)!', '#f87171'); return; }
+      S.fridge.push(sl.id);
+      S.inv[idx] = null;
+      save(); renderAll();
+      beep(520, 0.08, 'sine', 0.1);
+      flash(`🧊 ${GROCERY_ITEMS[sl.id].name} buzdolabına kondu!`, '#38bdf8');
+      openFridgeModal();
+    };
+  });
+
+  invModal.querySelectorAll('[data-eatfridge]').forEach(b => {
+    b.onclick = () => {
+      const fIdx = +b.dataset.eatfridge;
+      const fid = S.fridge[fIdx];
+      if(!fid || !GROCERY_ITEMS[fid]) return;
+      S.fridge.splice(fIdx, 1);
+      consumeGroceryItem(fid);
+      openFridgeModal();
+    };
+  });
+
+  invModal.querySelectorAll('[data-takefridge]').forEach(b => {
+    b.onclick = () => {
+      const fIdx = +b.dataset.takefridge;
+      const fid = S.fridge[fIdx];
+      if(!fid) return;
+      const empty = S.inv.indexOf(null);
+      if(empty < 0){ flash('🎒 Envanter dolu!', '#f87171'); return; }
+      S.fridge.splice(fIdx, 1);
+      S.inv[empty] = {id: fid, foodItem: true};
+      save(); renderAll();
+      flash(`🎒 ${GROCERY_ITEMS[fid].name} envantere alındı!`, '#4ade80');
+      openFridgeModal();
+    };
+  });
+}
+
+function triggerHospitalEmergency(reasonText){
+  if(hospitalFeeCD > 0) return;
+  hospitalFeeCD = 8;
+  const FEE = 5000;
+  let cashPaid = 0;
+  let loanAdded = 0;
+  if((S.money || 0) >= FEE){
+    S.money -= FEE;
+    cashPaid = FEE;
   } else {
-    beep(230, 0.14, 'sawtooth', 0.08);
-    if(msg){
-      msg.style.color = '#f87171';
-      msg.textContent = '😢 3 aynı sembol çıkmadı! Yeni kartla tekrar dene!';
-    }
+    cashPaid = Math.max(0, Math.floor(S.money || 0));
+    loanAdded = FEE - cashPaid;
+    S.money = 0;
+    S.loan = (S.loan || 0) + loanAdded;
   }
+  hunger = 65;
+  thirst = 65;
+  can = MAX_LIVES;
+  if(C.driving) C.driving = false;
+  if(D.driving) D.driving = false;
+  if(CM.driving) CM.driving = false;
+  if(typeof inBunkerState !== 'undefined') inBunkerState = false;
+  P.x = HOSPITAL_POS.doorX + 1.5;
+  P.z = HOSPITAL_POS.doorZ;
+  P.y = 0;
+  P.yaw = -Math.PI / 2;
+  beep(240, 0.35, 'sawtooth', 0.18);
+  const payMsg = loanAdded > 0
+    ? (cashPaid > 0 ? `${cashPaid}₺ nakit + ${loanAdded}₺ Banka Kredisi ile ödendi!` : `Paran yetmediği için 5.000₺ Banka Kredisi borcuna eklendi!`)
+    : `5.000₺ hastane masrafı nakit ödendi!`;
+  flash(`🚑 ${reasonText} Şehir Hastanesine kaldırıldın! (${payMsg})`, '#f87171');
   save(); renderAll();
 }
 
-(function initScratchCanvasEvents(){
-  const cv = $('scratchCv');
-  if(!cv) return;
-  const scratchAt = e => {
-    if(!scratchState.open || scratchState.revealed) return;
-    const r = cv.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width) * cv.width;
-    const y = ((e.clientY - r.top) / r.height) * cv.height;
-    const ctx = cv.getContext('2d');
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.beginPath();
-    ctx.arc(x, y, 22, 0, Math.PI * 2);
-    ctx.fill();
-    scratchState.scratchedStrokes++;
-    if(scratchState.scratchedStrokes % 5 === 0) beep(700 + (scratchState.scratchedStrokes % 15) * 20, 0.02, 'triangle', 0.04);
-    if(scratchState.scratchedStrokes >= 22){
-      finishScratchReveal();
-    }
-  };
-  cv.addEventListener('pointerdown', e => {
-    e.stopPropagation();
-    scratchState.drawing = true;
-    scratchAt(e);
-  });
-  cv.addEventListener('pointermove', e => {
-    if(!scratchState.drawing) return;
-    e.stopPropagation();
-    scratchAt(e);
-  });
-  window.addEventListener('pointerup', () => { scratchState.drawing = false; });
-})();
-
-if($('scratchCardBtn')) $('scratchCardBtn').onclick = startNewScratchCard;
-if($('scratchAgainBtn')) $('scratchAgainBtn').onclick = startNewScratchCard;
-if($('scratchCloseBtn')) $('scratchCloseBtn').onclick = () => {
-  scratchState.open = false;
-  setOpen = false;
-  disp('scratchModal', 'none');
-  renderAll();
-};
+if($('grocMarketBtn')) $('grocMarketBtn').onclick = openGroceryModal;
+if($('homeFridgeBtn')) $('homeFridgeBtn').onclick = openFridgeModal;
 
 function updateShopSpeakerAndScratch(dt){
   const hasSpk = !!(S.kar.hoparlor || S.mk.hoparlor);
@@ -9189,8 +9278,10 @@ function updateShopSpeakerAndScratch(dt){
       }
     }
   }
-  const nearScratch = !C.driving && !D.driving && !CM.driving && !policeChase.inPrison && Math.hypot(P.x - SCRATCH_STAND_POS.x, P.z - SCRATCH_STAND_POS.z) < 4.5;
-  disp('scratchCardBtn', nearScratch ? 'block' : 'none');
+  const nearGroc = !C.driving && !D.driving && !CM.driving && !policeChase.inPrison && Math.hypot(P.x - GROCERY_POS.doorX, P.z - GROCERY_POS.doorZ) < 4.8;
+  disp('grocMarketBtn', nearGroc ? 'block' : 'none');
+  const nearFridge = !C.driving && !D.driving && !CM.driving && !policeChase.inPrison && Math.abs(P.y || 0) < 1.5 && Math.hypot(P.x - HOME_FRIDGE_WORLD.x, P.z - HOME_FRIDGE_WORLD.z) < 3.4;
+  disp('homeFridgeBtn', nearFridge ? 'block' : 'none');
   if(typeof updateHouseAndBunker === 'function') updateHouseAndBunker(dt);
   updateAtmosphericVisuals(dt);
 }
@@ -10426,16 +10517,16 @@ function step(dt, play){
     return true;
   });
 
-  // açlık: zamanla azalır, sıfırdayken yavaş yavaş can gider
+  // yemek (açlık) ve su (susuzluk) barı: zamanla azalır, çok azalıp sıfırlanınca Şehir Hastanesine kaldırılırsın (5.000₺ masraf, yetmezse kredi)
+  if(hospitalFeeCD > 0) hospitalFeeCD = Math.max(0, hospitalFeeCD - dt);
   if(play){
-    hunger = Math.max(0, hunger - dt * 0.25);
-    if(hunger <= 0){
-      starveT -= dt;
-      if(starveT <= 0){
-        starveT = 20;
-        flash('Açlıktan halsiz düştün!', '#f87171');
-        loseCan();
-      }
+    hunger = Math.max(0, hunger - dt * 0.36);
+    thirst = Math.max(0, thirst - dt * 0.44);
+    if(hunger <= 0 || thirst <= 0){
+      const reason = (hunger <= 0 && thirst <= 0)
+        ? 'Açlık ve susuzluktan bayıldın!'
+        : (hunger <= 0 ? 'Açlıktan bayıldın!' : 'Susuzluktan bayıldın!');
+      triggerHospitalEmergency(reason);
     }
   }
 
@@ -11085,6 +11176,8 @@ function frame(now){
   }
   sty('hungerFill', 'width', hunger + '%');
   sty('hungerFill', 'background', hunger < 30 ? '#f87171' : '#ffb020');
+  sty('thirstFill', 'width', thirst + '%');
+  sty('thirstFill', 'background', thirst < 30 ? '#f87171' : '#38bdf8');
   const nearCar = S.car && !C.driving && !D.driving && Math.hypot(P.x - CAR_STATE.x, P.z - CAR_STATE.z) < 4;
   const nearMoto = S.moto && !C.driving && !D.driving && Math.hypot(P.x - MOTO_STATE.x, P.z - MOTO_STATE.z) < 3.6;
   const isDrivingMoto = !!(C.driving && C.activeVeh === 'moto');
@@ -11686,7 +11779,12 @@ function openModal(title, bodyHTML){
   $('mdClose').onclick = () => { invModal.style.display = 'none'; };
 }
 function armLabel(slot){
+  if(!slot) return '';
+  if(typeof GROCERY_ITEMS !== 'undefined' && GROCERY_ITEMS[slot.id]){
+    return groceryItemDesc(slot.id) + ' · [Tüketmek için dokun]';
+  }
   const a = ARMS[slot.id];
+  if(!a) return slot.id || 'Eşya';
   return slot.id === 'sarjor' ? a.name : `${a.name} · ${slot.ammo}/${a.mag}`;
 }
 function renderInventory(){
@@ -11696,7 +11794,8 @@ function renderInventory(){
     : `<div style="padding:8px;color:var(--mut)">Elin boş</div>`;
   const rows = S.inv.map((slot, i) => {
     if(!slot) return `<div style="padding:8px;border:1px dashed var(--mut);border-radius:8px;margin:4px 0;color:var(--mut)">Boş</div>`;
-    return `<button data-slot="${i}" style="display:block;width:100%;text-align:left;padding:8px;margin:4px 0">${i + 1}. ${armLabel(slot)}</button>`;
+    const isFood = typeof GROCERY_ITEMS !== 'undefined' && GROCERY_ITEMS[slot.id];
+    return `<button data-slot="${i}" style="display:block;width:100%;text-align:left;padding:8px;margin:4px 0;${isFood ? 'border-color:#4ade80;background:#14532d' : ''}">${i + 1}. ${armLabel(slot)}</button>`;
   }).join('');
   openModal('🎒 Envanter (' + S.inv.filter(Boolean).length + '/' + INV_SIZE + ')', hand + rows);
   invModal.querySelectorAll('[data-slot]').forEach(b => b.onclick = () => useSlot(+b.dataset.slot));
@@ -11714,10 +11813,17 @@ function unequipHand(){
   flash('Silah envantere kondu', '#ffd54a');
   renderInventory();
 }
-// envanterdeki eşyaya dokununca: silah elde olur (elindeki varsa yerine geçer), şarjör elindeki silahı doldurur
+// envanterdeki eşyaya dokununca: yiyecek/su ise tüketilir, silah elde olur, şarjör elindeki silahı doldurur
 function useSlot(i){
   const slot = S.inv[i];
   if(!slot) return;
+  if(typeof GROCERY_ITEMS !== 'undefined' && GROCERY_ITEMS[slot.id]){
+    const fid = slot.id;
+    S.inv[i] = null;
+    consumeGroceryItem(fid);
+    renderInventory();
+    return;
+  }
   if(slot.id === 'sarjor'){
     if(!S.hand || !ARMS[S.hand.id].mag){ flash('Önce bir silah kuşan', '#f87171'); return; }
     S.hand.ammo = ARMS[S.hand.id].mag;
@@ -12254,7 +12360,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-28-193846';
+const APP_VERSION = '2026-10-29-115603';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
