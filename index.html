@@ -863,9 +863,9 @@ const FOG_DUSK = 0xc78a6a, FOG_RAIN = 0x3a4657;
 const SKY_DAY = skyTex('#5aa9e6', '#cfe9ff'), SKY_NIGHT = skyTex('#02040a', '#0a1020');
 const FOG_DAY = 0xbfe0f5, FOG_NIGHT = 0x030509;
 scene.background = SKY_DUSK;
-scene.fog = new THREE.Fog(FOG_DUSK, 35, 110);
+scene.fog = new THREE.Fog(FOG_DUSK, 48, 175);
 
-const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 130); // uzak nesneler çizilmesin (performans)
+const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 185); // genişletilmiş harita için görüş mesafesi artırıldı
 // gece gökyüzü: tek çizimde yıldızlar + ay (yalnızca gece görünür, kamerayı izler)
 const skyFx = new THREE.Group();
 skyFx.visible = false;
@@ -1017,7 +1017,7 @@ winTex.wrapS = winTex.wrapT = THREE.RepeatWrapping;
 winTex.repeat.set(2, 3);
 
 /* ================= Dünya ================= */
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(400,400), M(0x2e3b33));
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(600,600), M(0x2e3b33));
 ground.rotation.x = -Math.PI/2; ground.position.y = -0.01;
 scene.add(ground);
 
@@ -1033,7 +1033,7 @@ const asphaltTex = tex(256, 256, (g, w, h) => {
   g.beginPath(); g.moveTo(14, 0); g.lineTo(14, h); g.moveTo(w - 14, 0); g.lineTo(w - 14, h); g.stroke();
 });
 asphaltTex.wrapS = asphaltTex.wrapT = THREE.RepeatWrapping;
-asphaltTex.repeat.set(2, 20);
+asphaltTex.repeat.set(2, 32);
 const tileTex = tex(128, 128, (g, w, h) => {
   g.fillStyle = '#b4b1a9'; g.fillRect(0, 0, w, h);
   const cols = ['#aba79e', '#b9b5ad', '#a39f96', '#c0bcb4'];
@@ -1050,7 +1050,7 @@ const tileTex = tex(128, 128, (g, w, h) => {
   }
 });
 tileTex.wrapS = tileTex.wrapT = THREE.RepeatWrapping;
-tileTex.repeat.set(2, 32);
+tileTex.repeat.set(2, 48);
 
 function makeRichGrassMat(rx, rz, tintHex){
   const t = tex(128, 128, (g, w, h) => {
@@ -1072,36 +1072,36 @@ function makeRichGrassMat(rx, rz, tintHex){
   return new THREE.MeshLambertMaterial({map: t, side: THREE.DoubleSide});
 }
 
-const road = new THREE.Mesh(new THREE.PlaneGeometry(8.2, 152), new THREE.MeshLambertMaterial({map:asphaltTex}));
-road.rotation.x = -Math.PI/2; road.position.set(0, 0, -64);
+const road = new THREE.Mesh(new THREE.PlaneGeometry(8.2, 212), new THREE.MeshLambertMaterial({map:asphaltTex}));
+road.rotation.x = -Math.PI/2; road.position.set(0, 0, -94);
 road.receiveShadow = true;
 scene.add(road);
 
 const walkMat = new THREE.MeshLambertMaterial({map:tileTex});
-const sideL = new THREE.Mesh(B(5, 0.3, 152), walkMat); sideL.position.set(-6.5, 0.15, -64); sideL.receiveShadow = true; scene.add(sideL);
-const sideR = new THREE.Mesh(B(7, 0.3, 152), walkMat); sideR.position.set(7.5, 0.15, -64); sideR.receiveShadow = true; scene.add(sideR);
-const rightGrassMatN = makeRichGrassMat(6, 36, '#3b8544');
-const rightGrassMatS = makeRichGrassMat(6, 18, '#3b8544');
-const rightGrassMatSmall = makeRichGrassMat(2, 5, '#3b8544');
-const rightLawnN = new THREE.Mesh(new THREE.PlaneGeometry(14, 98), rightGrassMatN);
+const sideL = new THREE.Mesh(B(5, 0.3, 212), walkMat); sideL.position.set(-6.5, 0.15, -94); sideL.receiveShadow = true; scene.add(sideL);
+const sideR = new THREE.Mesh(B(7, 0.3, 212), walkMat); sideR.position.set(7.5, 0.15, -94); sideR.receiveShadow = true; scene.add(sideR);
+const rightGrassMatN = makeRichGrassMat(14, 52, '#3b8544');
+const rightGrassMatS = makeRichGrassMat(14, 18, '#3b8544');
+const rightGrassMatSmall = makeRichGrassMat(8, 5, '#3b8544');
+const rightLawnN = new THREE.Mesh(new THREE.PlaneGeometry(39, 152), rightGrassMatN);
 rightLawnN.rotation.x = -Math.PI / 2;
-rightLawnN.position.set(17.5, 0.02, -87);
+rightLawnN.position.set(30.0, 0.02, -124);
 scene.add(rightLawnN);
-const rightLawnS = new THREE.Mesh(new THREE.PlaneGeometry(14, 43), rightGrassMatS);
+const rightLawnS = new THREE.Mesh(new THREE.PlaneGeometry(39, 46), rightGrassMatS);
 rightLawnS.rotation.x = -Math.PI / 2;
-rightLawnS.position.set(17.5, 0.02, -16.5);
+rightLawnS.position.set(30.0, 0.02, -15);
 scene.add(rightLawnS);
 const rightLawnW = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 10), rightGrassMatSmall);
 rightLawnW.rotation.x = -Math.PI / 2;
 rightLawnW.position.set(11.3, 0.02, -43);
 scene.add(rightLawnW);
-const rightLawnE = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 10), rightGrassMatSmall);
+const rightLawnE = new THREE.Mesh(new THREE.PlaneGeometry(28.2, 10), rightGrassMatSmall);
 rightLawnE.rotation.x = -Math.PI / 2;
-rightLawnE.position.set(22.9, 0.02, -43);
+rightLawnE.position.set(35.4, 0.02, -43);
 scene.add(rightLawnE);
 
 const dashMat = M(0xe9e4d0);
-for(let z = -134; z < 8; z += 6){
+for(let z = -194; z < 8; z += 6){
   const d = new THREE.Mesh(GEO.dash, dashMat);
   d.position.set(0, 0.01, z); scene.add(d);
 }
@@ -1117,7 +1117,7 @@ for(let x = -3.4; x <= 3.4; x += 0.9){
   z.position.set(x, 0.012, -1); scene.add(z);
 }
 
-// tünel ağzı (yolun en ucunda: z = -136)
+// tünel ağzı (yolun en ucunda: z = -196)
 const tunnelTex = tex(512, 256, (g,w,h) => {
   g.fillStyle = '#050507'; g.fillRect(0,0,w,h);
   g.strokeStyle = '#ffcc66'; g.lineWidth = 14;
@@ -1128,9 +1128,9 @@ const tunnelTex = tex(512, 256, (g,w,h) => {
 });
 const tunnelMouth = new THREE.Mesh(new THREE.PlaneGeometry(26,12),
   new THREE.MeshBasicMaterial({map:tunnelTex, fog:false}));
-tunnelMouth.position.set(0, 6, -136);
+tunnelMouth.position.set(0, 6, -196);
 // tünel girişi: kapı yok, sadece sütunlar ve üst kemer (içinden geçilir)
-const tunnelFrame = [[B(0.8, 6, 0.8), -4.5, 3, -136], [B(0.8, 6, 0.8), 4.5, 3, -136], [B(9.8, 0.8, 0.8), 0, 6.4, -136]];
+const tunnelFrame = [[B(0.8, 6, 0.8), -4.5, 3, -196], [B(0.8, 6, 0.8), 4.5, 3, -196], [B(9.8, 0.8, 0.8), 0, 6.4, -196]];
 tunnelFrame.forEach(([geo, x, y, z]) => {
   const f = new THREE.Mesh(geo, M(0x2a2a2a));
   f.position.set(x, y, z);
@@ -1253,7 +1253,7 @@ const lampConeMat = new THREE.MeshBasicMaterial({color: 0xffe484, transparent: t
 const lampHaloGeo = new THREE.SphereGeometry(0.36, 8, 6);
 const lampHaloMat = new THREE.MeshBasicMaterial({color: 0xfff099, transparent: true, opacity: 0, depthWrite: false, fog: false});
 const lampPoolCircleGeo = new THREE.CircleGeometry(3.8, 14);
-for(let z = -128; z < 10; z += 16){
+for(let z = -192; z < 10; z += 16){
   [-4.6, 4.6].forEach(x => {
     const lampG = new THREE.Group();
     lampG.position.set(x, 0, z);
@@ -1639,10 +1639,10 @@ bunkerGroup.add(bunkerAlarmLed);
 // şehir: sağ ve sol taraftaki dekor binalar kaldırıldı
 
 
-// yolun karşısında kocaman park alanı: çimen ve ağaçlar (görsel)
-const parkLawn = new THREE.Mesh(new THREE.PlaneGeometry(32, 110), makeRichGrassMat(14, 48, '#3b8544'));
+// yolun karşısında kocaman park alanı: çimen ve ağaçlar (genişletildi)
+const parkLawn = new THREE.Mesh(new THREE.PlaneGeometry(66, 212), makeRichGrassMat(26, 76, '#3b8544'));
 parkLawn.rotation.x = -Math.PI / 2;
-parkLawn.position.set(-25, 0.02, -40);
+parkLawn.position.set(-42, 0.02, -94);
 scene.add(parkLawn);
 // yola yakın yarısı otopark (asfalt); ağaçlar sadece çimenli yarıda
 // asfalt yarı: iki parça, aralarında çimen şerit
@@ -1658,12 +1658,20 @@ scene.add(parkLawn);
   bay.position.set(x, 0.05, -15);
   scene.add(bay);
 });
-[[-28, -82], [-30, -64], [-34, -76], [-30, -44], [-36, -22], [-26, -12], [-34, -50], [-38, -66]].forEach(([x, z], idx) => {
+[
+  [-28, -82], [-30, -64], [-34, -76], [-30, -44], [-36, -22], [-26, -12], [-34, -50], [-38, -66],
+  [-46, -30], [-54, -55], [-48, -95], [-32, -118], [-44, -142], [-28, -165], [-56, -125], [-50, -175],
+  [28, -60], [36, -85], [26, -115], [38, -140], [30, -170], [42, -45]
+].forEach(([x, z], idx) => {
   const tg = makeNaturalTree(x, z, idx);
   addSmashable(tg, x, z, 1.1, 0x5a3d25, 0x2f6b3a);
 });
-// Park alanında doğal çiçek kümeleri
-[[-27, -30, 0xfacc15], [-33, -35, 0xe74c3c], [-37, -44, 0xe84393], [-32, -56, 0x38bdf8], [-25, -78, 0xfacc15], [-36, -60, 0xe74c3c]].forEach(([fx, fz, col]) => {
+// Park ve geniş çim alanlarında doğal çiçek kümeleri
+[
+  [-27, -30, 0xfacc15], [-33, -35, 0xe74c3c], [-37, -44, 0xe84393], [-32, -56, 0x38bdf8], [-25, -78, 0xfacc15], [-36, -60, 0xe74c3c],
+  [-45, -70, 0x38bdf8], [-52, -110, 0xfacc15], [-35, -135, 0xe84393], [-42, -160, 0xe74c3c],
+  [25, -75, 0xfacc15], [34, -105, 0x38bdf8], [28, -145, 0xe84393], [36, -165, 0xe74c3c]
+].forEach(([fx, fz, col]) => {
   const fl = makeNaturalFlowerCluster(fx, fz, col);
   addSmashable(fl, fx, fz, 0.7, col, 0x2f8f46);
 });
@@ -1710,13 +1718,13 @@ const grassTipPhase = new Float32Array(GRASS_TIP_COUNT);
     let gx = 0, gz = 0, ok = false;
     for(let tries = 0; tries < 12; tries++){
       if(i % 2 === 0){
-        // Sol park çim alanı
-        gx = -40.2 + Math.random() * 23.0;
-        gz = -92.0 + Math.random() * 98.0;
+        // Sol park çim alanı (genişletildi)
+        gx = -70.0 + Math.random() * 52.0;
+        gz = -188.0 + Math.random() * 194.0;
       } else {
-        // Sağ çim alanı
-        gx = 11.4 + Math.random() * 12.2;
-        gz = -92.0 + Math.random() * 98.0;
+        // Sağ çim alanı (genişletildi)
+        gx = 11.4 + Math.random() * 34.0;
+        gz = -188.0 + Math.random() * 194.0;
       }
       if(!isExcludedGrassSpot(gx, gz)){ ok = true; break; }
     }
@@ -1919,10 +1927,10 @@ const pgPivot = new THREE.Mesh(B(0.2, 0.4, 0.4), pgMetal);
 pgPivot.position.set(-2.8, 0.2, -1.2);
 playground.add(pgPivot);
 
-// dünyanın çevresindeki duvar (yürünebilir alanın sınırı)
+// dünyanın çevresindeki duvar (genişletilmiş yürünebilir ve sürülebilir alanın sınırı)
 const wallMat = M(0x8a7f74);
-[[B(0.3, 3, 143), -42, -64.5], [B(0.3, 3, 143), 22, -64.5],   // batı ve doğu
- [B(64, 3, 0.3), -10, -136], [B(64, 3, 0.3), -10, 7]            // kuzey ve güney
+[[B(0.3, 3, 212), -75, -94], [B(0.3, 3, 212), 49, -94],   // batı ve doğu
+ [B(124, 3, 0.3), -13, -196], [B(124, 3, 0.3), -13, 12]   // kuzey ve güney
 ].forEach(([geo, x, z]) => {
   const w = new THREE.Mesh(geo, wallMat);
   w.position.set(x, 1.5, z);
@@ -3548,8 +3556,8 @@ function spawnCar(forceDir){
   const dir = forceDir || (Math.random() < 0.5 ? 1 : -1);
   // Sağdan akan trafik: +z yönüne gidenler sağ şeritte (x = +2.0), -z yönüne gidenler sol şeritte (x = -2.0)
   const laneX = dir > 0 ? 2.0 : -2.0;
-  // Arabalar yolun en başından (z = -135.5 veya z = 8.5) doğar!
-  const startZ = dir > 0 ? -135.5 : 8.5;
+  // Arabalar yolun en başından (z = -195.5 veya z = 8.5) doğar!
+  const startZ = dir > 0 ? -195.5 : 8.5;
   const roll = Math.random();
   let c, isMoto = false, isModCar = false;
   if(roll < 0.22){
@@ -3590,9 +3598,9 @@ function tryWalk(o, dz){
 
 function spawnPasser(){
   const g = pick(HUMANS).clone();
-  g.position.set(-4.5, 0, -135);
+  g.position.set(-4.5, 0, -195);
   scene.add(g);
-  passers.push({g, x:-4.5, z:-135, speed:1.6 + Math.random()*0.8, ph:Math.random()*TAU,
+  passers.push({g, x:-4.5, z:-195, speed:1.6 + Math.random()*0.8, ph:Math.random()*TAU,
     legL:g.getObjectByName('legL'), legR:g.getObjectByName('legR')});
 }
 
@@ -3891,7 +3899,7 @@ const canWork = () => active() && nearCounter() && shutterOpen;
 
 // kaldırımlar ve geçit dışında yürünemez; tezgâh ve satıcı engel
 function free(x, z){
-  if(x < -41 || x > 21.5 || z < -135 || z > 6) return false; // sol taraf: park da yürünebilir
+  if(x < -74 || x > 48 || z < -195 || z > 10) return false; // genişletilmiş harita sınırları
   if(x > -11.4 && x < -8.2 && z > -8.5 && z < -3.5) return false; // market binası
   if(x > -11.4 && x < -8.2 && z > -16.9 && z < -12.1) return false; // banka binası
   if(x > -11.4 && x < -8.2 && z > -26.5 && z < -21.5) return false; // galeri binası
@@ -3951,7 +3959,7 @@ const localToWorld = (lx, lz) => {
 let crashCD = 0;
 let kick = null; // araba çarpınca oyuncunun fırlama animasyonu
 const truckFree = (x, z) => {
-  if(x < -8.5 || x > 18.5 || z < -135 || z > 6) return false;
+  if(x < -74 || x > 48 || z < -195 || z > 10) return false;
   if(Math.abs(x - 8.6) < 2.4 && Math.abs(z - 4.8) < 3.6) return false;
   return true;
 };
@@ -3994,7 +4002,7 @@ function comoUpdate(dt){
   CM.v += (target - CM.v) * Math.min(1, 2.5 * dt);
   if(Math.abs(CM.v) > 0.05) CM.h -= steer * 1.0 * Math.min(1, Math.abs(CM.v) / 2) * Math.sign(CM.v) * dt;
   const nx = CM.x + Math.sin(CM.h) * CM.v * dt, nz = CM.z + Math.cos(CM.h) * CM.v * dt;
-  if(nx > 4 && nx < 18 && nz > -135 && nz < 6){ CM.x = nx; CM.z = nz; } else CM.v = 0;
+  if(nx > -74 && nx < 48 && nz > -195 && nz < 10){ CM.x = nx; CM.z = nz; } else CM.v = 0;
 }
 
 function updatePlayer(dt){
@@ -7390,7 +7398,7 @@ function spawnOwnedCar(){
 // kendi arabamız: fiziği basit, trafik arabalarına çarpınca can gider
 // evin koridoru ve bahçesi de sürülebilir; garajın içi açık, duvarları geçilmez
 function carFree(x, z){
-  if(x < -41 || x > 21.5 || z < -135 || z > 6) return false;
+  if(x < -74 || x > 48 || z < -195 || z > 10) return false;
   if(x > 10.3 && x < 15.6 && z > -25.3 && z < -18.7) return false; // ev binası
   if(x > 16.85 && x < 20.65 && z > -23.5 && z < -18.5) return x > 17.0 && x < 20.5; // garaj duvarları
   return true; // sağ ve sol çimli alanların tamamı sürülebilir
@@ -10412,7 +10420,7 @@ function step(dt, play){
   // arabalar, motorcular ve yayalar (her iki yönden trafik, yolun en başından doğar)
   carT -= dt;
   if(carT <= 0){
-    const canFwd = !cars.some(c => (c.dir || 1) > 0 && c.g.position.z < -122);
+    const canFwd = !cars.some(c => (c.dir || 1) > 0 && c.g.position.z < -180);
     const canRev = !cars.some(c => (c.dir || 1) < 0 && c.g.position.z > -8);
     if(canFwd && canRev) spawnCar(Math.random() < 0.5 ? 1 : -1);
     else if(canFwd) spawnCar(1);
@@ -10484,7 +10492,7 @@ function step(dt, play){
     const d = c.cur * dt;
     c.g.rotation.y = dir > 0 ? Math.PI : 0;
     c.g.position.z += d * dir;
-    c.g.visible = c.g.position.z > -136 && c.g.position.z < 8.5; // tünel ağzından çıkarken/girerken görünür (tünelin içinde gizli)
+    c.g.visible = c.g.position.z > -196 && c.g.position.z < 8.5; // tünel ağzından çıkarken/girerken görünür (tünelin içinde gizli)
     // yanımızdan geçen araç: bir kez "viyuv" sesi
     if(!c.passSnd && Math.abs(c.g.position.z - myWp.z) < 3 && Math.abs(c.g.position.x - myWp.x) < 14){
       c.passSnd = true;
@@ -10502,7 +10510,7 @@ function step(dt, play){
   updateTacoTrafficMusic(nearestModCarDist);
   cars = cars.filter(c => {
     const dir = c.dir || 1;
-    if((dir > 0 && c.g.position.z > 8.5) || (dir < 0 && c.g.position.z < -137)){
+    if((dir > 0 && c.g.position.z > 8.5) || (dir < 0 && c.g.position.z < -197)){
       scene.remove(c.g);
       if(c.snd){ try{ c.snd.src.stop(); }catch(e){} }
       return false;
@@ -12394,7 +12402,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-161500';
+const APP_VERSION = '2026-10-29-164622';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
