@@ -10549,11 +10549,11 @@ function step(dt, play){
     return true;
   });
 
-  // yemek (açlık) ve su (susuzluk) barı: zamanla azalır, çok azalıp sıfırlanınca Şehir Hastanesine kaldırılırsın (5.000₺ masraf, yetmezse kredi)
+  // yemek (açlık) ve su (susuzluk) barı: zamanla çok yavaş azalır, sıfırlanınca Şehir Hastanesine kaldırılırsın (500₺ masraf, yetmezse kredi)
   if(hospitalFeeCD > 0) hospitalFeeCD = Math.max(0, hospitalFeeCD - dt);
   if(play){
-    hunger = Math.max(0, hunger - dt * 0.36);
-    thirst = Math.max(0, thirst - dt * 0.44);
+    hunger = Math.max(0, hunger - dt * 0.06);
+    thirst = Math.max(0, thirst - dt * 0.075);
     if(hunger <= 0 || thirst <= 0){
       const reason = (hunger <= 0 && thirst <= 0)
         ? 'Açlık ve susuzluktan bayıldın!'
@@ -12393,7 +12393,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-133204';
+const APP_VERSION = '2026-10-29-134956';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
