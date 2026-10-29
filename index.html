@@ -2640,36 +2640,30 @@ for(let fz = -25.0; fz <= 25.0; fz += 2.0){
   addTo(grandHotelGroup, new THREE.SphereGeometry(0.28, 10, 8), hotelWarmLightMat, 21.8, 2.98, gz);
 });
 
-// 4 Katlı Devasa Otel Binası (local x: -10..+2, y: 0..14.4, z: -23..+23 — Dört cephesi boydan boya şeffaf PENCERELİ!)
+// 4 Katlı Devasa Otel Binası (local x: -10..+2, y: 0..14.4, z: -23..+23 — Dört cephesi boydan boya AÇIK PENCERELİ, mavi bloklar yok!)
 addRectShadow(grandHotelGroup, 13.5, 48.0, -4.0, 0, 0.16);
-const hotelGlassMat = new THREE.MeshBasicMaterial({color: 0x7dd3fc, transparent: true, opacity: 0.30, side: THREE.DoubleSide});
-// Her katta (1. Kat, 2. Kat, 3. Kat, 4. VIP Kat) kapalı duvar yerine alt mermer parapet + boydan boya şeffaf CAM PENCERELER ve altın pencere doğramaları!
+// Her katta (1. Kat, 2. Kat, 3. Kat, 4. VIP Kat) alt mermer parapet + üst lento + altın pencere doğramaları (pencerelerin önü tamamen açık!)
 for(let fl = 0; fl < 4; fl++){
   const fy = fl * 3.6;
-  // Arka cephe (x = -9.8): alt parapet + şeffaf cam pencere + üst lento + dikey pencere kayıtları
+  // Arka cephe (x = -9.8): alt parapet + üst lento + dikey pencere kayıtları
   addTo(grandHotelGroup, B(0.35, 0.85, 46.0), M(0xfef9c3), -9.8, fy + 0.42, 0);
-  addTo(grandHotelGroup, B(0.12, 2.35, 45.6), hotelGlassMat, -9.8, fy + 2.02, 0);
   addTo(grandHotelGroup, B(0.35, 0.40, 46.0), M(0xfef9c3), -9.8, fy + 3.40, 0);
   for(let wz = -22; wz <= 22; wz += 4.4){
     addTo(grandHotelGroup, B(0.38, 3.6, 0.24), M(0xb45309), -9.8, fy + 1.8, wz);
   }
-  // Sol yan cephe (z = -22.8) ve Sağ yan cephe (z = +22.8): alt parapet + şeffaf cam pencere + dikey pencere kayıtları
+  // Sol yan cephe (z = -22.8) ve Sağ yan cephe (z = +22.8): alt parapet + üst lento + dikey pencere kayıtları
   [-22.8, 22.8].forEach(sz => {
     addTo(grandHotelGroup, B(12.0, 0.85, 0.35), M(0xfef9c3), -4.0, fy + 0.42, sz);
-    addTo(grandHotelGroup, B(11.6, 2.35, 0.12), hotelGlassMat, -4.0, fy + 2.02, sz);
     addTo(grandHotelGroup, B(12.0, 0.40, 0.35), M(0xfef9c3), -4.0, fy + 3.40, sz);
     [-9.6, -5.8, -2.0, 1.8].forEach(wx => {
       addTo(grandHotelGroup, B(0.24, 3.6, 0.38), M(0xb45309), wx, fy + 1.8, sz);
     });
   });
-  // Ön cephe (x = +1.8): sol ve sağ kanatlarda pencereler (2., 3. ve 4. katta balkon kapısı boşlukları açık)
+  // Ön cephe (x = +1.8): sol ve sağ kanatlarda açık pencereler
   [-13.4, 13.4].forEach(fz => {
     addTo(grandHotelGroup, B(0.35, 0.40, 19.2), M(0xfef9c3), 1.8, fy + 3.40, fz);
     if(fl === 0){
       addTo(grandHotelGroup, B(0.35, 0.85, 19.2), M(0xfef9c3), 1.8, fy + 0.42, fz);
-      addTo(grandHotelGroup, B(0.12, 2.35, 18.8), hotelGlassMat, 1.8, fy + 2.02, fz);
-    } else {
-      addTo(grandHotelGroup, B(0.12, 2.80, 18.8), hotelGlassMat, 1.8, fy + 1.80, fz);
     }
   });
   for(let wz = -22; wz <= 22; wz += 4.4){
@@ -2884,35 +2878,22 @@ addHotelCeilingLight(grandHotelGroup, -8.0, 3.40, 0, 0, 3.2); // 1. kat merdiven
   addTo(grandHotelGroup, B(0.35, 0.34, 46.6), M(0xd97706), 2.0, fy, 0);   // Ön dış kuşak
   addTo(grandHotelGroup, B(12.4, 0.34, 0.35), M(0xd97706), -4.0, fy, -23.0); // Sol dış kuşak
   addTo(grandHotelGroup, B(12.4, 0.34, 0.35), M(0xd97706), -4.0, fy, 23.0);  // Sağ dış kuşak
-  // Ön cephe boydan boya balkon çıkıntıları ve cam korkuluklar
+  // Ön cephe boydan boya balkon çıkıntıları ve altın korkuluklar
   addTo(grandHotelGroup, B(1.8, 0.22, 45.4), M(0xf8fafc), 2.8, fy - 0.05, 0);
   if(fy < 14.1){
-    addTo(grandHotelGroup, B(0.12, 0.85, 45.2), M(0x38bdf8), 3.62, fy + 0.45, 0);
     addTo(grandHotelGroup, B(0.16, 0.10, 45.4), M(0xfbbf24), 3.62, fy + 0.90, 0);
+    addTo(grandHotelGroup, B(0.14, 0.08, 45.4), M(0xd97706), 3.62, fy + 0.48, 0);
   }
 });
 // Çatı kral dairesi kulesi ve altın kubbe süsü (4. katın üstünde!)
 addTo(grandHotelGroup, B(8.5, 2.4, 18.0), M(0xfef08a), -4.0, 15.6, 0);
 addTo(grandHotelGroup, B(9.0, 0.36, 18.6), M(0xb45309), -4.0, 16.9, 0);
 
-// Ön cephe camları (2., 3. ve 4. katta odaların önünde açık balkon geçişi bırakır)
-for(let floor = 0; floor < 4; floor++){
-  const wy = 1.85 + floor * 3.6;
-  for(let wz = -20; wz <= 20; wz += 4){
-    if(floor === 0 && Math.abs(wz) <= 4) continue; // Zemin kat orta kısım açık lobi girişi
-    if(floor > 0 && (Math.abs(wz - (-18.5)) < 2.2 || Math.abs(wz - (-10.7)) < 2.2 || Math.abs(wz - 10.7) < 2.2 || Math.abs(wz - 18.5) < 2.2)) continue; // Odalardan balkona açık kapı
-    addTo(grandHotelGroup, B(0.14, 2.1, 2.3), M(0x0284c7), 1.85, wy, wz);
-  }
-}
-
 // Lüks Lobi Girişi, Altın Sütunlar, Açık Kemer Kapı ve Vale Resepsiyonu
 addTo(grandHotelGroup, B(4.8, 0.38, 10.5), M(0xb45309), 4.2, 3.85, 0); // Lobi sundurma çatısı
 [-4.4, 4.4].forEach(cz => {
   addTo(grandHotelGroup, new THREE.CylinderGeometry(0.36, 0.42, 3.7, 10), M(0xfde047), 6.1, 1.85, cz); // Altın sütunlar
 });
-// Kapı camları iki yana açık (ortadan yürüyerek doğrudan lobiye girilir!)
-addTo(grandHotelGroup, B(0.18, 2.9, 1.2), M(0x38bdf8), 2.04, 1.45, -3.2);
-addTo(grandHotelGroup, B(0.18, 2.9, 1.2), M(0x38bdf8), 2.04, 1.45, 3.2);
 addTo(grandHotelGroup, B(1.2, 1.1, 2.8), M(0x78350f), 3.6, 0.55, -4.6); // Dış resepsiyon/vale bankosu
 addTo(grandHotelGroup, B(1.3, 0.12, 2.9), M(0xfef08a), 3.6, 1.15, -4.6);
 const hotelReceptionist = human(0xb91c1c, 0x111827, pick(SKINS), pick(HAIRS));
@@ -2997,11 +2978,11 @@ addTo(hotelRoomInteriorGroup, B(4.6, 0.04, 3.4), M(0x991b1b), -0.8, 0.02, 0.2); 
 addTo(hotelRoomInteriorGroup, B(0.22, 3.6, 9.4), M(0xfef3c7), -5.1, 1.8, 0); // Arka duvar (yatak başı duvarı)
 addTo(hotelRoomInteriorGroup, B(10.4, 3.6, 0.22), M(0xfef3c7), 0, 1.8, -4.6); // Sol duvar (mutfak duvarı)
 addTo(hotelRoomInteriorGroup, B(10.4, 3.6, 0.22), M(0xfef3c7), 0, 1.8, 4.6);  // Sağ duvar (banyo & giriş duvarı)
-// Ön cephe: Havuz manzaralı boydan boya cam duvar ve balkon terası (local x: +3.8..+5.2)
+// Ön cephe: Havuz manzaralı açık balkon penceresi ve altın balkon korkuluğu (local x: +3.8..+5.2)
 addTo(hotelRoomInteriorGroup, B(0.14, 3.4, 3.0), M(0xfef3c7), 3.8, 1.7, -3.0);
 addTo(hotelRoomInteriorGroup, B(0.14, 3.4, 3.0), M(0xfef3c7), 3.8, 1.7, 3.0);
-addTo(hotelRoomInteriorGroup, B(0.08, 2.8, 3.2), new THREE.MeshBasicMaterial({color: 0x7dd3fc, transparent: true, opacity: 0.32}), 3.8, 1.5, 0); // Balkon camı
-addTo(hotelRoomInteriorGroup, B(1.4, 0.95, 9.2), M(0x38bdf8), 4.5, 0.48, 0); // Balkon korkuluğu
+addTo(hotelRoomInteriorGroup, B(0.16, 0.10, 9.2), M(0xfbbf24), 4.5, 0.92, 0); // Altın balkon korkuluğu üst barı
+addTo(hotelRoomInteriorGroup, B(0.14, 0.08, 9.2), M(0xd97706), 4.5, 0.50, 0); // Altın balkon korkuluğu orta barı
 
 // 🛏️🛏️ 1 ODA 2 GÜZEL YATAK (Kraliyet Başlıklı, Çift Yastıklı, Kapitone Yorganlı ve Komodin Lambalı 2 Lüks Yatak!)
 [-2.4, 0.8].forEach((bz, bIdx) => {
@@ -13480,7 +13461,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-204227';
+const APP_VERSION = '2026-10-29-220639';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
