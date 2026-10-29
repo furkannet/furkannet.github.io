@@ -2947,36 +2947,92 @@ for(let hi = 0; hi < 8; hi++){
   addTo(grandHotelGroup, B(0.24, 0.16, 0.24), new THREE.MeshBasicMaterial({color: hi % 2 === 0 ? 0x4ade80 : 0xfde047}), -4.0 + Math.cos(ha) * 4.85, 14.68, 13.8 + Math.sin(ha) * 4.85);
 }
 
-// 🚁 3B VIP HELİKOPTER MODELİ (Marketten 2M₺'ye alınınca otel çatısındaki H pistinde belirir!)
+// 🚁 3B GERÇEKÇİ HELİKOPTER MODELİ (Wikipedia'daki Bell 206 / Eurocopter tipi: yuvarlak cam kokpit, aerodinamik gövde, üst türbin motoru, ince konik kuyruk borusu, yatay/dikey dengeleyiciler ve kavisli iniş kızakları)
 const heliMesh = new THREE.Group();
-// Kızaklar (Landing Skids)
-[-0.85, 0.85].forEach(sx => {
-  addTo(heliMesh, B(0.12, 0.10, 3.4), M(0x334155), sx, 0.08, 0);
-  addTo(heliMesh, B(0.10, 0.55, 0.10), M(0x475569), sx, 0.35, -0.75);
-  addTo(heliMesh, B(0.10, 0.55, 0.10), M(0x475569), sx, 0.35, 0.75);
+const heliSkidMat = M(0x334155);
+const heliBodyMat = M(0x0284c7);
+const heliWhiteMat = M(0xf8fafc);
+const heliGoldMat = M(0xfacc15);
+const heliDarkMat = M(0x111827);
+const heliGlassMat = M(0x7dd3fc);
+// 1) Kavisli Boru İniş Kızakları (Landing Skids) ve Eğimli Destek Dikmeleri
+[-0.95, 0.95].forEach(sx => {
+  const skidTube = addTo(heliMesh, new THREE.CylinderGeometry(0.055, 0.055, 3.6, 8), heliSkidMat, sx, 0.08, 0.15);
+  skidTube.rotation.x = Math.PI / 2;
+  const skidTip = addTo(heliMesh, new THREE.CylinderGeometry(0.05, 0.055, 0.48, 8), heliSkidMat, sx, 0.19, 2.08);
+  skidTip.rotation.x = Math.PI / 2 - 0.52;
+  [-0.85, 0.85].forEach(sz => {
+    const strut = addTo(heliMesh, new THREE.CylinderGeometry(0.045, 0.045, 0.68, 6), heliSkidMat, sx * 0.78, 0.36, sz);
+    strut.rotation.z = sx > 0 ? 0.38 : -0.38;
+  });
+  // Biniş basamağı
+  addTo(heliMesh, B(0.18, 0.03, 0.95), heliDarkMat, sx * 0.92, 0.32, 0.25);
 });
-// Ana gövde (Mavi-Altın VIP tasarım)
-addTo(heliMesh, B(1.75, 1.25, 2.8), M(0x0284c7), 0, 1.0, 0);
-addTo(heliMesh, B(1.80, 0.22, 2.86), M(0xfacc15), 0, 0.88, 0); // Altın VIP kuşak
-// Ön cam kokpit (Tinted mavi cam)
-addTo(heliMesh, B(1.62, 0.92, 1.05), M(0xbae6fd), 0, 1.06, 1.15);
-// Kuyruk bomu ve arka dikey kanat
-addTo(heliMesh, B(0.45, 0.48, 3.2), M(0x0369a1), 0, 1.12, -2.6);
-addTo(heliMesh, B(0.16, 1.15, 0.65), M(0xfacc15), 0, 1.52, -3.95);
-// Üst rotor direği ve dönen ana pervane (heliMainRotor)
-addTo(heliMesh, new THREE.CylinderGeometry(0.14, 0.18, 0.42, 8), M(0x1e293b), 0, 1.80, 0);
+// 2) Aerodinamik Gözyaşı Damlası Gövde & Yuvarlak Burunlu Cam Kokpit (Bubble Canopy)
+const heliCabin = addTo(heliMesh, new THREE.SphereGeometry(1.0, 12, 10), heliBodyMat, 0, 1.08, 0.15);
+heliCabin.scale.set(0.95, 0.76, 1.65);
+const heliBelly = addTo(heliMesh, new THREE.SphereGeometry(0.96, 12, 8), heliWhiteMat, 0, 0.82, 0.20);
+heliBelly.scale.set(0.88, 0.42, 1.55);
+// Yuvarlak bombeli ön kokpit camı ve yan pencereler
+const heliCanopy = addTo(heliMesh, new THREE.SphereGeometry(0.92, 12, 10), heliGlassMat, 0, 1.15, 0.82);
+heliCanopy.scale.set(0.88, 0.68, 1.15);
+// Kokpit cam çerçeve direkleri ve yan kapı pencereleri
+addTo(heliMesh, B(0.05, 0.68, 0.85), heliDarkMat, 0, 1.24, 1.48).rotation.x = 0.55;
+[-0.89, 0.89].forEach(wx => {
+  addTo(heliMesh, B(0.06, 0.44, 0.72), heliGlassMat, wx, 1.16, 0.25);
+  addTo(heliMesh, B(0.06, 0.40, 0.58), heliGlassMat, wx * 0.94, 1.16, -0.52);
+  addTo(heliMesh, B(0.07, 0.12, 2.55), heliGoldMat, wx * 0.96, 0.90, 0.10); // Yan altın-beyaz yarış şeridi
+});
+// 3) Üst Türbin Motor Yatağı ve Çift Egzoz Çıkışı
+const heliEnginePod = addTo(heliMesh, new THREE.CylinderGeometry(0.36, 0.44, 1.85, 10), heliWhiteMat, 0, 1.72, -0.25);
+heliEnginePod.rotation.x = Math.PI / 2;
+addTo(heliMesh, new THREE.CylinderGeometry(0.28, 0.34, 0.35, 8), heliDarkMat, 0, 1.72, 0.68).rotation.x = Math.PI / 2; // Ön hava girişi
+[-0.18, 0.18].forEach(ex => {
+  const exh = addTo(heliMesh, new THREE.CylinderGeometry(0.11, 0.13, 0.36, 8), M(0x475569), ex, 1.74, -1.22);
+  exh.rotation.x = Math.PI / 2 + 0.18;
+});
+// 4) İnce Uzun Konik Kuyruk Borusu (Tail Boom), Yatay Dengeleyici ve Eğimli Kuyruk Dikmesi (Fin)
+const heliTailBoom = addTo(heliMesh, new THREE.CylinderGeometry(0.11, 0.32, 3.85, 10), heliBodyMat, 0, 1.26, -2.75);
+heliTailBoom.rotation.x = Math.PI / 2 - 0.04;
+addTo(heliMesh, B(1.45, 0.05, 0.34), heliGoldMat, 0, 1.28, -3.35); // Yatay dengeleyici kanatçıklar (Horizontal Stabilizer)
+[-0.72, 0.72].forEach(fx => {
+  addTo(heliMesh, B(0.04, 0.28, 0.36), heliBodyMat, fx, 1.32, -3.35);
+});
+const heliTailFin = addTo(heliMesh, B(0.10, 1.25, 0.58), heliBodyMat, 0, 1.65, -4.48); // Kuyruk dikey kanadı (Vertical Fin)
+heliTailFin.rotation.x = -0.28;
+const heliFinTip = addTo(heliMesh, B(0.11, 0.35, 0.42), heliGoldMat, 0, 2.22, -4.64);
+heliFinTip.rotation.x = -0.28;
+// 5) Ana Rotor Göbeği (Swashplate) ve 4 Kanatlı Dönen Ana Pervane (heliMainRotor)
+addTo(heliMesh, new THREE.CylinderGeometry(0.10, 0.14, 0.46, 8), heliSkidMat, 0, 2.10, 0.05);
+addTo(heliMesh, new THREE.CylinderGeometry(0.22, 0.22, 0.08, 8), heliDarkMat, 0, 2.02, 0.05);
 const heliMainRotor = new THREE.Group();
-heliMainRotor.position.set(0, 1.98, 0);
-addTo(heliMainRotor, B(6.8, 0.05, 0.32), M(0x111827), 0, 0, 0);
-addTo(heliMainRotor, B(0.32, 0.05, 6.8), M(0x111827), 0, 0, 0);
-addTo(heliMainRotor, new THREE.CylinderGeometry(0.22, 0.22, 0.12, 8), M(0xfacc15), 0, 0.04, 0);
+heliMainRotor.position.set(0, 2.32, 0.05);
+addTo(heliMainRotor, new THREE.CylinderGeometry(0.20, 0.24, 0.14, 8), heliDarkMat, 0, 0, 0);
+addTo(heliMainRotor, new THREE.CylinderGeometry(0.10, 0.14, 0.10, 8), heliGoldMat, 0, 0.10, 0);
+// Ana pervane kanatları + sarı güvenlik uçları
+addTo(heliMainRotor, B(7.8, 0.035, 0.26), heliDarkMat, 0, 0.02, 0);
+addTo(heliMainRotor, B(0.26, 0.035, 7.8), heliDarkMat, 0, 0.02, 0);
+[-3.75, 3.75].forEach(tip => {
+  addTo(heliMainRotor, B(0.32, 0.04, 0.27), heliGoldMat, tip, 0.02, 0);
+  addTo(heliMainRotor, B(0.27, 0.04, 0.32), heliGoldMat, 0, 0.02, tip);
+});
 heliMesh.add(heliMainRotor);
-// Arka kuyruk pervanesi (heliTailRotor)
+// 6) Arka Kuyruk Pervanesi (heliTailRotor) ve Kuyruk Rotor Göbeği
+addTo(heliMesh, new THREE.CylinderGeometry(0.08, 0.08, 0.24, 8), heliSkidMat, 0.12, 1.78, -4.55).rotation.z = Math.PI / 2;
 const heliTailRotor = new THREE.Group();
-heliTailRotor.position.set(0.16, 1.65, -4.05);
-addTo(heliTailRotor, B(0.05, 1.35, 0.16), M(0x111827), 0, 0, 0);
-addTo(heliTailRotor, B(0.05, 0.16, 1.35), M(0x111827), 0, 0, 0);
+heliTailRotor.position.set(0.22, 1.78, -4.55);
+addTo(heliTailRotor, new THREE.CylinderGeometry(0.09, 0.09, 0.08, 8), heliGoldMat, 0, 0, 0).rotation.z = Math.PI / 2;
+addTo(heliTailRotor, B(0.03, 1.45, 0.14), heliDarkMat, 0, 0, 0);
+addTo(heliTailRotor, B(0.03, 0.14, 1.45), heliDarkMat, 0, 0, 0);
+[-0.66, 0.66].forEach(tt => {
+  addTo(heliTailRotor, B(0.035, 0.16, 0.15), M(0xef4444), 0, tt, 0);
+  addTo(heliTailRotor, B(0.035, 0.15, 0.16), M(0xef4444), 0, 0, tt);
+});
 heliMesh.add(heliTailRotor);
+// Gece uçuş seyrüsefer ışıkları (Kırmızı sol, Yeşil sağ, Beyaz kuyruk)
+addTo(heliMesh, B(0.10, 0.10, 0.10), new THREE.MeshBasicMaterial({color: 0xef4444}), -0.95, 0.88, 0.65);
+addTo(heliMesh, B(0.10, 0.10, 0.10), new THREE.MeshBasicMaterial({color: 0x22c55e}), 0.95, 0.88, 0.65);
+addTo(heliMesh, B(0.10, 0.10, 0.10), new THREE.MeshBasicMaterial({color: 0xffffff}), 0, 2.32, -4.72);
 heliMesh.position.set(HELI_PAD_POS.x, HELI_PAD_POS.y, HELI_PAD_POS.z);
 heliMesh.visible = !!(S.mk && S.mk.helikopter);
 scene.add(heliMesh);
@@ -13707,7 +13763,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-235038';
+const APP_VERSION = '2026-10-30-000315';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
