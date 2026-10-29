@@ -1466,12 +1466,18 @@ home.add(pool);
 const homeFridgeGroup = new THREE.Group();
 homeFridgeGroup.position.set(-1.45, 0, -2.05);
 home.add(homeFridgeGroup);
-addTo(homeFridgeGroup, B(0.82, 1.95, 0.68), M(0xe2e8f0), 0, 0.975, 0);          // gümüş/beyaz ana gövde
-addTo(homeFridgeGroup, B(0.84, 0.04, 0.70), M(0x64748b), 0, 1.32, 0.01);        // dondurucu ve alt kapak ayrım çizgisi
-addTo(homeFridgeGroup, B(0.05, 0.42, 0.06), M(0x475569), 0.30, 1.62, 0.36);     // üst dondurucu kapı kolu
-addTo(homeFridgeGroup, B(0.05, 0.68, 0.06), M(0x475569), 0.30, 0.82, 0.36);     // alt buzdolabı kapı kolu
-addTo(homeFridgeGroup, B(0.22, 0.26, 0.04), M(0x1e293b), -0.16, 1.02, 0.35);    // soğuk su pınarı yuvası
-addTo(homeFridgeGroup, B(0.14, 0.08, 0.05), M(0x38bdf8), -0.16, 1.10, 0.36);    // mavi su/buz göstergesi
+[
+  [B(0.82, 1.95, 0.68), 0xe2e8f0, 0, 0.975, 0],          // gümüş/beyaz ana gövde
+  [B(0.84, 0.04, 0.70), 0x64748b, 0, 1.32, 0.01],        // dondurucu ve alt kapak ayrım çizgisi
+  [B(0.05, 0.42, 0.06), 0x475569, 0.30, 1.62, 0.36],     // üst dondurucu kapı kolu
+  [B(0.05, 0.68, 0.06), 0x475569, 0.30, 0.82, 0.36],     // alt buzdolabı kapı kolu
+  [B(0.22, 0.26, 0.04), 0x1e293b, -0.16, 1.02, 0.35],    // soğuk su pınarı yuvası
+  [B(0.14, 0.08, 0.05), 0x38bdf8, -0.16, 1.10, 0.36]     // mavi su/buz göstergesi
+].forEach(([geo, col, x, y, z]) => {
+  const m = new THREE.Mesh(geo, M(col));
+  m.position.set(x, y, z);
+  homeFridgeGroup.add(m);
+});
 const HOME_FRIDGE_WORLD = {x: 11.55, z: -24.05};
 
 // 🏡 2 KATLI VE BALKONLU VİLLA + MERDİVEN + 3B GİZLİ YERALTI SIĞINAĞI (BUNKER)
@@ -12360,7 +12366,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-115603';
+const APP_VERSION = '2026-10-29-120709';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
