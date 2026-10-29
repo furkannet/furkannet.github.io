@@ -1072,20 +1072,20 @@ function makeRichGrassMat(rx, rz, tintHex){
   return new THREE.MeshLambertMaterial({map: t, side: THREE.DoubleSide});
 }
 
-const road = new THREE.Mesh(new THREE.PlaneGeometry(8.2,110), new THREE.MeshLambertMaterial({map:asphaltTex}));
-road.rotation.x = -Math.PI/2; road.position.set(0,0,-40);
+const road = new THREE.Mesh(new THREE.PlaneGeometry(8.2, 152), new THREE.MeshLambertMaterial({map:asphaltTex}));
+road.rotation.x = -Math.PI/2; road.position.set(0, 0, -64);
 road.receiveShadow = true;
 scene.add(road);
 
 const walkMat = new THREE.MeshLambertMaterial({map:tileTex});
-const sideL = new THREE.Mesh(B(5,0.3,110), walkMat); sideL.position.set(-6.5,0.15,-40); sideL.receiveShadow = true; scene.add(sideL);
-const sideR = new THREE.Mesh(B(7,0.3,110), walkMat); sideR.position.set(7.5,0.15,-40); sideR.receiveShadow = true; scene.add(sideR);
-const rightGrassMatN = makeRichGrassMat(6, 24, '#3b8544');
+const sideL = new THREE.Mesh(B(5, 0.3, 152), walkMat); sideL.position.set(-6.5, 0.15, -64); sideL.receiveShadow = true; scene.add(sideL);
+const sideR = new THREE.Mesh(B(7, 0.3, 152), walkMat); sideR.position.set(7.5, 0.15, -64); sideR.receiveShadow = true; scene.add(sideR);
+const rightGrassMatN = makeRichGrassMat(6, 36, '#3b8544');
 const rightGrassMatS = makeRichGrassMat(6, 18, '#3b8544');
 const rightGrassMatSmall = makeRichGrassMat(2, 5, '#3b8544');
-const rightLawnN = new THREE.Mesh(new THREE.PlaneGeometry(14, 57), rightGrassMatN);
+const rightLawnN = new THREE.Mesh(new THREE.PlaneGeometry(14, 98), rightGrassMatN);
 rightLawnN.rotation.x = -Math.PI / 2;
-rightLawnN.position.set(17.5, 0.02, -66.5);
+rightLawnN.position.set(17.5, 0.02, -87);
 scene.add(rightLawnN);
 const rightLawnS = new THREE.Mesh(new THREE.PlaneGeometry(14, 43), rightGrassMatS);
 rightLawnS.rotation.x = -Math.PI / 2;
@@ -1101,7 +1101,7 @@ rightLawnE.position.set(22.9, 0.02, -43);
 scene.add(rightLawnE);
 
 const dashMat = M(0xe9e4d0);
-for(let z = -88; z < 8; z += 6){
+for(let z = -134; z < 8; z += 6){
   const d = new THREE.Mesh(GEO.dash, dashMat);
   d.position.set(0, 0.01, z); scene.add(d);
 }
@@ -1117,7 +1117,7 @@ for(let x = -3.4; x <= 3.4; x += 0.9){
   z.position.set(x, 0.012, -1); scene.add(z);
 }
 
-// tünel ağzı
+// tünel ağzı (yolun en ucunda: z = -136)
 const tunnelTex = tex(512, 256, (g,w,h) => {
   g.fillStyle = '#050507'; g.fillRect(0,0,w,h);
   g.strokeStyle = '#ffcc66'; g.lineWidth = 14;
@@ -1128,9 +1128,9 @@ const tunnelTex = tex(512, 256, (g,w,h) => {
 });
 const tunnelMouth = new THREE.Mesh(new THREE.PlaneGeometry(26,12),
   new THREE.MeshBasicMaterial({map:tunnelTex, fog:false}));
-tunnelMouth.position.set(0,6,-90);
+tunnelMouth.position.set(0, 6, -136);
 // tünel girişi: kapı yok, sadece sütunlar ve üst kemer (içinden geçilir)
-const tunnelFrame = [[B(0.8, 6, 0.8), -4.5, 3, -90], [B(0.8, 6, 0.8), 4.5, 3, -90], [B(9.8, 0.8, 0.8), 0, 6.4, -90]];
+const tunnelFrame = [[B(0.8, 6, 0.8), -4.5, 3, -136], [B(0.8, 6, 0.8), 4.5, 3, -136], [B(9.8, 0.8, 0.8), 0, 6.4, -136]];
 tunnelFrame.forEach(([geo, x, y, z]) => {
   const f = new THREE.Mesh(geo, M(0x2a2a2a));
   f.position.set(x, y, z);
@@ -3548,7 +3548,8 @@ function spawnCar(forceDir){
   const dir = forceDir || (Math.random() < 0.5 ? 1 : -1);
   // Sağdan akan trafik: +z yönüne gidenler sağ şeritte (x = +2.0), -z yönüne gidenler sol şeritte (x = -2.0)
   const laneX = dir > 0 ? 2.0 : -2.0;
-  const startZ = dir > 0 ? -91.5 : 8.5;
+  // Arabalar yolun en başından (z = -135.5 veya z = 8.5) doğar!
+  const startZ = dir > 0 ? -135.5 : 8.5;
   const roll = Math.random();
   let c, isMoto = false, isModCar = false;
   if(roll < 0.22){
@@ -3589,9 +3590,9 @@ function tryWalk(o, dz){
 
 function spawnPasser(){
   const g = pick(HUMANS).clone();
-  g.position.set(-4.5, 0, -91);
+  g.position.set(-4.5, 0, -135);
   scene.add(g);
-  passers.push({g, x:-4.5, z:-91, speed:1.6 + Math.random()*0.8, ph:Math.random()*TAU,
+  passers.push({g, x:-4.5, z:-135, speed:1.6 + Math.random()*0.8, ph:Math.random()*TAU,
     legL:g.getObjectByName('legL'), legR:g.getObjectByName('legR')});
 }
 
@@ -3950,7 +3951,7 @@ const localToWorld = (lx, lz) => {
 let crashCD = 0;
 let kick = null; // araba çarpınca oyuncunun fırlama animasyonu
 const truckFree = (x, z) => {
-  if(x < -8.5 || x > 18.5 || z < -89 || z > 6) return false;
+  if(x < -8.5 || x > 18.5 || z < -135 || z > 6) return false;
   if(Math.abs(x - 8.6) < 2.4 && Math.abs(z - 4.8) < 3.6) return false;
   return true;
 };
@@ -10408,10 +10409,10 @@ function step(dt, play){
     }
   }
 
-  // arabalar, motorcular ve yayalar (her iki yönden trafik)
+  // arabalar, motorcular ve yayalar (her iki yönden trafik, yolun en başından doğar)
   carT -= dt;
   if(carT <= 0){
-    const canFwd = !cars.some(c => (c.dir || 1) > 0 && c.g.position.z < -80);
+    const canFwd = !cars.some(c => (c.dir || 1) > 0 && c.g.position.z < -122);
     const canRev = !cars.some(c => (c.dir || 1) < 0 && c.g.position.z > -8);
     if(canFwd && canRev) spawnCar(Math.random() < 0.5 ? 1 : -1);
     else if(canFwd) spawnCar(1);
@@ -10483,7 +10484,7 @@ function step(dt, play){
     const d = c.cur * dt;
     c.g.rotation.y = dir > 0 ? Math.PI : 0;
     c.g.position.z += d * dir;
-    c.g.visible = c.g.position.z > -91 && c.g.position.z < 8.5; // tünel ağzından çıkarken/girerken görünür (tünelin içinde gizli)
+    c.g.visible = c.g.position.z > -136 && c.g.position.z < 8.5; // tünel ağzından çıkarken/girerken görünür (tünelin içinde gizli)
     // yanımızdan geçen araç: bir kez "viyuv" sesi
     if(!c.passSnd && Math.abs(c.g.position.z - myWp.z) < 3 && Math.abs(c.g.position.x - myWp.x) < 14){
       c.passSnd = true;
@@ -10501,7 +10502,7 @@ function step(dt, play){
   updateTacoTrafficMusic(nearestModCarDist);
   cars = cars.filter(c => {
     const dir = c.dir || 1;
-    if((dir > 0 && c.g.position.z > 8.5) || (dir < 0 && c.g.position.z < -92)){
+    if((dir > 0 && c.g.position.z > 8.5) || (dir < 0 && c.g.position.z < -137)){
       scene.remove(c.g);
       if(c.snd){ try{ c.snd.src.stop(); }catch(e){} }
       return false;
@@ -12393,7 +12394,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-29-134956';
+const APP_VERSION = '2026-10-29-161500';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
