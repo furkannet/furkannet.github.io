@@ -2270,26 +2270,77 @@ const PANTS = ['#2c3e50','#4b3b2a','#1f2a44','#555555'];
 const SKINS = ['#f1c27d','#c68642','#8d5524','#ffdbac'];
 const HAIRS = ['#1b1b1b','#4a2c17','#c9a227'];
 
-const SHOE_M = M(0x1e1e1e), EYE_M = M(0x111111);
+const SHOE_M = M(0x1e1e1e), SHOE_SOLE_M = M(0xdddddd), EYE_M = M(0x111111), EYE_W_M = M(0xffffff), LIP_M = M(0xb85d53), BELT_M = M(0x1c1917), BUCKLE_M = M(0xfbbf24);
+const HUMAN_GEO = {
+  pelvis: B(0.47, 0.14, 0.27),
+  belt: B(0.51, 0.06, 0.31),
+  buckle: B(0.09, 0.07, 0.03),
+  collar: new THREE.CylinderGeometry(0.115, 0.135, 0.06, 8),
+  sleeve: new THREE.CylinderGeometry(0.105, 0.1, 0.24, 8),
+  forearm: new THREE.CylinderGeometry(0.078, 0.068, 0.52, 8),
+  ear: new THREE.SphereGeometry(0.042, 6, 6),
+  eyeWhite: B(0.056, 0.046, 0.02),
+  pupil: B(0.03, 0.034, 0.022),
+  brow: B(0.068, 0.018, 0.022),
+  nose: new THREE.ConeGeometry(0.028, 0.065, 6),
+  mouth: B(0.075, 0.02, 0.02),
+  hairBack: B(0.35, 0.2, 0.16),
+  hairSide: B(0.05, 0.16, 0.18),
+  hairFringe: B(0.32, 0.055, 0.09),
+  shoeSole: B(0.23, 0.035, 0.38),
+  shoeToe: new THREE.SphereGeometry(0.105, 8, 6)
+};
 // yürürken ayak yerde kalsın: bacak kalçadan döner, kalça da açının kosinüsüyle alçalır (yoksa ayaklar havalanır)
 function legPose(leg, a){ leg.rotation.x = a; leg.position.y = 0.85 * Math.cos(a); }
 const SHOE_Y = 0.85;
 function human(shirt, pants, skin, hair){
   const g = new THREE.Group();
   const mS = M(shirt), mP = M(pants), mK = M(skin), mH = M(hair);
-  addTo(g, GEO.body, mS, 0, 1.25, 0);
-  addTo(g, GEO.neck, mK, 0, 1.68, 0);
-  const head = addTo(g, GEO.head, mK, 0, 1.85, 0);
-  head.scale.set(1, 1.08, 0.95);
-  addTo(g, GEO.hair, mH, 0, 1.87, 0);
+  // Gövde, yaka, kalça ve kemer
+  addTo(g, GEO.body, mS, 0, 1.28, 0);
+  addTo(g, HUMAN_GEO.collar, mS, 0, 1.66, 0);
+  addTo(g, HUMAN_GEO.pelvis, mP, 0, 0.88, 0);
+  addTo(g, HUMAN_GEO.belt, BELT_M, 0, 0.93, 0);
+  addTo(g, HUMAN_GEO.buckle, BUCKLE_M, 0, 0.93, 0.155);
+  // Boyun ve kafa
+  addTo(g, GEO.neck, mK, 0, 1.71, 0);
+  const head = addTo(g, GEO.head, mK, 0, 1.87, 0);
+  head.scale.set(1, 1.08, 0.96);
+  // Kulaklar
+  addTo(g, HUMAN_GEO.ear, mK, -0.185, 1.86, 0);
+  addTo(g, HUMAN_GEO.ear, mK, 0.185, 1.86, 0);
+  // Yüz hatları: göz akı, göz bebeği, kaşlar, burun ve ağız (+Z yönüne bakar)
+  addTo(g, HUMAN_GEO.eyeWhite, EYE_W_M, -0.068, 1.89, 0.168);
+  addTo(g, HUMAN_GEO.eyeWhite, EYE_W_M, 0.068, 1.89, 0.168);
+  addTo(g, HUMAN_GEO.pupil, EYE_M, -0.068, 1.89, 0.176);
+  addTo(g, HUMAN_GEO.pupil, EYE_M, 0.068, 1.89, 0.176);
+  const browL = addTo(g, HUMAN_GEO.brow, mH, -0.068, 1.935, 0.172); browL.rotation.z = 0.06;
+  const browR = addTo(g, HUMAN_GEO.brow, mH, 0.068, 1.935, 0.172); browR.rotation.z = -0.06;
+  const nose = addTo(g, HUMAN_GEO.nose, mK, 0, 1.855, 0.195); nose.rotation.x = Math.PI * 0.45;
+  addTo(g, HUMAN_GEO.mouth, LIP_M, 0, 1.795, 0.172);
+  // Gür saç: üst kubbe, kakül, yan favoriler ve ense saçı
+  addTo(g, GEO.hair, mH, 0, 1.89, 0);
+  addTo(g, HUMAN_GEO.hairFringe, mH, 0, 1.99, 0.145);
+  addTo(g, HUMAN_GEO.hairBack, mH, 0, 1.86, -0.1);
+  addTo(g, HUMAN_GEO.hairSide, mH, -0.17, 1.88, -0.01);
+  addTo(g, HUMAN_GEO.hairSide, mH, 0.17, 1.88, -0.01);
+  // Bacaklar ve detaylı spor ayakkabılar (taban + burun)
   const legL = addTo(g, GEO.leg, mP, -0.13, 0.85, 0); legL.name = 'legL';
   const legR = addTo(g, GEO.leg, mP, 0.13, 0.85, 0); legR.name = 'legR';
-  addTo(legL, GEO.shoe, SHOE_M, 0, -0.79, 0.05);
-  addTo(legR, GEO.shoe, SHOE_M, 0, -0.79, 0.05);
-  const armL = addTo(g, GEO.arm, mS, -0.34, 1.6, 0); armL.name = 'armL';
-  const armR = addTo(g, GEO.arm, mS, 0.34, 1.6, 0); armR.name = 'armR';
-  addTo(armL, GEO.hand, mK, 0, -0.68, 0);
-  addTo(armR, GEO.hand, mK, 0, -0.68, 0);
+  [legL, legR].forEach(leg => {
+    addTo(leg, GEO.shoe, SHOE_M, 0, -0.78, 0.05);
+    addTo(leg, HUMAN_GEO.shoeSole, SHOE_SOLE_M, 0, -0.835, 0.055);
+    const toe = addTo(leg, HUMAN_GEO.shoeToe, SHOE_M, 0, -0.79, 0.16);
+    toe.scale.set(1, 0.55, 1.1);
+  });
+  // Kollar: kısa kollu tişört + ten rengi ön kol + eller
+  const armL = new THREE.Group(); armL.position.set(-0.33, 1.6, 0); armL.name = 'armL'; g.add(armL);
+  const armR = new THREE.Group(); armR.position.set(0.33, 1.6, 0); armR.name = 'armR'; g.add(armR);
+  [armL, armR].forEach(arm => {
+    addTo(arm, HUMAN_GEO.sleeve, mS, 0, -0.11, 0);
+    addTo(arm, HUMAN_GEO.forearm, mK, 0, -0.39, 0);
+    addTo(arm, GEO.hand, mK, 0, -0.67, 0);
+  });
   addBlob(g, 0.5, 0.5);
   return g;
 }
@@ -13856,7 +13907,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-114447';
+const APP_VERSION = '2026-10-30-115008';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
