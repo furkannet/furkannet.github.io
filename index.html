@@ -306,6 +306,9 @@ button small{font-size:9px;margin-top:0}
 <div id="comoMenu" class="panel" style="display:none;top:330px;right:10px;width:190px;padding:10px;font-size:13px;z-index:3"></div>
 <button id="comoBtn" style="display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:762px;z-index:3;padding:12px 14px;background:#1e4a2a;font-weight:700;font-size:15px">🚚 COMOGENE'yi Sür</button>
 <button id="camBtn" style="display:none;position:fixed;left:150px;bottom:762px;z-index:3;padding:12px 14px;background:#2a3a5a;font-weight:700;font-size:15px">🎥 Yakın</button>
+<div id="speedHud" style="display:none;position:fixed;bottom:max(14px,calc(env(safe-area-inset-bottom) + 10px));left:50%;transform:translateX(-50%);z-index:5;background:rgba(10,16,28,.92);border:2px solid #38bdf8;border-radius:14px;padding:4px 14px;color:#fff;font-family:monospace;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.65);pointer-events:none;white-space:nowrap">
+  <span id="speedVal" style="font-size:20px;font-weight:900;color:#4ade80">0</span> <span style="font-size:11px;color:#7dd3fc;font-weight:700">KM/S</span> · <span id="gearVal" style="font-size:13px;font-weight:900;color:#fde047">N</span> · <span id="fuelHudVal" style="font-size:11px;color:#cbd5e1">⛽ %100</span>
+</div>
 <div id="carLabel" style="display:none;position:fixed;transform:translate(-50%,-100%);background:#1e4a3a;color:#fff;padding:6px 10px;border-radius:10px;font-weight:700;font-size:15px;pointer-events:none;z-index:6">🚗 BİN (E)</div>
 <div id="lvl" class="modal">
   <div class="card">
@@ -4263,6 +4266,50 @@ GEO.motoFork = new THREE.CylinderGeometry(0.032, 0.028, 0.62, 8);
 GEO.motoDisc = new THREE.CylinderGeometry(0.22, 0.22, 0.02, 10).rotateZ(Math.PI/2);
 GEO.motoMirrorGlass = new THREE.PlaneGeometry(0.13, 0.078);
 GEO.motoMirrorGlass.scale(-1, 1, 1); // gerçek ayna yansıması için yatay çevrilmiş düzlem
+// Motosiklet gidonundaki 3B dijital hız göstergesi ekranı (km/s, vites ve devir çubuğu)
+const motoDashCv = document.createElement('canvas');
+motoDashCv.width = 160; motoDashCv.height = 88;
+const motoDashCtx = motoDashCv.getContext('2d');
+const motoDashTex = new THREE.CanvasTexture(motoDashCv);
+const motoDashMat = new THREE.MeshBasicMaterial({map: motoDashTex});
+let lastMotoDashKey = '';
+function updateMotoDashCanvas(kmh, gearTxt, fuelPct){
+  const key = kmh + '_' + gearTxt + '_' + fuelPct;
+  if(key === lastMotoDashKey) return;
+  lastMotoDashKey = key;
+  const g = motoDashCtx;
+  g.fillStyle = '#06101e';
+  g.fillRect(0, 0, 160, 88);
+  g.strokeStyle = '#38bdf8';
+  g.lineWidth = 4;
+  g.strokeRect(2, 2, 156, 84);
+  // Üstte devir (RPM) çubukları
+  const bars = 10;
+  const activeBars = Math.min(bars, Math.ceil((kmh % 45) / 45 * bars) + (kmh > 0 ? 1 : 0));
+  for(let i = 0; i < bars; i++){
+    g.fillStyle = i < activeBars ? (i >= 8 ? '#ef4444' : i >= 6 ? '#facc15' : '#4ade80') : '#1e293b';
+    g.fillRect(10 + i * 14, 10, 10, 11);
+  }
+  // Ortada büyük dijital hız (KM/S)
+  g.fillStyle = '#ffffff';
+  g.font = 'bold 40px monospace';
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillText(String(kmh), 72, 50);
+  g.fillStyle = '#38bdf8';
+  g.font = 'bold 12px sans-serif';
+  g.fillText('KM/S', 72, 74);
+  // Sağda vites kutusu
+  g.fillStyle = '#fde047';
+  g.font = 'bold 26px monospace';
+  g.fillText(gearTxt, 134, 46);
+  // Solda benzin yüzdesi
+  g.fillStyle = fuelPct < 25 ? '#f87171' : '#86efac';
+  g.font = 'bold 12px monospace';
+  g.fillText('⛽' + fuelPct + '%', 30, 74);
+  motoDashTex.needsUpdate = true;
+}
+updateMotoDashCanvas(0, 'N', 100);
 function car(color, type = 'sedan'){
   const g = new THREE.Group();
   const paint = M(color);
@@ -4294,7 +4341,10 @@ function car(color, type = 'sedan'){
     steerPivot.position.set(0, 0, -0.54);
     g.add(steerPivot);
     addTo(steerPivot, B(0.14, 0.08, 0.14), TRIM_M, 0, 0.88, 0);                 // gidon boğazı (triple clamp)
-    addTo(steerPivot, B(0.18, 0.09, 0.03), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0, 0.96, -0.05).rotation.x = -0.35; // dijital hız göstergesi
+    const dashCase = addTo(steerPivot, B(0.19, 0.105, 0.03), TRIM_M, 0, 0.96, -0.05);
+    dashCase.rotation.x = -0.35;
+    const dashScreen = addTo(steerPivot, new THREE.PlaneGeometry(0.175, 0.092), motoDashMat, 0, 0.962, -0.034); // canlı 3B dijital hız göstergesi ekranı
+    dashScreen.rotation.x = -0.35;
     addTo(steerPivot, B(0.70, 0.04, 0.04), CHROME_M, 0, 0.93, 0);               // gidon borusu
     [-0.33, 0.33].forEach(hx => {
       addTo(steerPivot, B(0.14, 0.055, 0.055), TRIM_M, hx, 0.93, 0);            // sol ve sağ elcik
@@ -13283,6 +13333,19 @@ function frame(now){
   }
   disp('camBtn', C.driving ? 'block' : 'none');
   disp('hornBtn', C.driving ? 'block' : 'none');
+  const anyDriving = !!(C.driving || D.driving || CM.driving || (typeof BOAT !== 'undefined' && BOAT.driving) || (typeof HELI !== 'undefined' && HELI.flying));
+  disp('speedHud', anyDriving ? 'block' : 'none');
+  if(anyDriving){
+    const rawV = C.driving ? C.v : D.driving ? D.v : CM.driving ? CM.v : (typeof BOAT !== 'undefined' && BOAT.driving) ? BOAT.v : (typeof HELI !== 'undefined' && HELI.flying) ? HELI.v : 0;
+    const kmh = Math.round(Math.abs(rawV) * 18);
+    const gearTxt = rawV < -0.2 ? 'R' : kmh === 0 ? 'N' : String(Math.min(6, Math.max(1, Math.ceil(kmh / 38))));
+    const fuelPct = Math.round(S.fuel || 0);
+    txt('speedVal', String(kmh));
+    sty('speedVal', 'color', kmh > 160 ? '#ef4444' : kmh > 100 ? '#facc15' : '#4ade80');
+    txt('gearVal', 'Vites: ' + gearTxt);
+    txt('fuelHudVal', '⛽ %' + fuelPct);
+    if(C.driving && C.activeVeh === 'moto') updateMotoDashCanvas(kmh, gearTxt, fuelPct);
+  }
   // benzin istasyonunun yanında, durmuş arabada benzin doldurma
   const atBenzin = C.driving && Math.hypot(C.x - BENZIN_X, C.z + 52) < 8 && Math.abs(C.v) < 1 && S.fuel < 100;
   disp('fuelBtn', atBenzin ? 'block' : 'none');
@@ -14408,7 +14471,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-31-004658';
+const APP_VERSION = '2026-10-31-010508';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
