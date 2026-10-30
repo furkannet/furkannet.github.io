@@ -4261,7 +4261,7 @@ motoMirrorCam.rotation.order = 'YXZ';
 let motoMirrorFrame = 0;
 GEO.motoFork = new THREE.CylinderGeometry(0.032, 0.028, 0.62, 8);
 GEO.motoDisc = new THREE.CylinderGeometry(0.22, 0.22, 0.02, 10).rotateZ(Math.PI/2);
-GEO.motoMirrorGlass = new THREE.PlaneGeometry(0.22, 0.13);
+GEO.motoMirrorGlass = new THREE.PlaneGeometry(0.13, 0.078);
 GEO.motoMirrorGlass.scale(-1, 1, 1); // gerçek ayna yansıması için yatay çevrilmiş düzlem
 function car(color, type = 'sedan'){
   const g = new THREE.Group();
@@ -4300,16 +4300,16 @@ function car(color, type = 'sedan'){
       addTo(steerPivot, B(0.14, 0.055, 0.055), TRIM_M, hx, 0.93, 0);            // sol ve sağ elcik
     });
     [-1, 1].forEach(dir => {
-      const mStem = addTo(steerPivot, B(0.12, 0.025, 0.025), CHROME_M, dir * 0.28, 0.99, -0.04);
-      mStem.rotation.z = dir * 0.45;                                            // gidondan yukarı uzanan ayna kolu
+      const mStem = addTo(steerPivot, B(0.10, 0.02, 0.02), CHROME_M, dir * 0.27, 0.98, -0.04);
+      mStem.rotation.z = dir * 0.42;                                            // gidondan yukarı uzanan kibar ayna kolu
       const mirGrp = new THREE.Group();
-      mirGrp.position.set(dir * 0.34, 1.06, -0.06);
+      mirGrp.position.set(dir * 0.32, 1.03, -0.05);
       mirGrp.rotation.y = -dir * 0.18;                                          // sürücünün gözüne doğru dönük açı
       mirGrp.rotation.x = -0.08;
       steerPivot.add(mirGrp);
-      addTo(mirGrp, B(0.24, 0.15, 0.03), TRIM_M, 0, 0, -0.016);                 // siyah ayna dış kasası
-      addTo(mirGrp, B(0.23, 0.14, 0.01), motoMirrorFrameMat, 0, 0, -0.004);     // parlak mavi iç çerçeve
-      addTo(mirGrp, GEO.motoMirrorGlass, motoMirrorGlassMat, 0, 0, 0.004);      // arkayı gösteren canlı ayna camı
+      addTo(mirGrp, B(0.145, 0.09, 0.024), TRIM_M, 0, 0, -0.014);               // siyah ayna dış kasası (küçültüldü)
+      addTo(mirGrp, B(0.138, 0.084, 0.008), motoMirrorFrameMat, 0, 0, -0.004);  // ince mavi iç çerçeve
+      addTo(mirGrp, GEO.motoMirrorGlass, motoMirrorGlassMat, 0, 0, 0.003);      // arkayı gösteren canlı ayna camı
     });
     // 6. Kademeli sürücü selesi ve yukarı eğimli sivri yarış kuyruğu (depodan kuyruğa kesintisiz birleşir!)
     addTo(g, B(0.34, 0.14, 0.48), TRIM_M, 0, 0.78, 0.26);                      // sürücü koltuğu
@@ -14408,7 +14408,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-31-004005';
+const APP_VERSION = '2026-10-31-004658';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
