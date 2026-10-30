@@ -3508,33 +3508,91 @@ addTo(islandGroup, new THREE.ConeGeometry(1.25, 1.1, 10), M(0x1e293b), 2.5, 8.35
   makeNaturalTree(SEA_ISLAND_POS.x + tx, SEA_ISLAND_POS.z + tz, idx);
 });
 
-// 🚤 3B LÜKS SÜRAT TEKNESİ MODELİ (iskele yanında suda hazır bekler: x: 61.5, z: -22.2)
+// 🚤 3B GERÇEKÇİ LÜKS SÜRAT TEKNESİ / YAT MODELİ (iskele yanında suda hazır bekler: x: 61.5, z: -22.2)
 const boatMesh = new THREE.Group();
-const boatHullMat = M(0xf8fafc), boatStripeMat = M(0x0284c7), boatDeckMat = M(0xd97706), boatDarkMat = M(0x1e293b);
-// Ana gövde ve sivri burun (+Z ileri yön)
-addTo(boatMesh, B(2.1, 0.65, 3.6), boatHullMat, 0, 0.32, -0.3);
-const boatBow = addTo(boatMesh, new THREE.ConeGeometry(1.08, 1.9, 4), boatHullMat, 0, 0.34, 2.4);
+const boatHullMat = M(0xf8fafc), boatStripeMat = M(0x0284c7), boatGoldMat = M(0xfacc15), boatDeckMat = M(0xb45309), boatDarkMat = M(0x1e293b), boatChromeMat = M(0xcbd5e1), boatGlassMat = M(0x7dd3fc);
+// 1) Derin V-Omurga Alt Gövde (Keel) ve Çok Kademeli Aerodinamik Yan Gövde (+Z ileri yön)
+addTo(boatMesh, B(1.85, 0.28, 4.1), M(0x0f172a), 0, 0.14, -0.2); // Su altı koyu omurga
+addTo(boatMesh, B(2.26, 0.56, 3.85), boatHullMat, 0, 0.44, -0.25); // Ana beyaz gövde
+// Kademeli sivri burun (Bow) ve burun altı V-kesiti
+const boatBow = addTo(boatMesh, new THREE.ConeGeometry(1.18, 2.35, 4), boatHullMat, 0, 0.46, 2.50);
 boatBow.rotation.x = Math.PI / 2;
 boatBow.rotation.y = Math.PI / 4;
-// Yan mavi yarış şeritleri ve ahşap güverte
-addTo(boatMesh, B(2.16, 0.16, 3.5), boatStripeMat, 0, 0.45, -0.3);
-addTo(boatMesh, B(1.86, 0.08, 3.3), boatDeckMat, 0, 0.66, -0.3);
-// Ön eğimli rüzgâr camı ve kaptan konsolu/direksiyonu
-const boatGlass = addTo(boatMesh, B(1.72, 0.48, 0.08), M(0x7dd3fc), 0, 0.92, 0.65);
-boatGlass.rotation.x = -0.45;
-addTo(boatMesh, B(0.65, 0.52, 0.45), boatDarkMat, 0.38, 0.85, 0.25); // Konsol
-addTo(boatMesh, new THREE.CylinderGeometry(0.18, 0.18, 0.05, 8).rotateX(Math.PI / 3), M(0xfacc15), 0.38, 1.05, 0.02); // Dümen
-// Deri koltuklar (ön kaptan & arka yolcu koltuğu)
-addTo(boatMesh, B(1.65, 0.32, 0.55), M(0xffffff), 0, 0.82, -0.45);
-addTo(boatMesh, B(1.65, 0.45, 0.16), boatStripeMat, 0, 1.02, -0.68);
-addTo(boatMesh, B(1.65, 0.32, 0.62), M(0xffffff), 0, 0.82, -1.55);
-addTo(boatMesh, B(1.65, 0.48, 0.18), boatStripeMat, 0, 1.02, -1.82);
-// Arka dıştan takma motor ve pervane
-addTo(boatMesh, B(0.52, 0.75, 0.48), boatDarkMat, 0, 0.55, -2.28);
-addTo(boatMesh, B(0.54, 0.14, 0.50), M(0xef4444), 0, 0.86, -2.28);
+const boatBowKeel = addTo(boatMesh, new THREE.ConeGeometry(0.95, 2.1, 4), M(0x0f172a), 0, 0.22, 2.35);
+boatBowKeel.rotation.x = Math.PI / 2;
+boatBowKeel.rotation.y = Math.PI / 4;
+// Yan mavi & altın yarış şeritleri + siyah kauçuk usturmaça (Rub Rail)
+addTo(boatMesh, B(2.32, 0.14, 3.80), boatStripeMat, 0, 0.52, -0.25);
+addTo(boatMesh, B(2.34, 0.05, 3.82), boatGoldMat, 0, 0.42, -0.25);
+addTo(boatMesh, B(2.35, 0.06, 3.88), boatDarkMat, 0, 0.68, -0.25);
+// 2) Çizgili Tik Ağacı Güverte (Teak Deck), Ön Güneşlenme Minderi ve Küpeşte Korkulukları
+addTo(boatMesh, B(2.04, 0.08, 3.65), boatDeckMat, 0, 0.70, -0.25);
+[-0.6, -0.2, 0.2, 0.6].forEach(tx => {
+  addTo(boatMesh, B(0.03, 0.085, 3.60), M(0x78350f), tx, 0.702, -0.25); // Tik ağacı çizgileri
+});
+// Ön burun güneşlenme yatağı (Sunpad) ve krom burun korkulukları (Bow Rails)
+addTo(boatMesh, B(1.45, 0.14, 1.35), M(0xffffff), 0, 0.76, 1.55);
+[-0.88, 0.88].forEach(rx => {
+  const rail = addTo(boatMesh, new THREE.CylinderGeometry(0.025, 0.025, 2.2, 6), boatChromeMat, rx, 0.90, 1.35);
+  rail.rotation.x = Math.PI / 2;
+  rail.rotation.z = rx > 0 ? 0.22 : -0.22;
+  addTo(boatMesh, new THREE.CylinderGeometry(0.022, 0.022, 0.22, 6), boatChromeMat, rx, 0.80, 0.55);
+  addTo(boatMesh, new THREE.CylinderGeometry(0.022, 0.022, 0.22, 6), boatChromeMat, rx * 0.72, 0.80, 2.15);
+  // Yanlarda asılı silindirik usturmaça balonları (Fenders)
+  addTo(boatMesh, new THREE.CylinderGeometry(0.10, 0.10, 0.42, 8), boatStripeMat, rx * 1.34, 0.42, -0.35);
+  addTo(boatMesh, new THREE.CylinderGeometry(0.10, 0.10, 0.42, 8), boatStripeMat, rx * 1.34, 0.42, -1.35);
+});
+// 3) Panoramik Eğimli Ön ve Yan Rüzgâr Camları (Wrap-around Windshield) + Krom Çerçeve
+const boatGlassF = addTo(boatMesh, B(1.88, 0.52, 0.06), boatGlassMat, 0, 0.96, 0.72);
+boatGlassF.rotation.x = -0.48;
+addTo(boatMesh, B(1.92, 0.05, 0.08), boatChromeMat, 0, 1.18, 0.60); // Üst krom çerçeve
+[-0.92, 0.92].forEach(gx => {
+  const sideG = addTo(boatMesh, B(0.06, 0.44, 0.82), boatGlassMat, gx, 0.92, 0.28);
+  sideG.rotation.z = gx > 0 ? 0.12 : -0.12;
+});
+// 4) Kaptan Kokpiti, Gösterge Paneli, Krom Dümen ve Gaz Kolu
+addTo(boatMesh, B(0.78, 0.56, 0.52), boatDarkMat, 0.44, 0.88, 0.32); // Kaptan konsolu
+addTo(boatMesh, B(0.62, 0.22, 0.06), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0.44, 1.06, 0.06); // Dijital deniz radarı ekranı
+addTo(boatMesh, new THREE.CylinderGeometry(0.20, 0.20, 0.05, 10).rotateX(Math.PI / 3), boatChromeMat, 0.44, 1.06, -0.02); // Krom yat dümeni
+addTo(boatMesh, B(0.08, 0.22, 0.08), M(0xef4444), 0.82, 1.04, 0.18).rotation.x = 0.35; // Kırmızı gaz kolu (Throttle)
+// 5) Lüks Kapitone Deri Koltuklar (2 Ön Kaptan Koltuğu + Arka U-Oturma Grubu ve Masa)
+[-0.48, 0.48].forEach(sx => {
+  addTo(boatMesh, B(0.62, 0.34, 0.56), M(0xffffff), sx, 0.86, -0.42); // Ön koltuk oturak
+  addTo(boatMesh, B(0.62, 0.52, 0.16), M(0xf1f5f9), sx, 1.10, -0.64); // Ön koltuk sırtlık
+  addTo(boatMesh, B(0.58, 0.14, 0.14), boatStripeMat, sx, 1.38, -0.64); // Mavi başlık
+});
+// Arka VIP U-koltuk ve güneşlenme minderleri
+addTo(boatMesh, B(1.88, 0.34, 0.65), M(0xffffff), 0, 0.86, -1.62);
+addTo(boatMesh, B(1.88, 0.48, 0.18), boatStripeMat, 0, 1.08, -1.90);
+[-0.78, 0.78].forEach(ux => {
+  addTo(boatMesh, B(0.36, 0.34, 0.75), M(0xffffff), ux, 0.86, -1.15);
+});
+// 6) Sportif Radar Kemeri (Roll Bar / Bimini T-Top), Seyrüsefer Işıkları ve Türk Bayrağı
+[-0.96, 0.96].forEach(ax => {
+  const arch = addTo(boatMesh, B(0.10, 1.35, 0.28), boatHullMat, ax, 1.32, -0.95);
+  arch.rotation.x = -0.22;
+});
+addTo(boatMesh, B(2.04, 0.12, 0.42), boatHullMat, 0, 1.96, -1.10); // Üst radar köprüsü
+addTo(boatMesh, new THREE.CylinderGeometry(0.28, 0.32, 0.14, 10), boatHullMat, 0, 2.08, -1.10); // Garmin Deniz Radarı kubbesi
+addTo(boatMesh, B(0.12, 0.12, 0.12), new THREE.MeshBasicMaterial({color: 0xef4444}), -1.02, 1.96, -1.10); // İskele kırmızı fener
+addTo(boatMesh, B(0.12, 0.12, 0.12), new THREE.MeshBasicMaterial({color: 0x22c55e}), 1.02, 1.96, -1.10);  // Sancak yeşil fener
+// Kıç yüzme platformu (Swim Platform), katlanır deniz merdiveni ve Çift V8 Dıştan Takma Motor (Twin Outboard Engines)
+addTo(boatMesh, B(1.96, 0.10, 0.58), boatDeckMat, 0, 0.38, -2.32); // Arka yüzme platformu
+[-0.42, 0.42].forEach(mx => {
+  addTo(boatMesh, B(0.46, 0.82, 0.54), boatDarkMat, mx, 0.62, -2.55); // V8 motor gövdesi
+  addTo(boatMesh, B(0.48, 0.16, 0.56), M(0xef4444), mx, 0.96, -2.55); // Kırmızı motor üst şeridi
+  addTo(boatMesh, new THREE.CylinderGeometry(0.06, 0.08, 0.45, 6), boatChromeMat, mx, 0.18, -2.58); // Pervane şaftı
+});
+// Arkada dalgalanan kırmızı bayrak
+addTo(boatMesh, new THREE.CylinderGeometry(0.02, 0.02, 0.75, 6), boatChromeMat, -0.88, 1.12, -2.10).rotation.x = -0.3;
+addTo(boatMesh, B(0.03, 0.28, 0.46), M(0xdc2626), -0.88, 1.36, -2.36);
 // Su köpüğü izi (tekne giderken arkasında görünür)
-const boatWakeMesh = addTo(boatMesh, B(1.5, 0.04, 2.6), new THREE.MeshBasicMaterial({color: 0xe0f2fe}), 0, 0.05, -3.6);
+const boatWakeMesh = new THREE.Group();
+addTo(boatWakeMesh, B(1.65, 0.04, 3.2), new THREE.MeshBasicMaterial({color: 0xe0f2fe}), 0, 0.05, -3.9);
+addTo(boatWakeMesh, B(0.35, 0.05, 4.2), new THREE.MeshBasicMaterial({color: 0xffffff}), -0.95, 0.06, -4.3).rotation.y = 0.18;
+addTo(boatWakeMesh, B(0.35, 0.05, 4.2), new THREE.MeshBasicMaterial({color: 0xffffff}), 0.95, 0.06, -4.3).rotation.y = -0.18;
 boatWakeMesh.visible = false;
+boatMesh.add(boatWakeMesh);
 const BOAT = {x: 61.5, y: 0.05, z: -22.2, h: 0, v: 0, driving: false};
 boatMesh.position.set(BOAT.x, BOAT.y, BOAT.z);
 scene.add(boatMesh);
@@ -4945,13 +5003,9 @@ const canWork = () => active() && nearCounter() && shutterOpen;
 
 // kaldırımlar ve geçit dışında yürünemez; tezgâh ve satıcı engel
 function free(x, z){
-  if(x < -74 || x > 148 || z < -195 || z > 10) return false; // genişletilmiş harita ve deniz sınırları
-  // Deniz alanında (x > 54.5) yalnızca iskelede (z: -27.8..-24.2, x <= 62.2) ve adada (merkezi 108, -65) yürünebilir!
-  if(x > 54.5 && !(typeof BOAT !== 'undefined' && BOAT.driving)){
-    const onMarinaDock = x <= 62.2 && z >= -27.8 && z <= -24.2;
-    const onIsland = Math.hypot(x - 108.0, z - (-65.0)) <= 12.5 || (x >= 93.0 && x <= 100.0 && Math.abs(z + 65.0) <= 1.5);
-    if(!onMarinaDock && !onIsland) return false;
-  }
+  if(x < -74 || x > 158 || z < -195 || z > 10) return false; // genişletilmiş harita ve deniz sınırları
+  // Deniz alanında (x > 54.5) hem iskelede/adada yürünebilir hem de denize girip yüzülebilir! (Yalnızca z: -150..+10 sahil-deniz şeridi içinde)
+  if(x > 54.5 && (z < -150 || z > 10)) return false;
   if(x > -11.4 && x < -8.2 && z > -8.5 && z < -3.5) return false; // market binası
   if(x > -11.4 && x < -8.2 && z > -16.9 && z < -12.1) return false; // banka binası
   if(x > -11.4 && x < -8.2 && z > -26.5 && z < -21.5) return false; // galeri binası
@@ -10859,14 +10913,18 @@ if($('boatBtn')) $('boatBtn').onclick = () => {
     BOAT.driving = false;
     BOAT.v = 0;
     boatWakeMesh.visible = false;
-    // İskele veya adaya yakınsa oraya indir, değilse sahil iskelesine indir
+    // Adaya, iskeleye veya doğrudan denize in!
     const distIsland = Math.hypot(BOAT.x - SEA_ISLAND_POS.x, BOAT.z - SEA_ISLAND_POS.z);
+    const distMarina = Math.hypot(BOAT.x - 58.0, BOAT.z - (-26.0));
     if(distIsland < 18.0){
       P.x = SEA_ISLAND_POS.x - 11.0; P.y = 0.55; P.z = SEA_ISLAND_POS.z;
       flash('🏝️ Hazine Adası İskelesine çıktın!', '#4ade80');
-    } else {
+    } else if(distMarina < 11.0){
       P.x = 58.0; P.y = 0.25; P.z = -26.0;
       flash('🚤 Tekneden Yat Limanı İskelesine indin!', '#7dd3fc');
+    } else {
+      P.x = BOAT.x + 2.2; P.y = 0; P.z = BOAT.z;
+      flash('🏊 Tekneden denize atladın, yüzüyorsun!', '#38bdf8');
     }
     stopEngine();
     beep(520, 0.12, 'sine', 0.14);
@@ -12903,15 +12961,18 @@ function frame(now){
   } else {
     if(passengerOf) passengerOf = null;
     const onDock = P.x > -27.2 && P.x < -23.0 && Math.abs(P.z + 22) < 1.0;
+    const onMarinaDock = P.x >= 47.8 && P.x <= 62.2 && P.z >= -27.8 && P.z <= -24.2;
+    const onSeaIsland = Math.hypot(P.x - 108.0, P.z - (-65.0)) <= 12.2 || (P.x >= 93.0 && P.x <= 100.0 && Math.abs(P.z + 65.0) <= 1.5);
+    const inSeaWater = !inHotelRoomState && P.x > 54.4 && !onMarinaDock && !onSeaIsland && (P.y || 0) < 1.5;
     const inHotelPool = (!inHotelRoomState && typeof HOTEL_POOLS !== 'undefined')
       ? HOTEL_POOLS.find(pl => (!pl.indoor || (P.y || 0) < 1.5) && Math.abs(P.x - pl.wx) < pl.hw && Math.abs(P.z - pl.wz) < pl.hd)
       : null;
-    const inPondWater = (!onDock && Math.hypot(P.x - POND_POS.x, P.z - POND_POS.z) < 5.2) || !!inHotelPool;
+    const inPondWater = (!onDock && Math.hypot(P.x - POND_POS.x, P.z - POND_POS.z) < 5.2) || !!inHotelPool || inSeaWater;
     const swimBob = inPondWater ? Math.sin(performance.now() * 0.006) * 0.08 : 0;
     if(inPondWater && !window._wasInWater){
       window._wasInWater = true;
       beep(340, 0.12, 'sine', 0.08);
-      flash(inHotelPool ? `${inHotelPool.name}na girdin, yüzüyorsun!` : '🏊 Gölete girdin, yüzüyorsun! Suya dalıp serinledin.', '#38bdf8');
+      flash(inSeaWater ? '🌊🏊 Denize girdin, kulaç atarak yüzüyorsun!' : (inHotelPool ? `${inHotelPool.name}na girdin, yüzüyorsun!` : '🏊 Gölete girdin, yüzüyorsun! Suya dalıp serinledin.'), '#38bdf8');
     } else if(!inPondWater && window._wasInWater){
       window._wasInWater = false;
     }
@@ -14188,7 +14249,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-200109';
+const APP_VERSION = '2026-10-30-201605';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
