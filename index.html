@@ -13044,16 +13044,16 @@ function frame(now){
     if(isFirstPersonVeh && C.activeVeh === 'moto'){
       // Motosiklet iç ekran: kamera motorun dönüşü (motoYaw), direksiyon açısı (steer) ve yatışıyla (leanZ) tam uyumlu döner!
       const motoYaw = C.h + (C.slip || 0);
-      const targetLeanNow = -(C.steer || 0) * 0.36 * Math.max(0.35, Math.min(1, Math.abs(C.v) / 4));
+      const targetLeanNow = (C.steer || 0) * 0.36 * Math.max(0.35, Math.min(1, Math.abs(C.v) / 4));
       if(ownedMotoMesh){
         ownedMotoMesh.rotation.z += (targetLeanNow - (ownedMotoMesh.rotation.z || 0)) * Math.min(1, dt * 10);
       }
       const leanZ = ownedMotoMesh ? (ownedMotoMesh.rotation.z || 0) : targetLeanNow;
       const steerTurn = -(C.steer || 0) * 0.22; // dönerken ekran/kask virajın içine doğru da döner
       camera.position.set(
-        C.x - Math.sin(motoYaw) * 0.22 + Math.cos(motoYaw) * (-leanZ * 0.85),
+        C.x - Math.sin(motoYaw) * 0.22 - Math.cos(motoYaw) * (leanZ * 0.85),
         1.16 - Math.abs(leanZ) * 0.12,
-        C.z - Math.cos(motoYaw) * 0.22 - Math.sin(motoYaw) * (-leanZ * 0.85)
+        C.z - Math.cos(motoYaw) * 0.22 + Math.sin(motoYaw) * (leanZ * 0.85)
       );
       camera.rotation.set(
         P.pitch - 0.14,
@@ -13186,7 +13186,7 @@ function frame(now){
     ownedMotoMesh.rotation.y = MOTO_STATE.h + Math.PI + ((C.driving && C.activeVeh === 'moto') ? (C.slip || 0) : 0);
     const ridingMoto = !!(C.driving && C.activeVeh === 'moto');
     const isMotoFirstPerson = ridingMoto && C.camDist <= 0.1;
-    const targetLean = ridingMoto ? (-(C.steer || 0) * 0.36 * Math.max(0.35, Math.min(1, Math.abs(C.v) / 4))) : 0;
+    const targetLean = ridingMoto ? ((C.steer || 0) * 0.36 * Math.max(0.35, Math.min(1, Math.abs(C.v) / 4))) : 0;
     ownedMotoMesh.rotation.z += (targetLean - (ownedMotoMesh.rotation.z || 0)) * Math.min(1, dt * 8);
     const targetSteerRot = ridingMoto ? (-(C.steer || 0) * 0.38) : 0;
     ownedMotoMesh.children.forEach(ch => {
@@ -13357,7 +13357,7 @@ function frame(now){
         1.05,
         C.z - Math.cos(motoYaw) * 0.85
       );
-      motoMirrorCam.rotation.set(-0.04, motoYaw, -leanZ * 0.5);
+      motoMirrorCam.rotation.set(-0.04, motoYaw, leanZ * 0.5);
       ownedMotoMesh.visible = false;
       renderer.setRenderTarget(motoRearRT);
       renderer.render(scene, motoMirrorCam);
@@ -14401,7 +14401,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-234843';
+const APP_VERSION = '2026-10-30-235934';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
