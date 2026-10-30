@@ -4253,14 +4253,15 @@ const CHROME_M = M(0xd1d5db);
 const DARK_GRILLE_M = M(0x0b0f17);
 const GOLD_FORK_M = M(0xd4af37);
 // Motosiklet iç ekran (birinci şahıs) için arkayı gösteren canlı dikiz aynası dokusu
-const motoRearRT = new THREE.WebGLRenderTarget(160, 96, {depthBuffer: true, stencilBuffer: false});
-const motoMirrorGlassMat = new THREE.MeshBasicMaterial({map: motoRearRT.texture});
-const motoMirrorCam = new THREE.PerspectiveCamera(68, 160 / 96, 0.15, 130);
+const motoRearRT = new THREE.WebGLRenderTarget(192, 112, {depthBuffer: true, stencilBuffer: false});
+const motoMirrorGlassMat = new THREE.MeshBasicMaterial({map: motoRearRT.texture, side: THREE.DoubleSide});
+const motoMirrorFrameMat = new THREE.MeshBasicMaterial({color: 0x38bdf8});
+const motoMirrorCam = new THREE.PerspectiveCamera(72, 192 / 112, 0.15, 140);
 motoMirrorCam.rotation.order = 'YXZ';
 let motoMirrorFrame = 0;
 GEO.motoFork = new THREE.CylinderGeometry(0.032, 0.028, 0.62, 8);
 GEO.motoDisc = new THREE.CylinderGeometry(0.22, 0.22, 0.02, 10).rotateZ(Math.PI/2);
-GEO.motoMirrorGlass = new THREE.PlaneGeometry(0.115, 0.068);
+GEO.motoMirrorGlass = new THREE.PlaneGeometry(0.22, 0.13);
 GEO.motoMirrorGlass.scale(-1, 1, 1); // gerçek ayna yansıması için yatay çevrilmiş düzlem
 function car(color, type = 'sedan'){
   const g = new THREE.Group();
@@ -4287,24 +4288,28 @@ function car(color, type = 'sedan'){
     nose.rotation.x = -0.18;
     const screen = addTo(g, B(0.32, 0.04, 0.36), GLASS_M, 0, 0.98, -0.64);
     screen.rotation.x = -0.55;                                                 // burundan gidon üstüne doğru düzgün eğimli cam
-    // 5. Dijital gösterge paneli, gidon boğazı, clip-on gidon, elcikler ve saplı yan aynalar
+    // 5. Dijital gösterge paneli, gidon boğazı, clip-on gidon, elcikler ve gidona bağlı büyük dikiz aynaları
     const steerPivot = new THREE.Group();
     steerPivot.name = 'motoSteer';
     steerPivot.position.set(0, 0, -0.54);
     g.add(steerPivot);
     addTo(steerPivot, B(0.14, 0.08, 0.14), TRIM_M, 0, 0.88, 0);                 // gidon boğazı (triple clamp)
-    addTo(steerPivot, B(0.15, 0.07, 0.03), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0, 0.95, -0.04).rotation.x = -0.45;
+    addTo(steerPivot, B(0.18, 0.09, 0.03), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0, 0.96, -0.05).rotation.x = -0.35; // dijital hız göstergesi
     addTo(steerPivot, B(0.70, 0.04, 0.04), CHROME_M, 0, 0.93, 0);               // gidon borusu
     [-0.33, 0.33].forEach(hx => {
       addTo(steerPivot, B(0.14, 0.055, 0.055), TRIM_M, hx, 0.93, 0);            // sol ve sağ elcik
     });
     [-1, 1].forEach(dir => {
-      const mStem = addTo(g, B(0.14, 0.025, 0.025), TRIM_M, dir * 0.22, 0.94, -0.72);
-      mStem.rotation.z = dir * 0.35;                                           // ayna bağlantı kolu (havada durmaz!)
-      const mHousing = addTo(g, B(0.13, 0.08, 0.04), TRIM_M, dir * 0.30, 0.99, -0.73); // yan ayna başlığı
-      mHousing.rotation.y = dir * 0.16;
-      const mGlass = addTo(g, GEO.motoMirrorGlass, motoMirrorGlassMat, dir * 0.30, 0.99, -0.708); // arkayı gösteren canlı ayna camı
-      mGlass.rotation.y = dir * 0.16;
+      const mStem = addTo(steerPivot, B(0.12, 0.025, 0.025), CHROME_M, dir * 0.28, 0.99, -0.04);
+      mStem.rotation.z = dir * 0.45;                                            // gidondan yukarı uzanan ayna kolu
+      const mirGrp = new THREE.Group();
+      mirGrp.position.set(dir * 0.34, 1.06, -0.06);
+      mirGrp.rotation.y = -dir * 0.18;                                          // sürücünün gözüne doğru dönük açı
+      mirGrp.rotation.x = -0.08;
+      steerPivot.add(mirGrp);
+      addTo(mirGrp, B(0.24, 0.15, 0.03), TRIM_M, 0, 0, -0.016);                 // siyah ayna dış kasası
+      addTo(mirGrp, B(0.23, 0.14, 0.01), motoMirrorFrameMat, 0, 0, -0.004);     // parlak mavi iç çerçeve
+      addTo(mirGrp, GEO.motoMirrorGlass, motoMirrorGlassMat, 0, 0, 0.004);      // arkayı gösteren canlı ayna camı
     });
     // 6. Kademeli sürücü selesi ve yukarı eğimli sivri yarış kuyruğu (depodan kuyruğa kesintisiz birleşir!)
     addTo(g, B(0.34, 0.14, 0.48), TRIM_M, 0, 0.78, 0.26);                      // sürücü koltuğu
@@ -13052,12 +13057,12 @@ function frame(now){
       const leanZ = ownedMotoMesh ? (ownedMotoMesh.rotation.z || 0) : targetLeanNow;
       const steerTurn = -(C.steer || 0) * 0.22; // dönerken ekran/kask virajın içine doğru da döner
       camera.position.set(
-        C.x - Math.sin(motoYaw) * 0.22 - Math.cos(motoYaw) * (-leanZ * 0.85),
-        1.16 - Math.abs(leanZ) * 0.12,
-        C.z - Math.cos(motoYaw) * 0.22 + Math.sin(motoYaw) * (-leanZ * 0.85)
+        C.x - Math.sin(motoYaw) * 0.08 - Math.cos(motoYaw) * (-leanZ * 0.85),
+        1.14 - Math.abs(leanZ) * 0.12,
+        C.z - Math.cos(motoYaw) * 0.08 + Math.sin(motoYaw) * (-leanZ * 0.85)
       );
       camera.rotation.set(
-        P.pitch - 0.14,
+        P.pitch - 0.17,
         motoYaw + Math.PI + (P.yaw + Math.PI / 2) + steerTurn,
         leanZ * 0.85
       );
@@ -13353,12 +13358,13 @@ function frame(now){
     if(motoMirrorFrame === 0){
       const motoYaw = C.h + (C.slip || 0);
       const leanZ = ownedMotoMesh.rotation.z || 0;
+      const steerYaw = -(C.steer || 0) * 0.25;
       motoMirrorCam.position.set(
         C.x - Math.sin(motoYaw) * 0.85,
-        1.05,
+        1.10,
         C.z - Math.cos(motoYaw) * 0.85
       );
-      motoMirrorCam.rotation.set(-0.04, motoYaw, -leanZ * 0.5);
+      motoMirrorCam.rotation.set(-0.03, motoYaw + steerYaw, -leanZ * 0.5);
       ownedMotoMesh.visible = false;
       renderer.setRenderTarget(motoRearRT);
       renderer.render(scene, motoMirrorCam);
@@ -14402,7 +14408,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-31-001010';
+const APP_VERSION = '2026-10-31-004005';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
