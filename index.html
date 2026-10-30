@@ -3898,82 +3898,92 @@ function car(color, type = 'sedan'){
   const g = new THREE.Group();
   const paint = M(color);
   if(type === 'moto'){
-    // 🏍️ Gerçekçi Süpersport Yarış Motoru: aerodinamik yan karenajlar, kaslı yakıt deposu, altın USD ön amortisörler, çift fren diski, çamurluklar ve eğimli yarış egzozu
-    addTo(g, B(0.36, 0.36, 0.72), DARK_GRILLE_M, 0, 0.56, -0.05);              // iç motor bloğu ve şasi (koyu metal)
-    // Yan aerodinamik karenaj kanatları (sağ ve sol)
-    [-0.20, 0.20].forEach(sx => {
-      const sideFairing = addTo(g, B(0.06, 0.42, 0.88), paint, sx, 0.62, -0.18);
-      sideFairing.rotation.x = 0.14;
-      addTo(g, B(0.07, 0.10, 0.48), DARK_GRILLE_M, sx, 0.58, -0.22);           // yan hava ızgarası
-      addTo(g, B(0.09, 0.04, 0.22), TRIM_M, sx > 0 ? 0.25 : -0.25, 0.66, -0.58);// yan aerodinamik winglet kanatçıklar
+    // 🏍️ Düzgün ve Bütünleşik Süpersport Yarış Motoru (tüm parçalar birbirine tam oturur, ayrık veya ters parça yoktur!)
+    // 1. Alt karter / iç motor bloğu ve orta şasi omurgası (ön karenajdan arka kuyruğa kesintisiz uzanır)
+    addTo(g, B(0.34, 0.34, 0.78), DARK_GRILLE_M, 0, 0.52, -0.06);              // koyu metal motor bloğu
+    addTo(g, B(0.32, 0.14, 0.62), TRIM_M, 0, 0.35, -0.08);                     // alt karter muhafazası (belly pan)
+    // 2. Yan aerodinamik karenajlar (motor bloğunu sarar, yakıt deposu ve ön burunla birleşir)
+    [-0.18, 0.18].forEach(sx => {
+      const sideFairing = addTo(g, B(0.06, 0.38, 0.82), paint, sx, 0.62, -0.22);
+      sideFairing.rotation.x = -0.16;
+      addTo(g, B(0.07, 0.10, 0.42), DARK_GRILLE_M, sx, 0.58, -0.22);           // yan hava kanalı
+      addTo(g, B(0.08, 0.03, 0.22), TRIM_M, sx > 0 ? 0.22 : -0.22, 0.66, -0.58);// aerodinamik yan kanatçık (winglet)
     });
-    // Kaslı yuvarlak yakıt deposu ve depo kapağı
-    const fuelTank = addTo(g, new THREE.SphereGeometry(0.24, 10, 8), paint, 0, 0.88, -0.18);
-    fuelTank.scale.set(0.95, 0.68, 1.45);
-    addTo(g, new THREE.CylinderGeometry(0.05, 0.05, 0.02, 8), CHROME_M, 0, 1.04, -0.22); // krom depo kapağı
-    // Keskin aerodinamik ön burun karenajı ve bombeli yarış camı (windscreen)
-    const nose = addTo(g, B(0.42, 0.24, 0.46), paint, 0, 0.86, -0.68);
-    nose.rotation.x = 0.22;
-    const screen = addTo(g, new THREE.CylinderGeometry(0.18, 0.22, 0.36, 8, 1, false, -Math.PI * 0.4, Math.PI * 0.8), GLASS_M, 0, 1.04, -0.68);
-    screen.rotation.x = -0.82;
-    // Dijital gösterge ekranı, clip-on yarış gidonu, elcikler ve yan aynalar
-    addTo(g, B(0.16, 0.08, 0.03), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0, 0.98, -0.58).rotation.x = -0.45;
-    addTo(g, B(0.76, 0.045, 0.045), CHROME_M, 0, 0.96, -0.56);                 // gidon borusu
-    [-0.36, 0.36].forEach(hx => {
-      addTo(g, B(0.15, 0.06, 0.06), TRIM_M, hx, 0.96, -0.56);                  // elcikler
-      addTo(g, B(0.14, 0.07, 0.05), TRIM_M, hx * 1.15, 1.08, -0.74);           // yarış tipi yan aynalar
+    // 3. Yakıt deposu (karenajın üstüne tam oturur, boşluk kalmaz)
+    addTo(g, B(0.38, 0.24, 0.56), paint, 0, 0.82, -0.18);                      // depo alt gövdesi
+    const fuelTank = addTo(g, new THREE.SphereGeometry(0.22, 10, 8), paint, 0, 0.90, -0.18);
+    fuelTank.scale.set(0.92, 0.55, 1.35);
+    addTo(g, new THREE.CylinderGeometry(0.045, 0.045, 0.02, 8), CHROME_M, 0, 1.03, -0.20); // krom depo kapağı
+    // 4. Ön burun karenajı ve geriye doğru yatık aerodinamik ön cam (windscreen)
+    const nose = addTo(g, B(0.38, 0.24, 0.44), paint, 0, 0.80, -0.64);
+    nose.rotation.x = -0.18;
+    const screen = addTo(g, B(0.32, 0.04, 0.36), GLASS_M, 0, 0.98, -0.64);
+    screen.rotation.x = -0.55;                                                 // burundan gidon üstüne doğru düzgün eğimli cam
+    // 5. Dijital gösterge paneli, gidon boğazı, clip-on gidon, elcikler ve saplı yan aynalar
+    addTo(g, B(0.14, 0.08, 0.14), TRIM_M, 0, 0.88, -0.54);                     // gidon boğazı (triple clamp)
+    addTo(g, B(0.15, 0.07, 0.03), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0, 0.95, -0.58).rotation.x = -0.45;
+    addTo(g, B(0.70, 0.04, 0.04), CHROME_M, 0, 0.93, -0.54);                   // gidon borusu
+    [-0.33, 0.33].forEach(hx => {
+      addTo(g, B(0.14, 0.055, 0.055), TRIM_M, hx, 0.93, -0.54);                // sol ve sağ elcik
     });
-    // Kademeli sürücü selesi ve yukarı kalkık sivri yarış kuyruğu
-    addTo(g, B(0.36, 0.10, 0.48), TRIM_M, 0, 0.80, 0.28);                      // sürücü koltuğu
-    const tail = addTo(g, B(0.32, 0.16, 0.56), paint, 0, 0.94, 0.76);          // sivri arka kuyruk
-    tail.rotation.x = 0.22;
-    addTo(g, B(0.28, 0.06, 0.32), TRIM_M, 0, 1.02, 0.72).rotation.x = 0.22;    // artçı selesi
-    // Altın renkli ters (USD) ön amortisör çatalları ve ön çamurluk
+    [-1, 1].forEach(dir => {
+      const mStem = addTo(g, B(0.14, 0.025, 0.025), TRIM_M, dir * 0.22, 0.94, -0.72);
+      mStem.rotation.z = dir * 0.35;                                           // ayna bağlantı kolu (havada durmaz!)
+      addTo(g, B(0.11, 0.06, 0.04), TRIM_M, dir * 0.30, 0.98, -0.73);          // yan ayna başlığı
+    });
+    // 6. Kademeli sürücü selesi ve yukarı eğimli sivri yarış kuyruğu (depodan kuyruğa kesintisiz birleşir!)
+    addTo(g, B(0.34, 0.14, 0.48), TRIM_M, 0, 0.78, 0.26);                      // sürücü koltuğu
+    addTo(g, B(0.28, 0.16, 0.42), DARK_GRILLE_M, 0, 0.72, 0.52);               // kuyruk altı şasi bağlantısı
+    const tail = addTo(g, B(0.30, 0.15, 0.54), paint, 0, 0.88, 0.70);          // sivri arka kuyruk
+    tail.rotation.x = 0.20;
+    addTo(g, B(0.26, 0.06, 0.28), TRIM_M, 0, 0.96, 0.68).rotation.x = 0.20;    // artçı selesi
+    // 7. Altın USD ön amortisör çatalları (ön teker göbeğinden z=-0.92 doğrudan gidon boğazına z=-0.62 bağlanır!)
     [-0.14, 0.14].forEach(fx => {
-      const fork = addTo(g, GEO.motoFork, GOLD_FORK_M, fx, 0.64, -0.78);
-      fork.rotation.x = -0.26;
+      const fork = addTo(g, GEO.motoFork, GOLD_FORK_M, fx, 0.63, -0.77);
+      fork.rotation.x = 0.48;
+      addTo(g, B(0.05, 0.08, 0.08), TRIM_M, fx, 0.36, -0.92);                  // ön aks bağlantı ayağı
     });
-    addTo(g, B(0.24, 0.08, 0.38), paint, 0, 0.68, -0.92).rotation.x = 0.25;    // boyalı ön çamurluk
-    // Arka maşa (swingarm) ve arka teker üstü çamurluk (hugger)
-    [-0.14, 0.14].forEach(rx => {
-      addTo(g, B(0.05, 0.09, 0.58), M(0x4b5563), rx, 0.38, 0.64);
+    addTo(g, B(0.22, 0.06, 0.34), paint, 0, 0.67, -0.92);                      // ön teker üstü çamurluk (tekere değmez)
+    // 8. Arka maşa (swingarm: motor şasisinden arka teker göbeğine z=+0.92 uzanır)
+    [-0.15, 0.15].forEach(rx => {
+      const sw = addTo(g, B(0.045, 0.08, 0.64), M(0x4b5563), rx, 0.41, 0.62);
+      sw.rotation.x = -0.14;
     });
-    addTo(g, B(0.24, 0.05, 0.36), TRIM_M, 0, 0.66, 0.76).rotation.x = -0.35;   // arka hugger çamurluk
-    // Yukarı eğimli karbon-krom yarış egzozu (sağ yanda)
-    const mExPipe = addTo(g, new THREE.CylinderGeometry(0.035, 0.035, 0.45, 6), CHROME_M, 0.22, 0.42, 0.32);
-    mExPipe.rotation.x = Math.PI / 2 - 0.32;
-    const mExCan = addTo(g, new THREE.CylinderGeometry(0.06, 0.07, 0.52, 8), M(0x374151), 0.24, 0.56, 0.72);
-    mExCan.rotation.x = Math.PI / 2 - 0.38;
-    addTo(g, new THREE.CylinderGeometry(0.055, 0.06, 0.08, 8), CHROME_M, 0.24, 0.66, 0.96).rotation.x = Math.PI / 2 - 0.38;
-    // Çift agresif ön far ve arka LED stop lambası (GEO.light kullanarak far sistemiyle %100 uyumlu!)
-    addTo(g, GEO.light, HEAD_M, -0.11, 0.84, -0.91);
-    addTo(g, GEO.light, HEAD_M, 0.11, 0.84, -0.91);
-    addTo(g, GEO.light, TAIL_M, 0, 0.98, 1.04);
-    // Arka plaka ve plaka tutucu kuyruk (fender eliminator)
-    addTo(g, B(0.06, 0.18, 0.06), TRIM_M, 0, 0.84, 0.98).rotation.x = 0.35;
-    addTo(g, GEO.plate, PLATE_M, 0, 0.76, 1.05);
-    // Ön ve arka motosiklet tekerlekleri + jant kolları + çelik fren diskleri
+    // 9. Sağ yanda yukarı eğimli yarış egzozu (uç kapağı gövdeye tam yapışık!)
+    const mExPipe = addTo(g, new THREE.CylinderGeometry(0.032, 0.032, 0.42, 6), CHROME_M, 0.20, 0.40, 0.28);
+    mExPipe.rotation.x = Math.PI / 2 - 0.28;
+    const mExCan = addTo(g, new THREE.CylinderGeometry(0.055, 0.065, 0.48, 8), M(0x374151), 0.22, 0.54, 0.66);
+    mExCan.rotation.x = Math.PI / 2 - 0.34;
+    addTo(g, new THREE.CylinderGeometry(0.050, 0.058, 0.07, 8), CHROME_M, 0.22, 0.62, 0.89).rotation.x = Math.PI / 2 - 0.34;
+    // 10. Çift agresif ön far ve arka LED stop lambası (GEO.light ile far sistemiyle %100 uyumlu!)
+    addTo(g, GEO.light, HEAD_M, -0.10, 0.78, -0.87);
+    addTo(g, GEO.light, HEAD_M, 0.10, 0.78, -0.87);
+    addTo(g, GEO.light, TAIL_M, 0, 0.93, 0.97);
+    // 11. Arka plaka tutucu ve plaka (tekerleğe değmez, kuyruk altında temiz durur)
+    addTo(g, B(0.05, 0.14, 0.05), TRIM_M, 0, 0.82, 0.94).rotation.x = 0.30;
+    addTo(g, GEO.plate, PLATE_M, 0, 0.75, 0.99);
+    // 12. Ön ve arka motosiklet tekerlekleri + altın jantlar + çelik fren diskleri
     [[0, 0.92, true], [0, -0.92, false]].forEach(([x, z, isRear]) => {
       const w = addTo(g, GEO.wheel, TIRE_M, x, 0.36, z);
-      w.scale.set(isRear ? 0.72 : 0.60, 1, 1);
+      w.scale.set(isRear ? 0.68 : 0.58, 1, 1);
       w.name = 'wheel';
-      addTo(w, GEO.rim, GOLD_FORK_M, 0, 0, 0);                                 // altın yarış jantı
+      addTo(w, GEO.rim, GOLD_FORK_M, 0, 0, 0);
       addTo(w, GEO.spokeA, TRIM_M, 0, 0, 0);
       addTo(w, GEO.spokeB, TRIM_M, 0, 0, 0);
-      addTo(w, GEO.motoDisc, CHROME_M, 0.14, 0, 0);                            // çelik fren diski
-      if(!isRear) addTo(w, GEO.motoDisc, CHROME_M, -0.14, 0, 0);               // önde çift fren diski
+      addTo(w, GEO.motoDisc, CHROME_M, 0.13, 0, 0);
+      if(!isRear) addTo(w, GEO.motoDisc, CHROME_M, -0.13, 0, 0);
     });
-    // Üzerinde aerodinamik yarış tulumlu ve kasklı sürücü figürü
+    // 13. Üzerinde yarış tulumlu ve kasklı sürücü figürü (sürülürken görünür, sele ve gidona tam oturur)
     const rider = new THREE.Group();
     rider.name = 'motoRider';
-    addTo(rider, B(0.40, 0.54, 0.26), M(0x111827), 0, 1.20, 0.16).rotation.x = 0.42; // yarış tulumu gövde
-    addTo(rider, B(0.32, 0.24, 0.12), paint, 0, 1.28, 0.28).rotation.x = 0.42;       // sırt aerodinamik hörgücü
-    addTo(rider, new THREE.SphereGeometry(0.21, 10, 8), paint, 0, 1.58, -0.06);      // tam kapalı yarış kaskı
-    addTo(rider, B(0.32, 0.11, 0.06), GLASS_M, 0, 1.58, -0.24);                      // koyu kask vizörü
-    addTo(rider, B(0.13, 0.48, 0.13), M(0x111827), -0.24, 1.10, -0.22).rotation.x = -0.78;
-    addTo(rider, B(0.13, 0.48, 0.13), M(0x111827), 0.24, 1.10, -0.22).rotation.x = -0.78;
-    addTo(rider, B(0.14, 0.44, 0.16), M(0x1f2937), -0.24, 0.68, 0.18).rotation.x = 0.42;
-    addTo(rider, B(0.14, 0.44, 0.16), M(0x1f2937), 0.24, 0.68, 0.18).rotation.x = 0.42;
+    addTo(rider, B(0.38, 0.52, 0.24), M(0x111827), 0, 1.15, 0.14).rotation.x = -0.42; // öne eğik gövde
+    addTo(rider, B(0.30, 0.22, 0.12), paint, 0, 1.22, 0.26).rotation.x = -0.42;       // sırt hörgücü
+    addTo(rider, new THREE.SphereGeometry(0.20, 10, 8), paint, 0, 1.50, -0.06);      // yarış kaskı
+    addTo(rider, B(0.30, 0.10, 0.06), GLASS_M, 0, 1.50, -0.23);                      // kask vizörü
+    addTo(rider, B(0.12, 0.46, 0.12), M(0x111827), -0.24, 1.04, -0.22).rotation.x = 0.78; // sol kol gidona uzanır
+    addTo(rider, B(0.12, 0.46, 0.12), M(0x111827), 0.24, 1.04, -0.22).rotation.x = 0.78;  // sağ kol gidona uzanır
+    addTo(rider, B(0.13, 0.42, 0.15), M(0x1f2937), -0.23, 0.66, 0.18).rotation.x = -0.35; // sol bacak
+    addTo(rider, B(0.13, 0.42, 0.15), M(0x1f2937), 0.23, 0.66, 0.18).rotation.x = -0.35; // sağ bacak
     g.add(rider);
     const carSpot = new THREE.Mesh(new THREE.CircleGeometry(2.4, 16), carSpotMat);
     carSpot.rotation.x = -Math.PI / 2;
@@ -13846,7 +13856,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-002708';
+const APP_VERSION = '2026-10-30-114447';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
