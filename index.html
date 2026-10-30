@@ -3166,10 +3166,21 @@ addTo(heliTailRotor, B(0.03, 0.14, 1.45), heliDarkMat, 0, 0, 0);
   addTo(heliTailRotor, B(0.035, 0.15, 0.16), M(0xef4444), 0, 0, tt);
 });
 heliMesh.add(heliTailRotor);
-// Gece uçuş seyrüsefer ışıkları (Kırmızı sol, Yeşil sağ, Beyaz kuyruk)
-addTo(heliMesh, B(0.10, 0.10, 0.10), new THREE.MeshBasicMaterial({color: 0xef4444}), -0.95, 0.88, 0.65);
-addTo(heliMesh, B(0.10, 0.10, 0.10), new THREE.MeshBasicMaterial({color: 0x22c55e}), 0.95, 0.88, 0.65);
-addTo(heliMesh, B(0.10, 0.10, 0.10), new THREE.MeshBasicMaterial({color: 0xffffff}), 0, 2.32, -4.72);
+// Gece uçuş seyrüsefer ışıkları (Kırmızı sol, Yeşil sağ, Beyaz kuyruk) + Burun Altı Güçlü Projektör Spot Işığı (Searchlight)
+addTo(heliMesh, B(0.12, 0.12, 0.12), new THREE.MeshBasicMaterial({color: 0xef4444, fog: false}), -0.95, 0.88, 0.65);
+addTo(heliMesh, B(0.12, 0.12, 0.12), new THREE.MeshBasicMaterial({color: 0x22c55e, fog: false}), 0.95, 0.88, 0.65);
+addTo(heliMesh, B(0.12, 0.12, 0.12), new THREE.MeshBasicMaterial({color: 0xffffff, fog: false}), 0, 2.32, -4.72);
+// Burun altı projektör lambası, ışık hüzmesi konisi ve yerdeki aydınlatma halkası
+const heliSpotLampMat = new THREE.MeshBasicMaterial({color: 0xfef08a, fog: false});
+addTo(heliMesh, new THREE.CylinderGeometry(0.14, 0.18, 0.22, 8).rotateX(Math.PI / 2 + 0.35), heliDarkMat, 0, 0.62, 1.52);
+addTo(heliMesh, new THREE.SphereGeometry(0.13, 8, 6), heliSpotLampMat, 0, 0.60, 1.62);
+const heliSpotBeamMat = new THREE.MeshBasicMaterial({color: 0xfef08a, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, fog: false});
+const heliSpotBeam = addTo(heliMesh, new THREE.ConeGeometry(2.6, 9.5, 10, 1, true), heliSpotBeamMat, 0, -2.4, 5.2);
+heliSpotBeam.rotation.x = -Math.PI / 2 + 0.45;
+const heliGroundGlow = new THREE.Mesh(new THREE.CircleGeometry(3.8, 12).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({color: 0xfef08a, transparent: true, opacity: 0.26, depthWrite: false, fog: false}));
+heliGroundGlow.position.set(HELI_PAD_POS.x, HELI_PAD_POS.y + 0.03, HELI_PAD_POS.z + 3.5);
+heliGroundGlow.visible = false;
+scene.add(heliGroundGlow);
 heliMesh.position.set(HELI_PAD_POS.x, HELI_PAD_POS.y, HELI_PAD_POS.z);
 heliMesh.visible = !!(S.mk && S.mk.helikopter);
 scene.add(heliMesh);
@@ -3462,8 +3473,23 @@ const seaWaterPlane = new THREE.Mesh(new THREE.PlaneGeometry(110, 170), new THRE
 seaWaterPlane.rotation.x = -Math.PI / 2;
 seaWaterPlane.position.set(109, 0.015, -70);
 beachSeaGroup.add(seaWaterPlane);
-// Kıyı beyaz köpük şeridi
-addTo(beachSeaGroup, B(0.45, 0.02, 160), new THREE.MeshBasicMaterial({color: 0xe0f2fe}), 54.2, 0.028, -70);
+// Kıyı beyaz köpük şeridi ve denizde hareket eden 3B köpüklü dalgalar
+const seaShoreFoam = addTo(beachSeaGroup, B(0.65, 0.025, 160), new THREE.MeshBasicMaterial({color: 0xe0f2fe}), 54.4, 0.028, -70);
+const seaWaves = [];
+const waveCrestGeo = B(0.85, 0.05, 18.0);
+const waveFoamGeo = B(0.42, 0.06, 17.5);
+const waveCrestMat = new THREE.MeshBasicMaterial({color: 0x38bdf8});
+const waveFoamMat = new THREE.MeshBasicMaterial({color: 0xe0f2fe});
+for(let wi = 0; wi < 12; wi++){
+  const wg = new THREE.Group();
+  addTo(wg, waveCrestGeo, waveCrestMat, 0, 0, 0);
+  addTo(wg, waveFoamGeo, waveFoamMat, -0.22, 0.015, 0);
+  const wx = 58 + (wi % 4) * 22 + (wi * 3.7) % 9;
+  const wz = -135 + Math.floor(wi / 4) * 52 + (wi % 2) * 18;
+  wg.position.set(wx, 0.03, wz);
+  beachSeaGroup.add(wg);
+  seaWaves.push({g: wg, baseX: wx, baseZ: wz, ph: wi * 0.95, sp: 2.2 + (wi % 3) * 0.45});
+}
 // Kumsalda plaj şemsiyeleri ve şezlonglar
 [[-18, 0xef4444], [-34, 0x3b82f6], [-50, 0xf59e0b]].forEach(([bz, uCol]) => {
   addTo(beachSeaGroup, B(0.9, 0.14, 1.9), M(0xffffff), 49.2, 0.12, bz); // Şezlong
@@ -3586,6 +3612,24 @@ addTo(boatMesh, B(1.96, 0.10, 0.58), boatDeckMat, 0, 0.38, -2.32); // Arka yüzm
 // Arkada dalgalanan kırmızı bayrak
 addTo(boatMesh, new THREE.CylinderGeometry(0.02, 0.02, 0.75, 6), boatChromeMat, -0.88, 1.12, -2.10).rotation.x = -0.3;
 addTo(boatMesh, B(0.03, 0.28, 0.46), M(0xdc2626), -0.88, 1.36, -2.36);
+// 💡 Tekne Ön Projektör Farları (Twin Bow Searchlights), Işık Hüzmesi ve Su Altı Mavi Neon LED Aydınlatması!
+const boatLightMat = new THREE.MeshBasicMaterial({color: 0xfef08a, fog: false});
+const boatBeamMat = new THREE.MeshBasicMaterial({color: 0xfef08a, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false, fog: false});
+const boatUnderGlowMat = new THREE.MeshBasicMaterial({color: 0x38bdf8, transparent: true, opacity: 0.34, side: THREE.DoubleSide, depthWrite: false, fog: false});
+[-0.42, 0.42].forEach(lx => {
+  addTo(boatMesh, B(0.22, 0.14, 0.20), boatChromeMat, lx, 0.68, 2.38);
+  addTo(boatMesh, B(0.18, 0.10, 0.06), boatLightMat, lx, 0.68, 2.48);
+});
+// Radar kemeri üstünde 2 adet projektör spot lambası
+[-0.45, 0.45].forEach(sx => {
+  addTo(boatMesh, B(0.22, 0.14, 0.16), boatChromeMat, sx, 2.05, -0.92);
+  addTo(boatMesh, B(0.18, 0.10, 0.05), boatLightMat, sx, 2.05, -0.83);
+});
+// Teknenin önündeki denizi aydınlatan geniş sarı projektör hüzmesi + su altı turkuaz LED halesi
+const boatLightBeam = addTo(boatMesh, new THREE.ConeGeometry(2.8, 11.0, 10, 1, true), boatBeamMat, 0, 0.28, 8.0);
+boatLightBeam.rotation.x = -Math.PI / 2;
+const boatWaterGlow = addTo(boatMesh, new THREE.CircleGeometry(3.4, 12).rotateX(-Math.PI / 2), boatUnderGlowMat, 0, 0.02, 0.2);
+const boatForwardGlow = addTo(boatMesh, new THREE.CircleGeometry(3.6, 12).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({color: 0xfef08a, transparent: true, opacity: 0.22, depthWrite: false, fog: false}), 0, 0.025, 7.8);
 // Su köpüğü izi (tekne giderken arkasında görünür)
 const boatWakeMesh = new THREE.Group();
 addTo(boatWakeMesh, B(1.65, 0.04, 3.2), new THREE.MeshBasicMaterial({color: 0xe0f2fe}), 0, 0.05, -3.9);
@@ -11072,10 +11116,18 @@ function updateShopSpeakerAndScratch(dt){
       if(HELI.flying || nearHeli) txt('heliBtn', HELI.flying ? '🚪 Helikopterden İn (E)' : '🚁 Helikoptere Bin (E)');
       disp('heliUpBtn', HELI.flying ? 'block' : 'none');
       disp('heliDownBtn', HELI.flying ? 'block' : 'none');
+      if(typeof heliSpotBeam !== 'undefined') heliSpotBeam.visible = HELI.flying || nightMode;
+      if(typeof heliGroundGlow !== 'undefined'){
+        heliGroundGlow.visible = (HELI.flying || nightMode) && HELI.y < 28;
+        const overRoofGlow = (HELI.x >= HOTEL_POS.x - 10.2 && HELI.x <= HOTEL_POS.x + 2.5 && HELI.z >= HOTEL_POS.z - 23.0 && HELI.z <= HOTEL_POS.z + 23.0);
+        const glowY = (overRoofGlow && HELI.y >= 14.0) ? 14.65 : 0.04;
+        heliGroundGlow.position.set(HELI.x + Math.sin(HELI.h) * 5.2, glowY, HELI.z + Math.cos(HELI.h) * 5.2);
+      }
     } else {
       disp('heliBtn', 'none');
       disp('heliUpBtn', 'none');
       disp('heliDownBtn', 'none');
+      if(typeof heliGroundGlow !== 'undefined') heliGroundGlow.visible = false;
     }
   }
   if(typeof BOAT !== 'undefined'){
@@ -11084,6 +11136,23 @@ function updateShopSpeakerAndScratch(dt){
        ((C.driving ? C.x : P.x) >= 46.5 && (C.driving ? C.x : P.x) <= 62.5 && Math.abs((C.driving ? C.z : P.z) + 26.0) < 5.5));
     disp('boatBtn', (BOAT.driving || nearBoat) ? 'block' : 'none');
     if(BOAT.driving || nearBoat) txt('boatBtn', BOAT.driving ? '🚪 Tekneden İskele/Adaya İn (E)' : '🚤 Sürat Teknesine Bin (E)');
+    const nowWave = performance.now() * 0.001;
+    if(!BOAT.driving){
+      boatMesh.position.y = 0.05 + Math.sin(nowWave * 2.6) * 0.045;
+      boatMesh.rotation.z = Math.sin(nowWave * 1.9) * 0.025;
+    }
+    if(typeof seaShoreFoam !== 'undefined'){
+      seaShoreFoam.position.x = 54.4 + Math.sin(nowWave * 2.2) * 0.45;
+      seaShoreFoam.scale.x = 1 + Math.sin(nowWave * 2.2) * 0.35;
+    }
+    if(typeof seaWaves !== 'undefined'){
+      for(let wi = 0; wi < seaWaves.length; wi++){
+        const wv = seaWaves[wi];
+        const cyc = (nowWave * wv.sp + wv.ph) % 14;
+        wv.g.position.x = wv.baseX - cyc * 1.5;
+        wv.g.position.y = 0.025 + Math.sin(cyc * 0.45) * 0.04;
+      }
+    }
   }
   if((S.hotelOwned || (S.mk && S.mk.otel)) && !escPaused){
     S.hotelOwned = true;
@@ -14249,7 +14318,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-201605';
+const APP_VERSION = '2026-10-30-202602';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
