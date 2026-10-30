@@ -1502,19 +1502,47 @@ const pool = new THREE.Mesh(B(3.0, 0.05, 2.0), M(0x3fa7d6));
 pool.position.set(0, 0.05, 3.8);
 home.add(pool);
 
-// içeride basit eşyalar: yatak, yastık, masa
-[[B(2.2, 0.02, 1.6), 0xb5523b, -0.2, 0.01, 0.2],   // halı
- [B(1.4, 0.5, 0.6), 0x3d5a80, -0.8, 0.25, 1.9],   // koltuk
- [B(1.4, 0.5, 0.15), 0x3d5a80, -0.8, 0.6, 2.2],   // koltuk arkalığı
- [B(2.6, 0.9, 0.6), 0xdedede, 0.3, 0.45, -2.1],   // mutfak tezgâhı
- [B(2.7, 0.05, 0.7), 0x555555, 0.3, 0.92, -2.1],  // tezgâh üstü
- [B(0.5, 0.4, 0.5), 0x8b5a2b, 1.5, 0.2, -1.9],    // saksı
- [B(0.5, 0.5, 0.5), 0x2f8f46, 1.5, 0.65, -1.9],   // bitki
- [B(0.06, 1.4, 0.06), 0x333333, -1.6, 0.7, 0.5],  // lamba direği
+// içeride detaylı eşyalar: koltuk takımı, yatak, yorgan, yastıklar, TV ünitesi, mutfak, sehpa ve lamba
+[[B(2.4, 0.02, 1.8), 0xb5523b, -0.2, 0.01, 0.2],   // salon halısı
+ [B(2.1, 0.015, 1.5), 0xfacc15, -0.2, 0.014, 0.2], // halı altın bordür
+ // Detaylı 3 kişilik koltuk (baza, minderler, sırtlık, kolçaklar ve kırlentler)
+ [B(1.5, 0.22, 0.68), 0x1e293b, -0.8, 0.14, 1.9],  // koltuk alt baza
+ [B(0.46, 0.16, 0.62), 0x3d5a80, -1.28, 0.32, 1.88], // sol oturma minderi
+ [B(0.46, 0.16, 0.62), 0x3d5a80, -0.80, 0.32, 1.88], // orta oturma minderi
+ [B(0.46, 0.16, 0.62), 0x3d5a80, -0.32, 0.32, 1.88], // sağ oturma minderi
+ [B(1.5, 0.52, 0.16), 0x2b4464, -0.8, 0.62, 2.18], // koltuk arkalığı
+ [B(0.16, 0.45, 0.70), 0x2b4464, -1.56, 0.44, 1.9], // sol kolçak
+ [B(0.16, 0.45, 0.70), 0x2b4464, -0.04, 0.44, 1.9], // sağ kolçak
+ [B(0.28, 0.26, 0.12), 0xfacc15, -1.32, 0.52, 2.04], // sarı kırlent yastık
+ [B(0.28, 0.26, 0.12), 0xe11d48, -0.28, 0.52, 2.04], // kırmızı kırlent yastık
+ // Orta sehpa + kumanda + kahve fincanı
+ [B(0.85, 0.06, 0.48), 0x78350f, -0.8, 0.36, 1.15], // sehpa tablası
+ [B(0.75, 0.32, 0.38), 0x451a03, -0.8, 0.17, 1.15], // sehpa ayağı
+ [B(0.16, 0.03, 0.07), 0x111827, -0.98, 0.40, 1.15], // TV kumandası
+ // Salon Duvar TV Ünitesi ve Geniş Ekran Plazma TV + Soundbar
+ [B(1.35, 0.42, 0.36), 0x451a03, -0.8, 0.21, 0.15], // TV sehpası
+ [B(1.25, 0.72, 0.06), 0x0f172a, -0.8, 0.88, 0.12], // TV siyah çerçeve
+ [B(1.16, 0.64, 0.02), 0x0284c7, -0.8, 0.88, 0.155], // TV parlak ekran
+ [B(0.85, 0.07, 0.08), 0x1e293b, -0.8, 0.46, 0.22], // Soundbar hoparlör
+ // Mutfak tezgâhı, evye, ocak ve üst dolaplar
+ [B(2.6, 0.9, 0.6), 0xdedede, 0.3, 0.45, -2.1],    // mutfak tezgâhı
+ [B(2.7, 0.05, 0.7), 0x555555, 0.3, 0.92, -2.1],   // mermer tezgâh üstü
+ [B(0.65, 0.03, 0.45), 0x111827, -0.2, 0.95, -2.1], // ankastre ocak
+ [B(0.65, 0.03, 0.45), 0x94a3b8, 0.8, 0.95, -2.1],  // mutfak lavabosu
+ [B(2.5, 0.62, 0.38), 0xf1f5f9, 0.3, 2.05, -2.22],  // mutfak üst dolabı
+ // Saksı bitkisi ve lambader
+ [B(0.5, 0.4, 0.5), 0x8b5a2b, 1.5, 0.2, -1.9],     // saksı
+ [B(0.5, 0.5, 0.5), 0x2f8f46, 1.5, 0.65, -1.9],    // bitki
+ [B(0.06, 1.4, 0.06), 0x333333, -1.6, 0.7, 0.5],   // lamba direği
  [B(0.35, 0.25, 0.35), 0xf5e6c8, -1.6, 1.45, 0.5], // abajur
- [B(1.4, 0.6, 1.0), 0x7aa7d9, 1.0, 0.3, 1.4],
- [B(0.4, 0.15, 0.6), 0xffffff, 1.5, 0.7, 1.4],
- [B(0.9, 0.8, 0.7), 0x6b3e26, -0.5, 0.4, -1.0]
+ // 1. Kat Lüks Yatak (ahşap baza, yatak başlığı, beyaz şilte, yorgan ve çift yastık)
+ [B(1.52, 0.30, 1.12), 0x5c3a21, 1.0, 0.15, 1.4],  // ahşap yatak bazası
+ [B(0.14, 1.05, 1.16), 0x451a03, 1.72, 0.52, 1.4], // yatak başlığı
+ [B(1.42, 0.24, 1.04), 0xffffff, 0.98, 0.42, 1.4], // beyaz ortopedik şilte
+ [B(1.02, 0.26, 1.06), 0x2563eb, 0.78, 0.44, 1.4], // mavi kapitone yorgan
+ [B(0.34, 0.14, 0.42), 0xf8fafc, 1.46, 0.60, 1.15], // yastık 1
+ [B(0.34, 0.14, 0.42), 0xf8fafc, 1.46, 0.60, 1.65], // yastık 2
+ [B(0.9, 0.8, 0.7), 0x6b3e26, -0.5, 0.4, -1.0]     // çalışma masası
 ].forEach(([geo, col, x, y, z]) => {
   const m = new THREE.Mesh(geo, M(col));
   m.position.set(x, y, z);
@@ -1551,12 +1579,26 @@ home.add(villaLuxuryGroup);
  [B(0.08, 0.75, 5.4), 0x38bdf8, -3.25, 3.72, 0],      // cam balkon korkuluğu (ön)
  [B(1.4, 0.75, 0.08), 0x38bdf8, -2.6, 3.72, -2.66],   // balkon yan cam
  [B(1.4, 0.75, 0.08), 0x38bdf8, -2.6, 3.72, 2.66],    // balkon yan cam
- // Balkon masa-sandalyesi ve 2. kat eşyaları
+ // Balkon masa-sandalyesi ve 2. kat lüks eşyaları (kral yatağı, koltuk, dev TV ve gardırop)
  [B(0.65, 0.55, 0.65), 0xf8fafc, -2.6, 3.65, -1.3],   // balkon masası
  [B(0.45, 0.45, 0.45), 0x0284c7, -2.6, 3.6, -2.0],    // balkon koltuğu 1
  [B(0.45, 0.45, 0.45), 0x0284c7, -2.6, 3.6, -0.6],    // balkon koltuğu 2
- [B(1.5, 0.55, 1.2), 0x991b1b, 0.95, 3.68, 1.6],      // 2. kat kral yatağı
- [B(0.45, 0.18, 0.9), 0xfef08a, 1.45, 4.02, 1.6],     // altın yastık
+ // 2. Kat Kral Yatağı (baza, altın başlık, beyaz şilte, bordo ipek yorgan ve çift altın yastık)
+ [B(1.62, 0.30, 1.32), 0x451a03, 0.95, 3.55, 1.6],    // kral yatağı ahşap bazası
+ [B(0.16, 1.25, 1.38), 0x78350f, 1.72, 4.02, 1.6],    // kral yatağı başlığı
+ [B(0.20, 0.12, 1.42), 0xfacc15, 1.72, 4.62, 1.6],    // yatak başlığı altın tacı
+ [B(1.50, 0.24, 1.22), 0xffffff, 0.92, 3.80, 1.6],    // beyaz ortopedik şilte
+ [B(1.12, 0.26, 1.24), 0x991b1b, 0.72, 3.82, 1.6],    // bordo kadife yorgan
+ [B(0.38, 0.16, 0.48), 0xfef08a, 1.42, 4.00, 1.30],   // altın yastık 1
+ [B(0.38, 0.16, 0.48), 0xfef08a, 1.42, 4.00, 1.90],   // altın yastık 2
+ // 2. Kat Dinlenme Koltuğu ve Duvar Plazma TV'si
+ [B(1.25, 0.36, 0.62), 0x1e3a8a, -0.85, 3.58, 1.85],  // 2. kat lüks koltuk
+ [B(1.25, 0.48, 0.15), 0x1d4ed8, -0.85, 3.92, 2.12],  // 2. kat koltuk sırtlığı
+ [B(0.14, 0.42, 0.64), 0x1d4ed8, -1.48, 3.75, 1.85],  // sol kolçak
+ [B(0.14, 0.42, 0.64), 0x1d4ed8, -0.22, 3.75, 1.85],  // sağ kolçak
+ [B(1.30, 0.78, 0.06), 0x0f172a, 0.85, 4.55, 2.46],   // 2. kat duvar TV çerçevesi
+ [B(1.20, 0.68, 0.02), 0x38bdf8, 0.85, 4.55, 2.42],   // 2. kat TV parlak ekranı
+ [B(0.95, 1.75, 0.52), 0x5c3a21, 1.52, 4.25, 0.15],   // 2. kat ahşap gardırop
  [B(4.6, 0.1, 3.4), 0x0ea5e9, 0, 0.07, 4.1],          // dev lüks yüzme havuzu
  [B(5.0, 0.06, 3.8), 0xf1f5f9, 0, 0.03, 4.1]          // havuz kenarı mermer taş
 ].forEach(([geo, col, x, y, z]) => {
@@ -3299,16 +3341,45 @@ addTo(hotelRoomInteriorGroup, B(0.97, 0.04, 0.90), M(0x64748b), -1.45, 1.32, -3.
 addTo(hotelRoomInteriorGroup, B(0.05, 0.45, 0.06), M(0x475569), -1.05, 1.62, -3.48);
 addTo(hotelRoomInteriorGroup, B(0.05, 0.55, 0.06), M(0x475569), -1.05, 0.85, -3.48);
 
-// 🛋️📺 OTURMA GRUBU, YEMEK MASASI VE DEV DUVAR TV'Sİ
-addTo(hotelRoomInteriorGroup, B(2.2, 0.45, 0.85), M(0x1e3a8a), 0.2, 0.24, 1.45); // Lüks koltuk minderi
-addTo(hotelRoomInteriorGroup, B(2.2, 0.85, 0.22), M(0x1e40af), 0.2, 0.45, 1.82); // Koltuk sırtlığı
-addTo(hotelRoomInteriorGroup, B(1.2, 0.38, 0.72), M(0x78350f), 0.2, 0.19, 0.35); // Orta sehpa
-addTo(hotelRoomInteriorGroup, B(1.85, 1.05, 0.08), M(0x090d16), 0.2, 1.75, -4.45); // Duvarda Plazma TV
-addTo(hotelRoomInteriorGroup, B(1.72, 0.92, 0.04), new THREE.MeshBasicMaterial({color: 0x0284c7}), 0.2, 1.75, -4.40);
-// Yemek masası ve sandalyeler
-addTo(hotelRoomInteriorGroup, B(1.35, 0.76, 1.15), M(0x92400e), 2.35, 0.38, -1.65);
-addTo(hotelRoomInteriorGroup, B(0.48, 0.46, 0.48), M(0xb45309), 1.45, 0.23, -1.65);
-addTo(hotelRoomInteriorGroup, B(0.48, 0.46, 0.48), M(0xb45309), 3.25, 0.23, -1.65);
+// 🛋️📺 OTURMA GRUBU, YEMEK MASASI, GARDIROP VE DEV DUVAR TV'Sİ
+// Lüks 3 kişilik koltuk (baza, 3 minder, sırtlık, kolçaklar ve dekoratif kırlentler)
+addTo(hotelRoomInteriorGroup, B(2.35, 0.22, 0.90), M(0x0f172a), 0.2, 0.12, 1.45);  // Koltuk alt baza
+[-0.52, 0.20, 0.92].forEach(cx => {
+  addTo(hotelRoomInteriorGroup, B(0.68, 0.20, 0.82), M(0x1e3a8a), cx, 0.32, 1.42); // 3 ayrı oturma minderi
+});
+addTo(hotelRoomInteriorGroup, B(2.35, 0.85, 0.22), M(0x1e40af), 0.2, 0.55, 1.82);  // Koltuk sırtlığı
+addTo(hotelRoomInteriorGroup, B(0.20, 0.58, 0.92), M(0x1e40af), -0.92, 0.42, 1.45);// Sol kolçak
+addTo(hotelRoomInteriorGroup, B(0.20, 0.58, 0.92), M(0x1e40af), 1.32, 0.42, 1.45); // Sağ kolçak
+addTo(hotelRoomInteriorGroup, B(0.36, 0.34, 0.14), M(0xfacc15), -0.62, 0.56, 1.64);// Altın kırlent 1
+addTo(hotelRoomInteriorGroup, B(0.36, 0.34, 0.14), M(0xe11d48), 1.02, 0.56, 1.64); // Kırmızı kırlent 2
+// Tekli VIP Berjer Koltuk (sehpanın sol yanında)
+addTo(hotelRoomInteriorGroup, B(0.88, 0.42, 0.85), M(0x7c2d12), -1.35, 0.22, 0.35);
+addTo(hotelRoomInteriorGroup, B(0.88, 0.78, 0.20), M(0x9a3412), -1.35, 0.52, 0.68);
+addTo(hotelRoomInteriorGroup, B(0.16, 0.54, 0.85), M(0x9a3412), -1.72, 0.38, 0.35);
+addTo(hotelRoomInteriorGroup, B(0.16, 0.54, 0.85), M(0x9a3412), -0.98, 0.38, 0.35);
+// Orta sehpa + meyve tabağı + kumanda
+addTo(hotelRoomInteriorGroup, B(1.30, 0.08, 0.76), M(0x78350f), 0.2, 0.38, 0.35);  // Sehpa üst tablası
+addTo(hotelRoomInteriorGroup, B(1.12, 0.34, 0.62), M(0x451a03), 0.2, 0.17, 0.35);  // Sehpa gövdesi
+addTo(hotelRoomInteriorGroup, new THREE.CylinderGeometry(0.22, 0.16, 0.08, 8), M(0xfacc15), 0.2, 0.46, 0.35); // Altın meyve kasesi
+addTo(hotelRoomInteriorGroup, B(0.20, 0.03, 0.08), M(0x111827), -0.22, 0.44, 0.35); // TV kumandası
+// Karşıda TV Ünitesi, Soundbar ve Dev Plazma TV (koltuktan bakınca tam karşıda)
+addTo(hotelRoomInteriorGroup, B(2.10, 0.48, 0.46), M(0x451a03), 0.2, 0.24, -0.82); // Ahşap TV ünitesi
+addTo(hotelRoomInteriorGroup, B(1.35, 0.10, 0.12), M(0x1e293b), 0.2, 0.54, -0.76); // Soundbar ses sistemi
+addTo(hotelRoomInteriorGroup, B(1.85, 1.05, 0.08), M(0x090d16), 0.2, 1.25, -0.85); // Plazma TV çerçevesi
+addTo(hotelRoomInteriorGroup, B(1.72, 0.92, 0.04), new THREE.MeshBasicMaterial({color: 0x0284c7}), 0.2, 1.25, -0.80); // TV ekranı
+// Ahşap Gardırop & Elbise Dolabı (giriş duvarı yanında)
+addTo(hotelRoomInteriorGroup, B(1.35, 2.25, 0.62), M(0x5c3a21), -3.45, 1.12, 4.12);
+addTo(hotelRoomInteriorGroup, B(0.04, 0.45, 0.06), M(0xfacc15), -3.38, 1.15, 3.78); // Altın dolap kulpu 1
+addTo(hotelRoomInteriorGroup, B(0.04, 0.45, 0.06), M(0xfacc15), -3.52, 1.15, 3.78); // Altın dolap kulpu 2
+// Yemek masası, arkalıklı sandalyeler ve masa üstü tabaklar
+addTo(hotelRoomInteriorGroup, B(1.45, 0.08, 1.18), M(0x92400e), 2.35, 0.74, -1.65); // Masa tablası
+addTo(hotelRoomInteriorGroup, B(1.15, 0.70, 0.92), M(0x78350f), 2.35, 0.35, -1.65); // Masa ayağı
+addTo(hotelRoomInteriorGroup, new THREE.CylinderGeometry(0.18, 0.16, 0.03, 8), M(0xffffff), 2.00, 0.80, -1.65); // Servis tabağı 1
+addTo(hotelRoomInteriorGroup, new THREE.CylinderGeometry(0.18, 0.16, 0.03, 8), M(0xffffff), 2.70, 0.80, -1.65); // Servis tabağı 2
+addTo(hotelRoomInteriorGroup, B(0.48, 0.46, 0.48), M(0xb45309), 1.45, 0.23, -1.65); // Sandalye 1 oturak
+addTo(hotelRoomInteriorGroup, B(0.10, 0.55, 0.46), M(0x92400e), 1.24, 0.72, -1.65); // Sandalye 1 sırtlık
+addTo(hotelRoomInteriorGroup, B(0.48, 0.46, 0.48), M(0xb45309), 3.25, 0.23, -1.65); // Sandalye 2 oturak
+addTo(hotelRoomInteriorGroup, B(0.10, 0.55, 0.46), M(0x92400e), 3.46, 0.72, -1.65); // Sandalye 2 sırtlık
 
 // Oda Çıkış Kapısı (local x: -1.8, z: 4.48) ve Dinamik Oda Numarası Tabelası (ODA #1 .. ODA #250)
 addTo(hotelRoomInteriorGroup, B(1.15, 2.35, 0.14), M(0x78350f), -1.8, 1.18, 4.48);
@@ -13950,7 +14021,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-120350';
+const APP_VERSION = '2026-10-30-130839';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
