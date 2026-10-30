@@ -262,6 +262,7 @@ button small{font-size:9px;margin-top:0}
 <button id="heliBtn" style="display:none;background:#0284c7;border-color:#fde047;font-weight:900">🚁 Helikoptere Bin (E)</button>
 <button id="heliUpBtn" style="display:none;background:#16a34a;border-color:#86efac;font-weight:900">⬆️ Yüksel (Boşluk)</button>
 <button id="heliDownBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">⬇️ Alçal (Shift)</button>
+<button id="boatBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:900">🚤 Tekneye Bin (E)</button>
 <button id="hotelRoomExitBtn" style="display:none;background:#dc2626;border-color:#fca5a5;font-weight:900">🚪 Odadan Lobiye Çık</button>
 </div>
 <div id="policeChaseHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:24;background:linear-gradient(135deg,rgba(185,28,28,.96),rgba(29,78,216,.96));border:2px solid #fde047;color:#fff;padding:7px 16px;border-radius:999px;font-weight:900;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.75);pointer-events:none;white-space:nowrap">🚨 POLİS KOVALIYOR! Kaç: 10 sn</div>
@@ -3446,6 +3447,98 @@ for(let i = 0; i < 4; i++){
   pondFishes.push({m: fg, a: i * 1.57, r: 1.5 + i * 0.7, sp: 0.8 + i * 0.25});
 }
 
+// 🏖️🌊🚤 DENEME SAHİL, KUMSAL, YAT LİMANI İSKELESİ, DENİZ, UZAK ADA VE SÜRÜLEBİLİR SÜRAT TEKNESİ (doğu kenarında: x: 46..150, z: -150..+10)
+const BEACH_DOCK_POS = {x: 54.0, z: -26.0};
+const SEA_ISLAND_POS = {x: 108.0, z: -65.0};
+const beachSeaGroup = new THREE.Group();
+scene.add(beachSeaGroup);
+// Altın sarısı kumsal şeridi (x: 45..55, z: -150..+10)
+const beachSandPlane = new THREE.Mesh(new THREE.PlaneGeometry(11, 160), M(0xfde68a));
+beachSandPlane.rotation.x = -Math.PI / 2;
+beachSandPlane.position.set(49.5, 0.025, -70);
+beachSeaGroup.add(beachSandPlane);
+// Büyük mavi deniz yüzeyi (x: 54..164, z: -155..+15)
+const seaWaterPlane = new THREE.Mesh(new THREE.PlaneGeometry(110, 170), new THREE.MeshBasicMaterial({color: 0x0284c7}));
+seaWaterPlane.rotation.x = -Math.PI / 2;
+seaWaterPlane.position.set(109, 0.015, -70);
+beachSeaGroup.add(seaWaterPlane);
+// Kıyı beyaz köpük şeridi
+addTo(beachSeaGroup, B(0.45, 0.02, 160), new THREE.MeshBasicMaterial({color: 0xe0f2fe}), 54.2, 0.028, -70);
+// Kumsalda plaj şemsiyeleri ve şezlonglar
+[[-18, 0xef4444], [-34, 0x3b82f6], [-50, 0xf59e0b]].forEach(([bz, uCol]) => {
+  addTo(beachSeaGroup, B(0.9, 0.14, 1.9), M(0xffffff), 49.2, 0.12, bz); // Şezlong
+  addTo(beachSeaGroup, new THREE.CylinderGeometry(0.06, 0.06, 2.2, 6), M(0x78350f), 49.2, 1.1, bz - 1.3);
+  addTo(beachSeaGroup, new THREE.ConeGeometry(1.4, 0.6, 8), M(uCol), 49.2, 2.25, bz - 1.3); // Şemsiye
+});
+// Ahşap Yat Limanı İskelesi (x: 48..62, z: -26)
+addTo(beachSeaGroup, B(14.0, 0.22, 3.2), M(0x92400e), 55.0, 0.25, -26.0);
+for(let px = 49; px <= 61; px += 3){
+  addTo(beachSeaGroup, new THREE.CylinderGeometry(0.14, 0.14, 0.9, 6), M(0x451a03), px, 0.35, -27.4);
+  addTo(beachSeaGroup, new THREE.CylinderGeometry(0.14, 0.14, 0.9, 6), M(0x451a03), px, 0.35, -24.6);
+}
+const marinaSignTex = tex(256, 80, (g, w, h) => {
+  g.fillStyle = '#0c4a6e'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#fde047'; g.lineWidth = 5; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#fde047'; g.font = 'bold 28px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🚤 SAHİL & YAT LİMANI', w / 2, h / 2 + 2);
+});
+const marinaSign = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 0.85), new THREE.MeshBasicMaterial({map: marinaSignTex, side: THREE.DoubleSide}));
+marinaSign.position.set(48.2, 2.4, -26.0);
+marinaSign.rotation.y = -Math.PI / 2;
+beachSeaGroup.add(marinaSign);
+addTo(beachSeaGroup, B(0.12, 2.4, 0.12), M(0x78350f), 48.2, 1.2, -27.4);
+addTo(beachSeaGroup, B(0.12, 2.4, 0.12), M(0x78350f), 48.2, 1.2, -24.6);
+
+// 🏝️ Uzakta Tropikal Hazine Adası ve Deniz Feneri (x: 108, z: -65)
+const islandGroup = new THREE.Group();
+islandGroup.position.set(SEA_ISLAND_POS.x, 0, SEA_ISLAND_POS.z);
+beachSeaGroup.add(islandGroup);
+addTo(islandGroup, new THREE.CylinderGeometry(11, 13, 0.55, 12), M(0xfde68a), 0, 0.22, 0); // Ada kumsalı
+addTo(islandGroup, new THREE.CylinderGeometry(7.5, 9.5, 0.45, 12), M(0x2f8f46), 0, 0.55, 0); // Ada yeşil çimi
+// Ada iskelesi (batı kıyısında x: -12, z: 0)
+addTo(islandGroup, B(6.5, 0.22, 2.4), M(0x92400e), -11.5, 0.28, 0);
+// Ada Deniz Feneri (kırmızı-beyaz kule + tepe ışığı)
+addTo(islandGroup, new THREE.CylinderGeometry(1.1, 1.5, 3.2, 10), M(0xffffff), 2.5, 2.2, -2.0);
+addTo(islandGroup, new THREE.CylinderGeometry(0.95, 1.1, 2.8, 10), M(0xdc2626), 2.5, 5.2, -2.0);
+addTo(islandGroup, new THREE.CylinderGeometry(1.05, 0.95, 1.2, 10), new THREE.MeshBasicMaterial({color: 0xfef08a}), 2.5, 7.2, -2.0);
+addTo(islandGroup, new THREE.ConeGeometry(1.25, 1.1, 10), M(0x1e293b), 2.5, 8.35, -2.0);
+// Adada 3 ağaç
+[[-3, -4], [4, 3], [-2, 5]].forEach(([tx, tz], idx) => {
+  makeNaturalTree(SEA_ISLAND_POS.x + tx, SEA_ISLAND_POS.z + tz, idx);
+});
+
+// 🚤 3B LÜKS SÜRAT TEKNESİ MODELİ (iskele yanında suda hazır bekler: x: 61.5, z: -22.2)
+const boatMesh = new THREE.Group();
+const boatHullMat = M(0xf8fafc), boatStripeMat = M(0x0284c7), boatDeckMat = M(0xd97706), boatDarkMat = M(0x1e293b);
+// Ana gövde ve sivri burun (+Z ileri yön)
+addTo(boatMesh, B(2.1, 0.65, 3.6), boatHullMat, 0, 0.32, -0.3);
+const boatBow = addTo(boatMesh, new THREE.ConeGeometry(1.08, 1.9, 4), boatHullMat, 0, 0.34, 2.4);
+boatBow.rotation.x = Math.PI / 2;
+boatBow.rotation.y = Math.PI / 4;
+// Yan mavi yarış şeritleri ve ahşap güverte
+addTo(boatMesh, B(2.16, 0.16, 3.5), boatStripeMat, 0, 0.45, -0.3);
+addTo(boatMesh, B(1.86, 0.08, 3.3), boatDeckMat, 0, 0.66, -0.3);
+// Ön eğimli rüzgâr camı ve kaptan konsolu/direksiyonu
+const boatGlass = addTo(boatMesh, B(1.72, 0.48, 0.08), M(0x7dd3fc), 0, 0.92, 0.65);
+boatGlass.rotation.x = -0.45;
+addTo(boatMesh, B(0.65, 0.52, 0.45), boatDarkMat, 0.38, 0.85, 0.25); // Konsol
+addTo(boatMesh, new THREE.CylinderGeometry(0.18, 0.18, 0.05, 8).rotateX(Math.PI / 3), M(0xfacc15), 0.38, 1.05, 0.02); // Dümen
+// Deri koltuklar (ön kaptan & arka yolcu koltuğu)
+addTo(boatMesh, B(1.65, 0.32, 0.55), M(0xffffff), 0, 0.82, -0.45);
+addTo(boatMesh, B(1.65, 0.45, 0.16), boatStripeMat, 0, 1.02, -0.68);
+addTo(boatMesh, B(1.65, 0.32, 0.62), M(0xffffff), 0, 0.82, -1.55);
+addTo(boatMesh, B(1.65, 0.48, 0.18), boatStripeMat, 0, 1.02, -1.82);
+// Arka dıştan takma motor ve pervane
+addTo(boatMesh, B(0.52, 0.75, 0.48), boatDarkMat, 0, 0.55, -2.28);
+addTo(boatMesh, B(0.54, 0.14, 0.50), M(0xef4444), 0, 0.86, -2.28);
+// Su köpüğü izi (tekne giderken arkasında görünür)
+const boatWakeMesh = addTo(boatMesh, B(1.5, 0.04, 2.6), new THREE.MeshBasicMaterial({color: 0xe0f2fe}), 0, 0.05, -3.6);
+boatWakeMesh.visible = false;
+const BOAT = {x: 61.5, y: 0.05, z: -22.2, h: 0, v: 0, driving: false};
+boatMesh.position.set(BOAT.x, BOAT.y, BOAT.z);
+scene.add(boatMesh);
+
 // 4) ÇİTLE ÇEVRİLİ DEDEKTÖRLÜ HAZİNE ARAMA ALANI (parktaki boş çimli alan: x -36..-20, z -74..-50)
 const DIG_ZONE = {minX: -36, maxX: -20, minZ: -74, maxZ: -50, gateX: -20, gateZ: -62};
 const digFenceGroup = new THREE.Group();
@@ -4852,7 +4945,13 @@ const canWork = () => active() && nearCounter() && shutterOpen;
 
 // kaldırımlar ve geçit dışında yürünemez; tezgâh ve satıcı engel
 function free(x, z){
-  if(x < -74 || x > 48 || z < -195 || z > 10) return false; // genişletilmiş harita sınırları
+  if(x < -74 || x > 148 || z < -195 || z > 10) return false; // genişletilmiş harita ve deniz sınırları
+  // Deniz alanında (x > 54.5) yalnızca iskelede (z: -27.8..-24.2, x <= 62.2) ve adada (merkezi 108, -65) yürünebilir!
+  if(x > 54.5 && !(typeof BOAT !== 'undefined' && BOAT.driving)){
+    const onMarinaDock = x <= 62.2 && z >= -27.8 && z <= -24.2;
+    const onIsland = Math.hypot(x - 108.0, z - (-65.0)) <= 12.5 || (x >= 93.0 && x <= 100.0 && Math.abs(z + 65.0) <= 1.5);
+    if(!onMarinaDock && !onIsland) return false;
+  }
   if(x > -11.4 && x < -8.2 && z > -8.5 && z < -3.5) return false; // market binası
   if(x > -11.4 && x < -8.2 && z > -16.9 && z < -12.1) return false; // banka binası
   if(x > -11.4 && x < -8.2 && z > -26.5 && z < -21.5) return false; // galeri binası
@@ -5041,9 +5140,36 @@ function heliUpdate(dt){
   heliMesh.rotation.set(HELI.v * 0.012, HELI.h, -steer * 0.16);
 }
 
+function boatUpdate(dt){
+  if(shopOpen || over || tutOpen || shiftEnded || setOpen) return;
+  const throttle = Math.max(-1, Math.min(1, -joy.dy + ((keys.w || keys.arrowup) ? 1 : 0) - ((keys.s || keys.arrowdown) ? 1 : 0)));
+  const steer = Math.max(-1, Math.min(1, joy.dx + ((keys.d || keys.arrowright) ? 1 : 0) - ((keys.a || keys.arrowleft) ? 1 : 0)));
+  BOAT.h -= steer * (0.85 + Math.min(1, Math.abs(BOAT.v) / 8) * 0.95) * dt;
+  const targetV = throttle >= 0 ? throttle * 16.0 : throttle * 6.5;
+  BOAT.v += (targetV - BOAT.v) * Math.min(1, 2.8 * dt);
+  const nx = BOAT.x + Math.sin(BOAT.h) * BOAT.v * dt;
+  const nz = BOAT.z + Math.cos(BOAT.h) * BOAT.v * dt;
+  // Deniz sınırları (x: 56.5..158, z: -148..+8) ve uzaktaki ada (merkez 108, -65, yarıçap 11.8) çarpışma kontrolü
+  const distToIsland = Math.hypot(nx - SEA_ISLAND_POS.x, nz - SEA_ISLAND_POS.z);
+  const hitMarinaDock = (nx < 63.0 && nz > -28.5 && nz < -23.5);
+  if(nx >= 56.5 && nx <= 158.0 && nz >= -148.0 && nz <= 8.0 && distToIsland > 12.2 && !hitMarinaDock){
+    BOAT.x = nx;
+    BOAT.z = nz;
+  } else {
+    BOAT.v *= -0.25;
+  }
+  const waveBob = Math.sin(performance.now() * 0.004) * 0.06;
+  BOAT.y = 0.05 + waveBob;
+  P.x = BOAT.x; P.y = 0.35; P.z = BOAT.z;
+  boatWakeMesh.visible = Math.abs(BOAT.v) > 1.2;
+  boatMesh.position.set(BOAT.x, BOAT.y, BOAT.z);
+  boatMesh.rotation.set(-BOAT.v * 0.008, BOAT.h, -steer * 0.14);
+}
+
 function updatePlayer(dt){
   if(shopOpen || over || tutOpen || shiftEnded || kick || setOpen || passengerOf) return;
   if(typeof HELI !== 'undefined' && HELI.flying){ heliUpdate(dt); return; }
+  if(typeof BOAT !== 'undefined' && BOAT.driving){ boatUpdate(dt); return; }
   if(CM.driving){ comoUpdate(dt); return; }
   if(D.driving){ driveUpdate(dt); return; }
   if(C.driving){ carUpdate(dt); return; }
@@ -7094,6 +7220,7 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keydown', e => {
   if(e.key.toLowerCase() !== 'e') return;
   if($('heliBtn') && $('heliBtn').style.display === 'block') $('heliBtn').click();
+  else if($('boatBtn') && $('boatBtn').style.display === 'block') $('boatBtn').click();
   else if($('carBtn').style.display === 'block') $('carBtn').click();
   else if($('motoBtn') && $('motoBtn').style.display === 'block') $('motoBtn').click();
   else if($('policeCarBtn') && $('policeCarBtn').style.display === 'block') $('policeCarBtn').click();
@@ -10726,6 +10853,35 @@ if($('heliDownBtn')){
   db.onpointercancel = () => { HELI.downHeld = false; };
   db.onpointerleave = () => { HELI.downHeld = false; };
 }
+if($('boatBtn')) $('boatBtn').onclick = () => {
+  if(!active()) return;
+  if(BOAT.driving){
+    BOAT.driving = false;
+    BOAT.v = 0;
+    boatWakeMesh.visible = false;
+    // İskele veya adaya yakınsa oraya indir, değilse sahil iskelesine indir
+    const distIsland = Math.hypot(BOAT.x - SEA_ISLAND_POS.x, BOAT.z - SEA_ISLAND_POS.z);
+    if(distIsland < 18.0){
+      P.x = SEA_ISLAND_POS.x - 11.0; P.y = 0.55; P.z = SEA_ISLAND_POS.z;
+      flash('🏝️ Hazine Adası İskelesine çıktın!', '#4ade80');
+    } else {
+      P.x = 58.0; P.y = 0.25; P.z = -26.0;
+      flash('🚤 Tekneden Yat Limanı İskelesine indin!', '#7dd3fc');
+    }
+    stopEngine();
+    beep(520, 0.12, 'sine', 0.14);
+  } else {
+    passengerOf = null;
+    C.driving = false; D.driving = false; CM.driving = false;
+    if(typeof HELI !== 'undefined') HELI.flying = false;
+    BOAT.driving = true;
+    BOAT.v = 0;
+    startEngine();
+    beep(760, 0.16, 'triangle', 0.15);
+    flash('🚤 Sürat Teknesine bindin! Denizde sür ve uzaktaki Deniz Fenerli Adaya git!', '#38bdf8');
+  }
+  renderAll();
+};
 
 // 🧳🏨 OTEL MÜŞTERİLERİ SİSTEMİ (Oteli satın alınca yürüyerek otele gelirler, resepsiyonda normal oda için 10.000₺, 4. Kat VIP oda için 30.000₺ ödeyip merdivenden odalara çıkarlar!)
 const hotelGuests = [];
@@ -10863,6 +11019,12 @@ function updateShopSpeakerAndScratch(dt){
       disp('heliUpBtn', 'none');
       disp('heliDownBtn', 'none');
     }
+  }
+  if(typeof BOAT !== 'undefined'){
+    const nearBoat = !BOAT.driving && !C.driving && !D.driving && !CM.driving && !(typeof HELI !== 'undefined' && HELI.flying) &&
+      (Math.hypot(P.x - BOAT.x, P.z - BOAT.z) < 6.5 || (P.x >= 47.5 && P.x <= 62.5 && Math.abs(P.z + 26.0) < 4.5));
+    disp('boatBtn', (BOAT.driving || nearBoat) ? 'block' : 'none');
+    if(BOAT.driving || nearBoat) txt('boatBtn', BOAT.driving ? '🚪 Tekneden İskele/Adaya İn (E)' : '🚤 Sürat Teknesine Bin (E)');
   }
   if((S.hotelOwned || (S.mk && S.mk.otel)) && !escPaused){
     S.hotelOwned = true;
@@ -12707,6 +12869,10 @@ function frame(now){
     playerMesh.visible = false;
     camera.position.set(HELI.x - Math.sin(HELI.h) * 8.4, HELI.y + 3.8, HELI.z - Math.cos(HELI.h) * 8.4);
     camera.rotation.set(P.pitch - 0.18, HELI.h + Math.PI + (P.yaw + Math.PI / 2), 0);
+  } else if(typeof BOAT !== 'undefined' && BOAT.driving){
+    playerMesh.visible = false;
+    camera.position.set(BOAT.x - Math.sin(BOAT.h) * 7.2, BOAT.y + 3.1, BOAT.z - Math.cos(BOAT.h) * 7.2);
+    camera.rotation.set(P.pitch - 0.16, BOAT.h + Math.PI + (P.yaw + Math.PI / 2), 0);
   } else if(CM.driving){
     playerMesh.visible = false;
     camera.position.set(CM.x - Math.sin(CM.h) * 4.5, 2.6, CM.z - Math.cos(CM.h) * 4.5);
@@ -14021,7 +14187,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-130839';
+const APP_VERSION = '2026-10-30-192437';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
