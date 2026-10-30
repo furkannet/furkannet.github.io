@@ -4252,8 +4252,16 @@ const TAXI_M = new THREE.MeshBasicMaterial({color:0xffd000});
 const CHROME_M = M(0xd1d5db);
 const DARK_GRILLE_M = M(0x0b0f17);
 const GOLD_FORK_M = M(0xd4af37);
+// Motosiklet iç ekran (birinci şahıs) için arkayı gösteren canlı dikiz aynası dokusu
+const motoRearRT = new THREE.WebGLRenderTarget(160, 96, {depthBuffer: true, stencilBuffer: false});
+const motoMirrorGlassMat = new THREE.MeshBasicMaterial({map: motoRearRT.texture});
+const motoMirrorCam = new THREE.PerspectiveCamera(68, 160 / 96, 0.15, 130);
+motoMirrorCam.rotation.order = 'YXZ';
+let motoMirrorFrame = 0;
 GEO.motoFork = new THREE.CylinderGeometry(0.032, 0.028, 0.62, 8);
 GEO.motoDisc = new THREE.CylinderGeometry(0.22, 0.22, 0.02, 10).rotateZ(Math.PI/2);
+GEO.motoMirrorGlass = new THREE.PlaneGeometry(0.115, 0.068);
+GEO.motoMirrorGlass.scale(-1, 1, 1); // gerçek ayna yansıması için yatay çevrilmiş düzlem
 function car(color, type = 'sedan'){
   const g = new THREE.Group();
   const paint = M(color);
@@ -4289,7 +4297,10 @@ function car(color, type = 'sedan'){
     [-1, 1].forEach(dir => {
       const mStem = addTo(g, B(0.14, 0.025, 0.025), TRIM_M, dir * 0.22, 0.94, -0.72);
       mStem.rotation.z = dir * 0.35;                                           // ayna bağlantı kolu (havada durmaz!)
-      addTo(g, B(0.11, 0.06, 0.04), TRIM_M, dir * 0.30, 0.98, -0.73);          // yan ayna başlığı
+      const mHousing = addTo(g, B(0.13, 0.08, 0.04), TRIM_M, dir * 0.30, 0.99, -0.73); // yan ayna başlığı
+      mHousing.rotation.y = dir * 0.16;
+      const mGlass = addTo(g, GEO.motoMirrorGlass, motoMirrorGlassMat, dir * 0.30, 0.99, -0.708); // arkayı gösteren canlı ayna camı
+      mGlass.rotation.y = dir * 0.16;
     });
     // 6. Kademeli sürücü selesi ve yukarı eğimli sivri yarış kuyruğu (depodan kuyruğa kesintisiz birleşir!)
     addTo(g, B(0.34, 0.14, 0.48), TRIM_M, 0, 0.78, 0.26);                      // sürücü koltuğu
@@ -5306,7 +5317,7 @@ window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
 window.addEventListener('wheel', e => {
   if(!C.driving) return;
   e.preventDefault();
-  C.camDist = Math.max(2, Math.min(8, C.camDist + e.deltaY * 0.004));
+  C.camDist = Math.max(0, Math.min(8, C.camDist + e.deltaY * 0.004));
 }, {passive: false});
 // ESC: oyunu durdur / devam ettir
 let escPaused = false;
@@ -8891,14 +8902,25 @@ window.addEventListener('keydown', e => {
   if(e.key.toLowerCase() === 'h' && C.driving) honk();
 });
 
-// kamera mesafesi: yakın / orta / uzak (sırayla)
-const CAM_STEPS = [{d: 2.2, name: 'Yakın'}, {d: 3.6, name: 'Orta'}, {d: 6, name: 'Uzak'}];
-$('camBtn').onclick = () => {
+// kamera mesafesi: iç ekran (gidon & aynalar) / yakın / orta / uzak (sırayla)
+const CAM_STEPS = [{d: 0, name: 'İç Ekran'}, {d: 2.2, name: 'Yakın'}, {d: 3.6, name: 'Orta'}, {d: 6, name: 'Uzak'}];
+function cycleVehicleCam(){
   const i = CAM_STEPS.findIndex(s => s.d === C.camDist);
   const next = CAM_STEPS[(i + 1) % CAM_STEPS.length];
   C.camDist = next.d;
-  $('camBtn').textContent = '🎥 ' + next.name;
-};
+  if($('camBtn')) $('camBtn').textContent = '🎥 ' + next.name;
+  if(next.d === 0 && C.activeVeh === 'moto'){
+    P.yaw = -Math.PI / 2;
+    P.pitch = 0.08;
+    flash('🏍️ Motor İç Ekran (Aynalardan arkanı görebilirsin!)', '#38bdf8');
+  }
+}
+$('camBtn').onclick = cycleVehicleCam;
+window.addEventListener('keydown', e => {
+  if(e.key.toLowerCase() === 'v' && C.driving && !e.repeat){
+    if(document.activeElement !== $('radioCodeIn') && document.activeElement !== $('chatIn')) cycleVehicleCam();
+  }
+});
 $('driftBtn').onclick = () => {
   C.driftOn = !C.driftOn;
   $('driftBtn').textContent = C.driftOn ? '🌀 Drift: Açık' : '🌀 Drift: Kapalı';
@@ -13007,9 +13029,27 @@ function frame(now){
     camera.rotation.set(P.pitch - 0.15, CM.h + Math.PI + (P.yaw + Math.PI / 2), 0);
   } else if(C.driving){
     playerMesh.visible = false;
-    // arkadan takip kamerası: araba gövdesi görüşü kapatmasın, yol önde görünsün
-    camera.position.set(C.x - Math.sin(C.h) * C.camDist, 1.2 + C.camDist * 0.28, C.z - Math.cos(C.h) * C.camDist);
-    camera.rotation.set(P.pitch - 0.15, C.h + Math.PI + (P.yaw + Math.PI / 2), 0);
+    const isFirstPersonVeh = C.camDist <= 0.1;
+    if(isFirstPersonVeh && C.activeVeh === 'moto'){
+      // Motosiklet iç ekran (gidon, gösterge paneli ve canlı dikiz aynaları görünür)
+      const motoYaw = C.h + (C.slip || 0);
+      const leanZ = ownedMotoMesh ? (ownedMotoMesh.rotation.z || 0) : 0;
+      camera.position.set(
+        C.x - Math.sin(motoYaw) * 0.22 - Math.cos(motoYaw) * leanZ * 0.45,
+        1.16,
+        C.z - Math.cos(motoYaw) * 0.22 + Math.sin(motoYaw) * leanZ * 0.45
+      );
+      camera.rotation.set(P.pitch - 0.14, motoYaw + Math.PI + (P.yaw + Math.PI / 2), leanZ * 0.45);
+    } else if(isFirstPersonVeh){
+      // Araba iç ekran (kaput üstü/direksiyon hizası)
+      const carYaw = C.h + (C.slip || 0);
+      camera.position.set(C.x - Math.sin(carYaw) * 0.15, 1.25, C.z - Math.cos(carYaw) * 0.15);
+      camera.rotation.set(P.pitch - 0.08, carYaw + Math.PI + (P.yaw + Math.PI / 2), 0);
+    } else {
+      // arkadan takip kamerası: araba gövdesi görüşü kapatmasın, yol önde görünsün
+      camera.position.set(C.x - Math.sin(C.h) * C.camDist, 1.2 + C.camDist * 0.28, C.z - Math.cos(C.h) * C.camDist);
+      camera.rotation.set(P.pitch - 0.15, C.h + Math.PI + (P.yaw + Math.PI / 2), 0);
+    }
   } else if(D.driving){
     playerMesh.visible = false;
     const fx = -Math.sin(D.h), fz = -Math.cos(D.h);
@@ -13124,10 +13164,11 @@ function frame(now){
     ownedMotoMesh.position.set(MOTO_STATE.x, 0, MOTO_STATE.z);
     ownedMotoMesh.rotation.y = MOTO_STATE.h + Math.PI + ((C.driving && C.activeVeh === 'moto') ? (C.slip || 0) : 0);
     const ridingMoto = !!(C.driving && C.activeVeh === 'moto');
+    const isMotoFirstPerson = ridingMoto && C.camDist <= 0.1;
     const targetLean = (ridingMoto && Math.abs(C.v) > 0.5) ? (-C.steer * 0.36 * Math.min(1, Math.abs(C.v) / 4)) : 0;
     ownedMotoMesh.rotation.z += (targetLean - (ownedMotoMesh.rotation.z || 0)) * Math.min(1, dt * 8);
     ownedMotoMesh.children.forEach(ch => {
-      if(ch.name === 'motoRider') ch.visible = ridingMoto;
+      if(ch.name === 'motoRider') ch.visible = ridingMoto && !isMotoFirstPerson;
       if(ch.name === 'wheel' && ridingMoto && Math.abs(C.v) > 0.05) ch.rotation.x -= C.v * dt * 3.2;
     });
   }
@@ -13282,6 +13323,25 @@ function frame(now){
   tm.slowT -= dt;
   sty('timeFx', 'opacity', tm.slowT > 0 ? 1 : 0);
   step(gdt, active());
+  // Motosiklet sürerken aynaların arkayı göstermesi için düşük çözünürlüklü arka kamera çizimi
+  if(C.driving && C.activeVeh === 'moto' && ownedMotoMesh){
+    motoMirrorFrame = (motoMirrorFrame + 1) % 2;
+    if(motoMirrorFrame === 0){
+      const motoYaw = C.h + (C.slip || 0);
+      const leanZ = ownedMotoMesh.rotation.z || 0;
+      motoMirrorCam.position.set(
+        C.x - Math.sin(motoYaw) * 0.85,
+        1.05,
+        C.z - Math.cos(motoYaw) * 0.85
+      );
+      motoMirrorCam.rotation.set(-0.04, motoYaw, -leanZ * 0.5);
+      ownedMotoMesh.visible = false;
+      renderer.setRenderTarget(motoRearRT);
+      renderer.render(scene, motoMirrorCam);
+      renderer.setRenderTarget(null);
+      ownedMotoMesh.visible = true;
+    }
+  }
   renderer.render(scene, camera);
   }catch(e){
     console.error(e);
@@ -14318,7 +14378,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-202602';
+const APP_VERSION = '2026-10-30-234330';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
