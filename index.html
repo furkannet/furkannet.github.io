@@ -2008,10 +2008,10 @@ const pgPivot = new THREE.Mesh(B(0.2, 0.4, 0.4), pgMetal);
 pgPivot.position.set(-2.8, 0.2, -1.2);
 playground.add(pgPivot);
 
-// dünyanın çevresindeki duvar (genişletilmiş yürünebilir ve sürülebilir alanın sınırı)
+// dünyanın çevresindeki duvar (doğu kenarında z: -150..+10 sahil ve denize açık bırakıldı)
 const wallMat = M(0x8a7f74);
-[[B(0.3, 3, 212), -75, -94], [B(0.3, 3, 212), 49, -94],   // batı ve doğu
- [B(124, 3, 0.3), -13, -196], [B(124, 3, 0.3), -13, 12]   // kuzey ve güney
+[[B(0.3, 3, 212), -75, -94], [B(0.3, 3, 46), 49, -173],   // batı duvarı ve doğunun yalnızca kuzey köşesi
+ [B(130, 3, 0.3), -10, -196], [B(130, 3, 0.3), -10, 12]   // kuzey ve güney
 ].forEach(([geo, x, z]) => {
   const w = new THREE.Mesh(geo, wallMat);
   w.position.set(x, 1.5, z);
@@ -5069,7 +5069,7 @@ const localToWorld = (lx, lz) => {
 let crashCD = 0;
 let kick = null; // araba çarpınca oyuncunun fırlama animasyonu
 const truckFree = (x, z) => {
-  if(x < -74 || x > 48 || z < -195 || z > 10) return false;
+  if(x < -74 || x > 53.8 || z < -195 || z > 10) return false;
   if(Math.abs(x - 8.6) < 2.4 && Math.abs(z - 4.8) < 3.6) return false;
   return true;
 };
@@ -5112,7 +5112,7 @@ function comoUpdate(dt){
   CM.v += (target - CM.v) * Math.min(1, 2.5 * dt);
   if(Math.abs(CM.v) > 0.05) CM.h -= steer * 1.0 * Math.min(1, Math.abs(CM.v) / 2) * Math.sign(CM.v) * dt;
   const nx = CM.x + Math.sin(CM.h) * CM.v * dt, nz = CM.z + Math.cos(CM.h) * CM.v * dt;
-  if(nx > -74 && nx < 48 && nz > -195 && nz < 10){ CM.x = nx; CM.z = nz; } else CM.v = 0;
+  if(nx > -74 && nx < 53.8 && nz > -195 && nz < 10){ CM.x = nx; CM.z = nz; } else CM.v = 0;
 }
 
 function heliUpdate(dt){
@@ -5128,7 +5128,7 @@ function heliUpdate(dt){
   HELI.vy += (targetVy - HELI.vy) * Math.min(1, 5.0 * dt);
   const nx = HELI.x + Math.sin(HELI.h) * HELI.v * dt;
   const nz = HELI.z + Math.cos(HELI.h) * HELI.v * dt;
-  if(nx > -74 && nx < 48) HELI.x = nx;
+  if(nx > -74 && nx < 158) HELI.x = nx;
   if(nz > -195 && nz < 10) HELI.z = nz;
   const overHotelRoof = (HELI.x >= HOTEL_POS.x - 10.2 && HELI.x <= HOTEL_POS.x + 2.5 && HELI.z >= HOTEL_POS.z - 23.0 && HELI.z <= HOTEL_POS.z + 23.0);
   const minFloorY = overHotelRoof ? 14.62 : 0.05;
@@ -8591,10 +8591,10 @@ function spawnOwnedCar(){
 // kendi arabamız: fiziği basit, trafik arabalarına çarpınca can gider
 // evin koridoru ve bahçesi de sürülebilir; garajın içi açık, duvarları geçilmez
 function carFree(x, z){
-  if(x < -74 || x > 48 || z < -195 || z > 10) return false;
+  if(x < -74 || x > 53.8 || z < -195 || z > 10) return false;
   if(x > 10.3 && x < 15.6 && z > -25.3 && z < -18.7) return false; // ev binası
   if(x > 16.85 && x < 20.65 && z > -23.5 && z < -18.5) return x > 17.0 && x < 20.5; // garaj duvarları
-  return true; // sağ ve sol çimli alanların tamamı sürülebilir
+  return true; // sağ ve sol çimli alanlar + kumsal sahil sürülebilir
 }
 function smashSound(){
   try{
@@ -11021,8 +11021,9 @@ function updateShopSpeakerAndScratch(dt){
     }
   }
   if(typeof BOAT !== 'undefined'){
-    const nearBoat = !BOAT.driving && !C.driving && !D.driving && !CM.driving && !(typeof HELI !== 'undefined' && HELI.flying) &&
-      (Math.hypot(P.x - BOAT.x, P.z - BOAT.z) < 6.5 || (P.x >= 47.5 && P.x <= 62.5 && Math.abs(P.z + 26.0) < 4.5));
+    const nearBoat = !BOAT.driving && !D.driving && !CM.driving && !(typeof HELI !== 'undefined' && HELI.flying) &&
+      (Math.hypot((C.driving ? C.x : P.x) - BOAT.x, (C.driving ? C.z : P.z) - BOAT.z) < 7.5 ||
+       ((C.driving ? C.x : P.x) >= 46.5 && (C.driving ? C.x : P.x) <= 62.5 && Math.abs((C.driving ? C.z : P.z) + 26.0) < 5.5));
     disp('boatBtn', (BOAT.driving || nearBoat) ? 'block' : 'none');
     if(BOAT.driving || nearBoat) txt('boatBtn', BOAT.driving ? '🚪 Tekneden İskele/Adaya İn (E)' : '🚤 Sürat Teknesine Bin (E)');
   }
@@ -14187,7 +14188,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-192437';
+const APP_VERSION = '2026-10-30-200109';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
