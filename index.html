@@ -2270,35 +2270,55 @@ const PANTS = ['#2c3e50','#4b3b2a','#1f2a44','#555555'];
 const SKINS = ['#f1c27d','#c68642','#8d5524','#ffdbac'];
 const HAIRS = ['#1b1b1b','#4a2c17','#c9a227'];
 
-const SHOE_M = M(0x1e1e1e), SHOE_SOLE_M = M(0xdddddd), EYE_M = M(0x111111), EYE_W_M = M(0xffffff), LIP_M = M(0xb85d53), BELT_M = M(0x1c1917), BUCKLE_M = M(0xfbbf24);
+const SHOE_M = M(0x1e1e1e), SHOE_SOLE_M = M(0xdddddd), EYE_M = M(0x111111), EYE_W_M = M(0xffffff), LIP_M = M(0xb85d53), BELT_M = M(0x1c1917), BUCKLE_M = M(0xfbbf24), GLASS_FRAME_M = M(0x0f172a), GLASS_LENS_M = M(0x1e293b);
 const HUMAN_GEO = {
   pelvis: B(0.47, 0.14, 0.27),
   belt: B(0.51, 0.06, 0.31),
   buckle: B(0.09, 0.07, 0.03),
   collar: new THREE.CylinderGeometry(0.115, 0.135, 0.06, 8),
+  pocket: B(0.11, 0.12, 0.02),
+  button: B(0.025, 0.025, 0.015),
   sleeve: new THREE.CylinderGeometry(0.105, 0.1, 0.24, 8),
   forearm: new THREE.CylinderGeometry(0.078, 0.068, 0.52, 8),
+  watchBand: new THREE.CylinderGeometry(0.076, 0.076, 0.045, 8),
+  watchFace: B(0.055, 0.055, 0.025),
   ear: new THREE.SphereGeometry(0.042, 6, 6),
   eyeWhite: B(0.056, 0.046, 0.02),
   pupil: B(0.03, 0.034, 0.022),
   brow: B(0.068, 0.018, 0.022),
   nose: new THREE.ConeGeometry(0.028, 0.065, 6),
   mouth: B(0.075, 0.02, 0.02),
+  mustache: B(0.13, 0.028, 0.03),
+  beardChin: B(0.24, 0.09, 0.14),
+  beardSide: B(0.035, 0.14, 0.12),
+  sunglassLens: B(0.11, 0.065, 0.025),
+  sunglassBridge: B(0.28, 0.018, 0.026),
+  sunglassArm: B(0.02, 0.018, 0.17),
+  necklace: new THREE.CylinderGeometry(0.125, 0.145, 0.022, 8),
   hairBack: B(0.35, 0.2, 0.16),
   hairSide: B(0.05, 0.16, 0.18),
   hairFringe: B(0.32, 0.055, 0.09),
   shoeSole: B(0.23, 0.035, 0.38),
-  shoeToe: new THREE.SphereGeometry(0.105, 8, 6)
+  shoeToe: new THREE.SphereGeometry(0.105, 8, 6),
+  shoeLace: B(0.12, 0.018, 0.1)
 };
-// yürürken ayak yerde kalsın: bacak kalçadan döner, kalça da açının kosinüsüyle alçalır (yoksa ayaklar havalanır)
-function legPose(leg, a){ leg.rotation.x = a; leg.position.y = 0.85 * Math.cos(a); }
+// yürürken ayak yerde kalsın ve bacak hafifçe diz kırma/adım hissi versin
+function legPose(leg, a){
+  if(!leg) return;
+  leg.rotation.x = a;
+  leg.position.y = 0.85 * Math.cos(a) + Math.max(0, -a) * 0.035;
+}
 const SHOE_Y = 0.85;
 function human(shirt, pants, skin, hair){
   const g = new THREE.Group();
   const mS = M(shirt), mP = M(pants), mK = M(skin), mH = M(hair);
-  // Gövde, yaka, kalça ve kemer
+  // Gövde, yaka, göğüs cebi, düğmeler, kalça ve kemer
   addTo(g, GEO.body, mS, 0, 1.28, 0);
   addTo(g, HUMAN_GEO.collar, mS, 0, 1.66, 0);
+  addTo(g, HUMAN_GEO.pocket, BELT_M, -0.12, 1.43, 0.155);
+  addTo(g, HUMAN_GEO.button, SHOE_SOLE_M, 0, 1.54, 0.155);
+  addTo(g, HUMAN_GEO.button, SHOE_SOLE_M, 0, 1.40, 0.155);
+  addTo(g, HUMAN_GEO.button, SHOE_SOLE_M, 0, 1.26, 0.155);
   addTo(g, HUMAN_GEO.pelvis, mP, 0, 0.88, 0);
   addTo(g, HUMAN_GEO.belt, BELT_M, 0, 0.93, 0);
   addTo(g, HUMAN_GEO.buckle, BUCKLE_M, 0, 0.93, 0.155);
@@ -2324,25 +2344,44 @@ function human(shirt, pants, skin, hair){
   addTo(g, HUMAN_GEO.hairBack, mH, 0, 1.86, -0.1);
   addTo(g, HUMAN_GEO.hairSide, mH, -0.17, 1.88, -0.01);
   addTo(g, HUMAN_GEO.hairSide, mH, 0.17, 1.88, -0.01);
-  // Bacaklar ve detaylı spor ayakkabılar (taban + burun)
+  // Bacaklar ve detaylı spor ayakkabılar (taban + burun + bağcık)
   const legL = addTo(g, GEO.leg, mP, -0.13, 0.85, 0); legL.name = 'legL';
   const legR = addTo(g, GEO.leg, mP, 0.13, 0.85, 0); legR.name = 'legR';
   [legL, legR].forEach(leg => {
     addTo(leg, GEO.shoe, SHOE_M, 0, -0.78, 0.05);
     addTo(leg, HUMAN_GEO.shoeSole, SHOE_SOLE_M, 0, -0.835, 0.055);
+    addTo(leg, HUMAN_GEO.shoeLace, SHOE_SOLE_M, 0, -0.715, 0.08);
     const toe = addTo(leg, HUMAN_GEO.shoeToe, SHOE_M, 0, -0.79, 0.16);
     toe.scale.set(1, 0.55, 1.1);
   });
-  // Kollar: kısa kollu tişört + ten rengi ön kol + eller
+  // Kollar: kısa kollu tişört + ten rengi ön kol + sol kolda kol saati + eller
   const armL = new THREE.Group(); armL.position.set(-0.33, 1.6, 0); armL.name = 'armL'; g.add(armL);
   const armR = new THREE.Group(); armR.position.set(0.33, 1.6, 0); armR.name = 'armR'; g.add(armR);
-  [armL, armR].forEach(arm => {
+  [armL, armR].forEach((arm, idx) => {
     addTo(arm, HUMAN_GEO.sleeve, mS, 0, -0.11, 0);
     addTo(arm, HUMAN_GEO.forearm, mK, 0, -0.39, 0);
+    if(idx === 0){
+      addTo(arm, HUMAN_GEO.watchBand, BELT_M, 0, -0.56, 0);
+      addTo(arm, HUMAN_GEO.watchFace, BUCKLE_M, -0.06, -0.56, 0.02);
+    }
     addTo(arm, GEO.hand, mK, 0, -0.67, 0);
   });
   addBlob(g, 0.5, 0.5);
   return g;
+}
+function addBeard(g, hairCol){
+  const mB = M(hairCol || 0x1b1b1b);
+  addTo(g, HUMAN_GEO.mustache, mB, 0, 1.822, 0.18);
+  addTo(g, HUMAN_GEO.beardChin, mB, 0, 1.755, 0.115);
+  addTo(g, HUMAN_GEO.beardSide, mB, -0.168, 1.81, 0.04);
+  addTo(g, HUMAN_GEO.beardSide, mB, 0.168, 1.81, 0.04);
+}
+function addSunglasses(g){
+  addTo(g, HUMAN_GEO.sunglassBridge, GLASS_FRAME_M, 0, 1.905, 0.184);
+  addTo(g, HUMAN_GEO.sunglassLens, GLASS_LENS_M, -0.072, 1.89, 0.186);
+  addTo(g, HUMAN_GEO.sunglassLens, GLASS_LENS_M, 0.072, 1.89, 0.186);
+  addTo(g, HUMAN_GEO.sunglassArm, GLASS_FRAME_M, -0.175, 1.895, 0.09);
+  addTo(g, HUMAN_GEO.sunglassArm, GLASS_FRAME_M, 0.175, 1.895, 0.09);
 }
 // kovboy şapkası: ortak geometri ve malzemeler (klonlar da paylaşır), toplam 2 küçük nesne
 const HAT_BRIM = new THREE.CylinderGeometry(0.36, 0.36, 0.025, 12);
@@ -2356,13 +2395,17 @@ function cowboyHat(g, col){
   addTo(g, HAT_BAND, M(0x1f1a16), 0, 2.13, 0);
 }
 const HUMANS = [];
-// değişik giyim tarzları: sade, ceketli, etekli, şapkalı
+// değişik giyim tarzları: sade, ceketli, etekli, şapkalı, sakallı, gözlüklü, kolyeli
 for(let i = 0; i < 10; i++){
-  const h = human(pick(SHIRTS), pick(PANTS), pick(SKINS), pick(HAIRS));
+  const hairCol = pick(HAIRS);
+  const h = human(pick(SHIRTS), pick(PANTS), pick(SKINS), hairCol);
   const style = i % 4;
   if(style === 1) addTo(h, B(0.56, 0.8, 0.36), M(pick(SHIRTS)), 0, 1.25, 0); // ceket
   if(style === 2) addTo(h, B(0.56, 0.45, 0.36), M(pick(PANTS)), 0, 0.8, 0);  // etek
   if(style === 3 || i === 5) cowboyHat(h); // kovboy şapkası
+  if(i % 3 === 0 && style !== 2) addBeard(h, hairCol); // sakal ve bıyık
+  if(i === 1 || i === 4 || i === 7) addSunglasses(h); // güneş gözlüğü
+  if(i % 2 === 1) addTo(h, HUMAN_GEO.necklace, BUCKLE_M, 0, 1.675, 0.01); // altın kolye
   HUMANS.push(h);
 }
 
@@ -13907,7 +13950,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-115008';
+const APP_VERSION = '2026-10-30-120350';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
