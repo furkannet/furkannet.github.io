@@ -4288,11 +4288,15 @@ function car(color, type = 'sedan'){
     const screen = addTo(g, B(0.32, 0.04, 0.36), GLASS_M, 0, 0.98, -0.64);
     screen.rotation.x = -0.55;                                                 // burundan gidon üstüne doğru düzgün eğimli cam
     // 5. Dijital gösterge paneli, gidon boğazı, clip-on gidon, elcikler ve saplı yan aynalar
-    addTo(g, B(0.14, 0.08, 0.14), TRIM_M, 0, 0.88, -0.54);                     // gidon boğazı (triple clamp)
-    addTo(g, B(0.15, 0.07, 0.03), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0, 0.95, -0.58).rotation.x = -0.45;
-    addTo(g, B(0.70, 0.04, 0.04), CHROME_M, 0, 0.93, -0.54);                   // gidon borusu
+    const steerPivot = new THREE.Group();
+    steerPivot.name = 'motoSteer';
+    steerPivot.position.set(0, 0, -0.54);
+    g.add(steerPivot);
+    addTo(steerPivot, B(0.14, 0.08, 0.14), TRIM_M, 0, 0.88, 0);                 // gidon boğazı (triple clamp)
+    addTo(steerPivot, B(0.15, 0.07, 0.03), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0, 0.95, -0.04).rotation.x = -0.45;
+    addTo(steerPivot, B(0.70, 0.04, 0.04), CHROME_M, 0, 0.93, 0);               // gidon borusu
     [-0.33, 0.33].forEach(hx => {
-      addTo(g, B(0.14, 0.055, 0.055), TRIM_M, hx, 0.93, -0.54);                // sol ve sağ elcik
+      addTo(steerPivot, B(0.14, 0.055, 0.055), TRIM_M, hx, 0.93, 0);            // sol ve sağ elcik
     });
     [-1, 1].forEach(dir => {
       const mStem = addTo(g, B(0.14, 0.025, 0.025), TRIM_M, dir * 0.22, 0.94, -0.72);
@@ -8796,6 +8800,7 @@ function carUpdate(dt){
   const target = throttle >= 0 ? throttle * C.maxV * (S.settings.carSpeed || 1) * (boosting ? 1.6 : 1) : throttle * 3;
   C.v += (target - C.v) * Math.min(1, 2.5 * dt);
   if(Math.abs(C.v) > 0.05) C.h -= steer * 1.4 * Math.min(1, Math.abs(C.v) / 3) * Math.sign(C.v) * dt;
+  else if(C.activeVeh === 'moto' && Math.abs(steer) > 0.05) C.h -= steer * 1.15 * dt; // motorda dururken de sağa/sola gidonla dönülebilir
   // drift: hızlıyken sert dönüşte gövde yana kayar
   const drifting = C.driftOn && Math.abs(steer) > 0.5 && Math.abs(C.v) > 0.6 * C.maxV;
   C.drifting = drifting;
@@ -12123,6 +12128,7 @@ $('carBtn').onclick = () => {
   passengerOf = null;
   C.activeVeh = 'car';
   C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = CAR_STATE.h;
+  P.yaw = -Math.PI / 2; P.pitch = 0;
   applyActiveVehBindings();
   C.driving = true; C.v = 0;
   startEngine();
@@ -12135,6 +12141,7 @@ if($('motoBtn')) $('motoBtn').onclick = () => {
   passengerOf = null;
   C.activeVeh = 'moto';
   C.x = MOTO_STATE.x; C.z = MOTO_STATE.z; C.h = MOTO_STATE.h;
+  P.yaw = -Math.PI / 2; P.pitch = 0.08;
   applyActiveVehBindings();
   C.driving = true; C.v = 0;
   startEngine();
@@ -13030,21 +13037,35 @@ function frame(now){
   } else if(C.driving){
     playerMesh.visible = false;
     const isFirstPersonVeh = C.camDist <= 0.1;
+    // Sürüşte direksiyon çevrilince bakış yönü (P.yaw) de yavaşça yolun/gidonun önüne doğru toplansın
+    if(Math.abs(C.steer || 0) > 0.05 || Math.abs(C.v) > 0.3){
+      P.yaw += (-Math.PI / 2 - P.yaw) * Math.min(1, dt * 3.5);
+    }
     if(isFirstPersonVeh && C.activeVeh === 'moto'){
-      // Motosiklet iç ekran (gidon, gösterge paneli ve canlı dikiz aynaları görünür)
+      // Motosiklet iç ekran: kamera motorun dönüşü (motoYaw), direksiyon açısı (steer) ve yatışıyla (leanZ) tam uyumlu döner!
       const motoYaw = C.h + (C.slip || 0);
-      const leanZ = ownedMotoMesh ? (ownedMotoMesh.rotation.z || 0) : 0;
+      const targetLeanNow = -(C.steer || 0) * 0.36 * Math.max(0.35, Math.min(1, Math.abs(C.v) / 4));
+      if(ownedMotoMesh){
+        ownedMotoMesh.rotation.z += (targetLeanNow - (ownedMotoMesh.rotation.z || 0)) * Math.min(1, dt * 10);
+      }
+      const leanZ = ownedMotoMesh ? (ownedMotoMesh.rotation.z || 0) : targetLeanNow;
+      const steerTurn = -(C.steer || 0) * 0.22; // dönerken ekran/kask virajın içine doğru da döner
       camera.position.set(
-        C.x - Math.sin(motoYaw) * 0.22 - Math.cos(motoYaw) * leanZ * 0.45,
-        1.16,
-        C.z - Math.cos(motoYaw) * 0.22 + Math.sin(motoYaw) * leanZ * 0.45
+        C.x - Math.sin(motoYaw) * 0.22 + Math.cos(motoYaw) * (-leanZ * 0.85),
+        1.16 - Math.abs(leanZ) * 0.12,
+        C.z - Math.cos(motoYaw) * 0.22 - Math.sin(motoYaw) * (-leanZ * 0.85)
       );
-      camera.rotation.set(P.pitch - 0.14, motoYaw + Math.PI + (P.yaw + Math.PI / 2), leanZ * 0.45);
+      camera.rotation.set(
+        P.pitch - 0.14,
+        motoYaw + Math.PI + (P.yaw + Math.PI / 2) + steerTurn,
+        -leanZ * 0.85
+      );
     } else if(isFirstPersonVeh){
       // Araba iç ekran (kaput üstü/direksiyon hizası)
       const carYaw = C.h + (C.slip || 0);
+      const steerTurn = -(C.steer || 0) * 0.15;
       camera.position.set(C.x - Math.sin(carYaw) * 0.15, 1.25, C.z - Math.cos(carYaw) * 0.15);
-      camera.rotation.set(P.pitch - 0.08, carYaw + Math.PI + (P.yaw + Math.PI / 2), 0);
+      camera.rotation.set(P.pitch - 0.08, carYaw + Math.PI + (P.yaw + Math.PI / 2) + steerTurn, 0);
     } else {
       // arkadan takip kamerası: araba gövdesi görüşü kapatmasın, yol önde görünsün
       camera.position.set(C.x - Math.sin(C.h) * C.camDist, 1.2 + C.camDist * 0.28, C.z - Math.cos(C.h) * C.camDist);
@@ -13165,10 +13186,12 @@ function frame(now){
     ownedMotoMesh.rotation.y = MOTO_STATE.h + Math.PI + ((C.driving && C.activeVeh === 'moto') ? (C.slip || 0) : 0);
     const ridingMoto = !!(C.driving && C.activeVeh === 'moto');
     const isMotoFirstPerson = ridingMoto && C.camDist <= 0.1;
-    const targetLean = (ridingMoto && Math.abs(C.v) > 0.5) ? (-C.steer * 0.36 * Math.min(1, Math.abs(C.v) / 4)) : 0;
+    const targetLean = ridingMoto ? (-(C.steer || 0) * 0.36 * Math.max(0.35, Math.min(1, Math.abs(C.v) / 4))) : 0;
     ownedMotoMesh.rotation.z += (targetLean - (ownedMotoMesh.rotation.z || 0)) * Math.min(1, dt * 8);
+    const targetSteerRot = ridingMoto ? (-(C.steer || 0) * 0.38) : 0;
     ownedMotoMesh.children.forEach(ch => {
       if(ch.name === 'motoRider') ch.visible = ridingMoto && !isMotoFirstPerson;
+      if(ch.name === 'motoSteer') ch.rotation.y += (targetSteerRot - (ch.rotation.y || 0)) * Math.min(1, dt * 12);
       if(ch.name === 'wheel' && ridingMoto && Math.abs(C.v) > 0.05) ch.rotation.x -= C.v * dt * 3.2;
     });
   }
@@ -14378,7 +14401,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-10-30-234330';
+const APP_VERSION = '2026-10-30-234843';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
