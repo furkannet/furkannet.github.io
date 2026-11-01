@@ -269,11 +269,11 @@ button small{font-size:9px;margin-top:0}
 <button id="hotelRoomExitBtn" style="display:none;background:#dc2626;border-color:#fca5a5;font-weight:900">🚪 Odadan Lobiye Çık</button>
 </div>
 <div id="underwaterOverlay" style="display:none;position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at center,rgba(2,132,199,.18) 35%,rgba(3,105,161,.52) 100%)"></div>
-<div id="diveHud" style="display:none;position:fixed;top:max(52px,calc(env(safe-area-inset-top) + 44px));left:50%;transform:translateX(-50%);z-index:6;background:rgba(7,34,59,.95);border:2px solid #38bdf8;color:#e0f2fe;padding:6px 14px;border-radius:14px;font-weight:900;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.65);pointer-events:none;text-align:center;min-width:250px">
-  <div id="diveRadarTxt" style="white-space:nowrap;margin-bottom:4px">🤿 SU ALTI ARAMASI: Aranıyor...</div>
-  <div style="display:flex;align-items:center;gap:6px;font-size:11px">
+<div id="diveHud" style="display:none;position:fixed;top:max(82px,calc(env(safe-area-inset-top) + 74px));left:50%;transform:translateX(-50%);z-index:6;background:rgba(7,34,59,.92);border:2px solid #38bdf8;color:#e0f2fe;padding:4px 11px;border-radius:12px;font-weight:800;font-size:11px;box-shadow:0 4px 14px rgba(0,0,0,.6);pointer-events:none;text-align:center;min-width:210px">
+  <div id="diveRadarTxt" style="white-space:nowrap;margin-bottom:3px">🤿 SU ALTI ARAMASI: Aranıyor...</div>
+  <div style="display:flex;align-items:center;gap:6px;font-size:10px">
     <span id="diveBreathLbl" style="color:#7dd3fc;white-space:nowrap">🫁 Nefes: %100</span>
-    <div style="flex:1;height:8px;background:#0f172a;border:1px solid #38bdf8;border-radius:999px;overflow:hidden">
+    <div style="flex:1;height:7px;background:#0f172a;border:1px solid #38bdf8;border-radius:999px;overflow:hidden">
       <div id="diveBreathFill" style="height:100%;width:100%;background:#38bdf8"></div>
     </div>
   </div>
@@ -304,7 +304,7 @@ button small{font-size:9px;margin-top:0}
   <button id="fishPullBtn" style="width:100%;padding:12px;font-size:16px;font-weight:900;background:#0284c7;border-color:#7dd3fc;border-radius:10px;touch-action:manipulation">💪 OLTAYI ÇEK (BASILI TUT / TIKLA)</button>
 </div>
 <div id="driftHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:6;background:linear-gradient(135deg,rgba(220,38,38,.92),rgba(234,88,12,.92));border:2px solid #fde047;color:#fff;padding:6px 14px;border-radius:999px;font-weight:900;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,.55);pointer-events:none;white-space:nowrap">🔥 DRİFT: 0 Puan (x1)</div>
-<div id="detHud" style="display:none;position:fixed;bottom:max(14px,calc(env(safe-area-inset-bottom) + 10px));left:50%;transform:translateX(-50%);z-index:6;background:rgba(14,18,26,.92);border:2px solid #4ade80;color:#fff;padding:5px 12px;border-radius:12px;font-weight:700;font-size:12px;pointer-events:none;white-space:nowrap">📡 Dedektör: Aranıyor...</div>
+<div id="detHud" style="display:none;position:fixed;bottom:max(4px,calc(env(safe-area-inset-bottom) + 2px));left:50%;transform:translateX(-50%);z-index:6;background:rgba(14,18,26,.92);border:2px solid #4ade80;color:#fff;padding:4px 10px;border-radius:10px;font-weight:700;font-size:11px;pointer-events:none;white-space:nowrap">📡 Dedektör: Aranıyor...</div>
 <button id="driftBtn" style="display:none;position:fixed;left:150px;bottom:706px;z-index:3;padding:12px 14px;background:#4a3a1e;font-weight:700;font-size:15px">🌀 Drift: Açık</button>
 <button id="hornBtn" style="display:none;position:fixed;left:290px;bottom:706px;z-index:3;padding:12px 14px;background:#5a1e1e;font-weight:700;font-size:15px">📯 Korna (H)</button>
 <div id="char" class="modal">
@@ -9787,7 +9787,7 @@ function updateUnderwaterDive(dt){
   }
   disp('underwaterOverlay', isDivingUnderwater ? 'block' : 'none');
   if(isDivingUnderwater){
-    diveBreath = Math.max(0, diveBreath - dt * 4.2); // Yaklaşık 24 saniye nefes süresi
+    diveBreath = Math.max(0, diveBreath - dt * 1.8); // Yaklaşık 55 saniye nefes süresi (daha yavaş azalır)
     const bPct = Math.ceil(diveBreath);
     const lowBreath = bPct <= 25;
     txt('diveBreathLbl', lowBreath ? `⚠️ Nefes: %${bPct}` : `🫁 Nefes: %${bPct}`);
@@ -14182,7 +14182,7 @@ heldDetectorThird.visible = false;
 pArmR.add(heldDetectorThird);
 
 const heldDetectorFirst = makeHeldDetector();
-heldDetectorFirst.position.set(0.32, -0.34, -0.52);
+heldDetectorFirst.position.set(0.34, -0.46, -0.55);
 heldDetectorFirst.visible = false;
 camera.add(heldDetectorFirst);
 
@@ -14868,7 +14868,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-11-01-150651';
+const APP_VERSION = '2026-11-01-151221';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
