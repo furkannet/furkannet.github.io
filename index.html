@@ -888,15 +888,27 @@ let thirdPerson = false; // P: iç görüş / dış görüş (yürürken)
 // satılık arabalar ve motorlar (galeri)
 const CARS = [
   {id:'scooter', name:'🛵 Scooter Motor', price:8000, type:'moto', color:'#0ea5e9', speed:7.5},
-  {id:'kucuk', name:'Küçük Araba', price:10000, type:'sedan', color:'#f1c40f', speed:6},
-  {id:'tofas', name:'Tofaş', price:18000, type:'sedan', color:'#8b1a1a', speed:6.5},
-  {id:'sedan', name:'Sedan', price:25000, type:'sedan', color:'#2980b9', speed:7},
-  {id:'yaris_motor', name:'🏍️ Yarış Motoru', price:30000, type:'moto', color:'#dc2626', speed:10.5},
-  {id:'taksi', name:'Taksi', price:35000, type:'taxi', color:'#f1c40f', speed:7.5},
-  {id:'minibus', name:'Minibüs', price:50000, type:'van', color:'#f5f6fa', speed:7},
-  {id:'super_motor', name:'⚡ Süper Motor (Ninja)', price:60000, type:'moto', color:'#16a34a', speed:12},
-  {id:'spor', name:'Spor Araba', price:75000, type:'sport', color:'#c0392b', speed:9},
-  {id:'luks', name:'Lüks Araba', price:100000, type:'sedan', color:'#1c1c1c', speed:10}
+  {id:'kucuk', name:'🚗 Küçük Hatchback', price:10000, type:'sedan', color:'#f1c40f', speed:6},
+  {id:'kurye_motor', name:'🛵 Kurye Maxi Scooter', price:14000, type:'moto', color:'#f97316', speed:8.5},
+  {id:'tofas', name:'🚗 Tofaş Şahin', price:18000, type:'sedan', color:'#8b1a1a', speed:6.5},
+  {id:'kartal', name:'🚗 Tofaş Kartal SLX', price:22000, type:'van', color:'#7f1d1d', speed:6.8},
+  {id:'sedan', name:'🚙 Mavi Aile Sedanı', price:25000, type:'sedan', color:'#2980b9', speed:7},
+  {id:'chopper_motor', name:'🏍️ Chopper Cruiser Motor', price:26000, type:'moto', color:'#1e293b', speed:9.5},
+  {id:'yaris_motor', name:'🏍️ Yarış Motoru (600RR)', price:30000, type:'moto', color:'#dc2626', speed:10.5},
+  {id:'taksi', name:'🚕 Ticari Taksi', price:35000, type:'taxi', color:'#f1c40f', speed:7.5},
+  {id:'klasik', name:'🚘 Klasik Amerikan (Pembe)', price:42000, type:'sedan', color:'#db2777', speed:7.8},
+  {id:'cross_motor', name:'🏍️ Dağ & Cross Motoru', price:45000, type:'moto', color:'#eab308', speed:11},
+  {id:'minibus', name:'🚐 VIP Minibüs', price:50000, type:'van', color:'#f5f6fa', speed:7},
+  {id:'pickup', name:'🛻 4x4 Arazi Kamyoneti (Pickup)', price:58000, type:'pickup', color:'#b45309', speed:8.2},
+  {id:'super_motor', name:'⚡ Süper Motor (Ninja H2)', price:60000, type:'moto', color:'#16a34a', speed:12},
+  {id:'suv', name:'🚙 Lüks Arazi Cipi (SUV 4x4)', price:68000, type:'suv', color:'#334155', speed:8.6},
+  {id:'spor', name:'🏎️ Kırmızı Spor Araba (GT)', price:75000, type:'sport', color:'#c0392b', speed:9},
+  {id:'elektrikli', name:'⚡ Elektrikli Süper Sedan (Togg/Tesla)', price:88000, type:'sedan', color:'#0284c7', speed:9.6},
+  {id:'luks', name:'🖤 Makam Arabası (Siyah Lüks)', price:100000, type:'sedan', color:'#1c1c1c', speed:10},
+  {id:'gwagon', name:'🛡️ Zırhlı VIP Cip (G-Serisi)', price:125000, type:'suv', color:'#0f172a', speed:10.4},
+  {id:'lambo', name:'🏎️ Sarı Süper Spor (Aventador)', price:160000, type:'sport', color:'#facc15', speed:11.4},
+  {id:'ferrari', name:'🏎️ İtalyan Yarış Arabası (F8)', price:210000, type:'sport', color:'#ef4444', speed:12.2},
+  {id:'bugatti', name:'👑 Hiper Araba (Chiron 500 KM/S)', price:300000, type:'sport', color:'#1d4ed8', speed:13.5}
 ];
 // COMOGENE dükkânı: sürülebilir (konumu ve yönü burada tutulur)
 const CM = {x:9.4, z:-12, h:0, v:0, driving:false};
@@ -4097,7 +4109,15 @@ const MINER_GAL_SLOTS = [
   {x: 18.8, z: -56.4, h: -Math.PI / 2},
   {x: 18.8, z: -59.6, h: -Math.PI / 2},
   {x: 18.8, z: -62.8, h: -Math.PI / 2},
-  {x: 18.8, z: -50.8, h: -Math.PI / 2}
+  {x: 18.8, z: -50.8, h: -Math.PI / 2},
+  {x: 23.6, z: -50.8, h: -Math.PI / 2},
+  {x: 23.6, z: -53.8, h: -Math.PI / 2},
+  {x: 23.6, z: -56.8, h: -Math.PI / 2},
+  {x: 23.6, z: -59.8, h: -Math.PI / 2},
+  {x: 23.6, z: -62.8, h: -Math.PI / 2},
+  {x: 13.8, z: -65.8, h: -Math.PI / 2},
+  {x: 18.8, z: -65.8, h: -Math.PI / 2},
+  {x: 23.6, z: -65.8, h: -Math.PI / 2}
 ];
 const minerAutoGalGroup = new THREE.Group();
 minerAutoGalGroup.position.set(MINER_AUTO_GAL_POS.x, 0, MINER_AUTO_GAL_POS.z);
@@ -4661,6 +4681,28 @@ function car(color, type = 'sedan'){
     addTo(g, B(1.68, 0.52, 0.04), GLASS_M, 0, 1.30, 2.11);                   // arka cam
     addTo(g, B(1.35, 0.26, 0.06), DARK_GRILLE_M, 0, 0.60, -2.26);            // ön radyatör ızgarası
     addTo(g, B(1.38, 0.04, 0.07), CHROME_M, 0, 0.74, -2.26);                 // krom ızgara çıtası
+  } else if(type === 'suv'){
+    // 🚙 Gerçekçi 4x4 Lüks Arazi Cipi (SUV / G-Serisi): yüksek kaslı gövde, tavan barları ve arkada stepne tekerlek
+    addTo(g, B(2.02, 0.66, 4.30), paint, 0, 0.64, 0);                        // yüksek ana gövde
+    addTo(g, B(1.86, 0.64, 2.75), paint, 0, 1.26, 0.35);                     // geniş arka-orta SUV kabini
+    addTo(g, B(1.76, 0.50, 0.04), GLASS_M, 0, 1.26, -1.04).rotation.x = 0.22;// dik ön cam
+    addTo(g, B(1.68, 0.48, 0.04), GLASS_M, 0, 1.26, 1.74);                   // arka cam
+    addTo(g, B(0.04, 0.44, 2.45), GLASS_M, 0.94, 1.26, 0.35);                // sağ yan cam
+    addTo(g, B(0.04, 0.44, 2.45), GLASS_M, -0.94, 1.26, 0.35);               // sol yan cam
+    addTo(g, B(1.42, 0.32, 0.06), DARK_GRILLE_M, 0, 0.72, -2.16);            // dev ön ızgara
+    addTo(g, B(1.25, 0.34, 0.14), CHROME_M, 0, 0.56, -2.22);                 // ön çelik koruma demiri (bullbar)
+    [-0.72, 0.72].forEach(rx => addTo(g, B(0.08, 0.08, 2.50), TRIM_M, rx, 1.62, 0.35)); // tavan portbagaj rayları
+    addTo(g, new THREE.CylinderGeometry(0.38, 0.38, 0.22, 10).rotateX(Math.PI / 2), TIRE_M, 0, 0.96, 2.22); // arka stepne
+  } else if(type === 'pickup'){
+    // 🛻 Gerçekçi 4x4 Arazi Kamyoneti (Pickup): çift kabin, açık arka kasa ve çelik roll-bar
+    addTo(g, B(2.00, 0.62, 4.38), paint, 0, 0.62, 0);                        // kamyonet alt gövde
+    addTo(g, B(1.80, 0.58, 1.65), paint, 0, 1.20, -0.35);                    // ön çift kabin
+    addTo(g, B(1.70, 0.48, 0.04), GLASS_M, 0, 1.22, -1.20).rotation.x = 0.28;// ön cam
+    addTo(g, B(0.04, 0.42, 1.35), GLASS_M, 0.91, 1.22, -0.35);               // sağ cam
+    addTo(g, B(0.04, 0.42, 1.35), GLASS_M, -0.91, 1.22, -0.35);              // sol cam
+    addTo(g, B(1.66, 0.08, 1.55), TRIM_M, 0, 0.72, 1.32);                    // açık arka kasa tabanı
+    addTo(g, B(1.64, 0.46, 0.10), TRIM_M, 0, 1.14, 0.58);                    // kasa üstü siyah çelik roll-bar
+    addTo(g, B(1.40, 0.30, 0.06), DARK_GRILLE_M, 0, 0.68, -2.20);            // ön ızgara
   } else {
     // 🚗 Gerçekçi Sedan / Taksi: kavisli kaput ve bagaj, eğimli ön/arka camlar, B sütunu, krom ızgara, kapı kolları ve sunroof
     addTo(g, B(1.92, 0.54, 4.24), paint, 0, 0.54, 0);                        // ana alt gövde
@@ -12806,7 +12848,7 @@ const PHONE_NOTES = [
 let phoneListings = [];
 function generatePhoneListings(){
   phoneListings = [];
-  const pool = [...CARS].sort(() => Math.random() - 0.5).slice(0, 5);
+  const pool = [...CARS].sort(() => Math.random() - 0.5).slice(0, 8);
   pool.forEach((c, idx) => {
     const disc = 0.62 + Math.random() * 0.22; // Galeri fiyatının %62 - %84'ü arası 2. el fiyatı
     const secPrice = Math.max(1000, Math.round((c.price * disc) / 250) * 250);
@@ -15374,7 +15416,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-11-01-184041';
+const APP_VERSION = '2026-11-01-184814';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
