@@ -269,7 +269,15 @@ button small{font-size:9px;margin-top:0}
 <button id="hotelRoomExitBtn" style="display:none;background:#dc2626;border-color:#fca5a5;font-weight:900">🚪 Odadan Lobiye Çık</button>
 </div>
 <div id="underwaterOverlay" style="display:none;position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at center,rgba(2,132,199,.18) 35%,rgba(3,105,161,.52) 100%)"></div>
-<div id="diveHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:6;background:rgba(7,34,59,.94);border:2px solid #38bdf8;color:#e0f2fe;padding:6px 14px;border-radius:999px;font-weight:900;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.6);pointer-events:none;white-space:nowrap">🤿 SU ALTI ARAMASI: Aranıyor...</div>
+<div id="diveHud" style="display:none;position:fixed;top:max(52px,calc(env(safe-area-inset-top) + 44px));left:50%;transform:translateX(-50%);z-index:6;background:rgba(7,34,59,.95);border:2px solid #38bdf8;color:#e0f2fe;padding:6px 14px;border-radius:14px;font-weight:900;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.65);pointer-events:none;text-align:center;min-width:250px">
+  <div id="diveRadarTxt" style="white-space:nowrap;margin-bottom:4px">🤿 SU ALTI ARAMASI: Aranıyor...</div>
+  <div style="display:flex;align-items:center;gap:6px;font-size:11px">
+    <span id="diveBreathLbl" style="color:#7dd3fc;white-space:nowrap">🫁 Nefes: %100</span>
+    <div style="flex:1;height:8px;background:#0f172a;border:1px solid #38bdf8;border-radius:999px;overflow:hidden">
+      <div id="diveBreathFill" style="height:100%;width:100%;background:#38bdf8"></div>
+    </div>
+  </div>
+</div>
 <div id="policeChaseHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:24;background:linear-gradient(135deg,rgba(185,28,28,.96),rgba(29,78,216,.96));border:2px solid #fde047;color:#fff;padding:7px 16px;border-radius:999px;font-weight:900;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.75);pointer-events:none;white-space:nowrap">🚨 POLİS KOVALIYOR! Kaç: 10 sn</div>
 <div id="prisonBox" style="display:none;position:fixed;left:50%;top:52%;transform:translate(-50%,-50%);z-index:26;width:min(360px,92vw);background:rgba(15,23,42,.97);border:2px solid #ef4444;border-radius:14px;padding:14px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.88)">
   <div style="font-size:28px;margin-bottom:4px">🚓⛓️</div>
@@ -7952,6 +7960,7 @@ function startShift(){
   Object.assign(D, {x: (S.kar.restoran || S.mk.restoran) ? 17.8 : 13.2, z:-1, h:0, v:0, driving:false});
   P.x = (S.kar.restoran || S.mk.restoran) ? 14.5 : 10.8; P.z = 0; P.y = 0; P.yaw = -Math.PI/2;
   if(typeof inBunkerState !== 'undefined') inBunkerState = false;
+  if(typeof isDivingUnderwater !== 'undefined'){ isDivingUnderwater = false; diveBreath = 100; }
   if(typeof resetMineForNewShift === 'function') resetMineForNewShift();
   can = MAX_LIVES; shiftEarned = 0; shiftT = SHIFT_LEN; shiftEnded = false; over = false;
   rushCD = RUSH_EVERY; rushLeft = 0; rushOn = false;
@@ -9682,6 +9691,7 @@ function updateDetectorZone(dt){
 
 // 🤿🌊💎 SUYUN ALTINA DALIP BATIK HAZİNE ARAMA SİSTEMİ
 let isDivingUnderwater = false;
+let diveBreath = 100;
 let diveBeepTimer = 0;
 const UNDERWATER_LOOT_ITEMS = [
   {name: '🏴‍☠️ Batık Korsan Altın Sandığı', val: 6000},
@@ -9777,19 +9787,38 @@ function updateUnderwaterDive(dt){
   }
   disp('underwaterOverlay', isDivingUnderwater ? 'block' : 'none');
   if(isDivingUnderwater){
+    diveBreath = Math.max(0, diveBreath - dt * 4.2); // Yaklaşık 24 saniye nefes süresi
+    const bPct = Math.ceil(diveBreath);
+    const lowBreath = bPct <= 25;
+    txt('diveBreathLbl', lowBreath ? `⚠️ Nefes: %${bPct}` : `🫁 Nefes: %${bPct}`);
+    sty('diveBreathLbl', 'color', lowBreath ? '#f87171' : '#7dd3fc');
+    sty('diveBreathFill', 'width', bPct + '%');
+    sty('diveBreathFill', 'background', lowBreath ? '#ef4444' : (bPct <= 50 ? '#facc15' : '#38bdf8'));
+    if(diveBreath <= 0){
+      isDivingUnderwater = false;
+      diveBreath = 100;
+      disp('underwaterOverlay', 'none');
+      disp('diveHud', 'none');
+      disp('diveLootBtn', 'none');
+      if(typeof triggerHospitalEmergency === 'function'){
+        triggerHospitalEmergency('Suyun altında nefesin bittiği için');
+      }
+      return;
+    }
     const dist = Math.hypot(P.x - underwaterTarget.x, P.z - underwaterTarget.z);
     const sigPct = Math.max(5, Math.min(100, Math.round((1 - Math.min(dist, 35) / 35) * 100)));
-    const statusTxt = dist < 3.8 ? '🔥 BATIK HAZİNE BURADA! HEMEN AL!' : dist < 10 ? '⚡ Çok Yaklaştın (Sarı Işığa Git)' : '🌊 Deniz Dibinde Sarı Işığı Ara...';
+    const statusTxt = lowBreath ? '🚨 NEFESİN BİTİYOR! YÜZEYE ÇIK!' : (dist < 3.8 ? '🔥 BATIK HAZİNE BURADA! HEMEN AL!' : dist < 10 ? '⚡ Çok Yaklaştın (Sarı Işığa Git)' : '🌊 Deniz Dibinde Sarı Işığı Ara...');
     disp('diveHud', 'block');
-    txt('diveHud', `🤿 SU ALTI RADARI: %${sigPct} (${dist.toFixed(1)}m) — ${statusTxt}`);
+    txt('diveRadarTxt', `🤿 SU ALTI RADARI: %${sigPct} (${dist.toFixed(1)}m) — ${statusTxt}`);
     diveBeepTimer -= dt;
     const interval = Math.max(0.16, Math.min(1.2, dist / 18));
     if(diveBeepTimer <= 0){
       diveBeepTimer = interval;
-      beep(Math.round(380 + sigPct * 4.2), 0.05, 'sine', 0.045);
+      beep(lowBreath ? 260 : Math.round(380 + sigPct * 4.2), 0.05, lowBreath ? 'sawtooth' : 'sine', 0.05);
     }
     disp('diveLootBtn', dist < 3.8 ? 'block' : 'none');
   } else {
+    if(diveBreath < 100) diveBreath = Math.min(100, diveBreath + dt * 40);
     disp('diveHud', 'none');
     disp('diveLootBtn', 'none');
   }
@@ -11006,6 +11035,7 @@ function triggerHospitalEmergency(reasonText){
   if(D.driving) D.driving = false;
   if(CM.driving) CM.driving = false;
   if(typeof inBunkerState !== 'undefined') inBunkerState = false;
+  if(typeof isDivingUnderwater !== 'undefined'){ isDivingUnderwater = false; diveBreath = 100; }
   if(typeof inHotelRoomState !== 'undefined' && inHotelRoomState > 0){
     inHotelRoomState = 0;
     if(typeof hotelRoomInteriorGroup !== 'undefined') hotelRoomInteriorGroup.visible = false;
@@ -14838,7 +14868,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-11-01-145916';
+const APP_VERSION = '2026-11-01-150651';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
