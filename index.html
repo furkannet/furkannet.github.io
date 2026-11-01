@@ -264,8 +264,12 @@ button small{font-size:9px;margin-top:0}
 <button id="heliDownBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">⬇️ Alçal (Shift)</button>
 <button id="boatBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:900">🚤 Tekneye Bin (E)</button>
 <button id="yachtBtn" style="display:none;background:#0f172a;border-color:#fde047;color:#fde047;font-weight:900">🛥️ Lüks Yata Bin (E)</button>
+<button id="diveBtn" style="display:none;background:#0369a1;border-color:#38bdf8;color:#e0f2fe;font-weight:900">🤿 Suyun Altına Dal (G)</button>
+<button id="diveLootBtn" style="display:none;background:#ca8a04;border-color:#fde047;color:#fff;font-weight:900">💎 Batık Hazineyi Al!</button>
 <button id="hotelRoomExitBtn" style="display:none;background:#dc2626;border-color:#fca5a5;font-weight:900">🚪 Odadan Lobiye Çık</button>
 </div>
+<div id="underwaterOverlay" style="display:none;position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at center,rgba(2,132,199,.18) 35%,rgba(3,105,161,.52) 100%)"></div>
+<div id="diveHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:6;background:rgba(7,34,59,.94);border:2px solid #38bdf8;color:#e0f2fe;padding:6px 14px;border-radius:999px;font-weight:900;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.6);pointer-events:none;white-space:nowrap">🤿 SU ALTI ARAMASI: Aranıyor...</div>
 <div id="policeChaseHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:24;background:linear-gradient(135deg,rgba(185,28,28,.96),rgba(29,78,216,.96));border:2px solid #fde047;color:#fff;padding:7px 16px;border-radius:999px;font-weight:900;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.75);pointer-events:none;white-space:nowrap">🚨 POLİS KOVALIYOR! Kaç: 10 sn</div>
 <div id="prisonBox" style="display:none;position:fixed;left:50%;top:52%;transform:translate(-50%,-50%);z-index:26;width:min(360px,92vw);background:rgba(15,23,42,.97);border:2px solid #ef4444;border-radius:14px;padding:14px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.88)">
   <div style="font-size:28px;margin-bottom:4px">🚓⛓️</div>
@@ -3472,11 +3476,65 @@ const beachSandPlane = new THREE.Mesh(new THREE.PlaneGeometry(11, 160), M(0xfde6
 beachSandPlane.rotation.x = -Math.PI / 2;
 beachSandPlane.position.set(49.5, 0.025, -70);
 beachSeaGroup.add(beachSandPlane);
-// Büyük mavi deniz yüzeyi (x: 54..164, z: -155..+15)
-const seaWaterPlane = new THREE.Mesh(new THREE.PlaneGeometry(110, 170), new THREE.MeshBasicMaterial({color: 0x0284c7}));
+// Büyük mavi deniz yüzeyi (x: 54..164, z: -155..+15) — çift yönlü ve yarı saydam ki suyun altından yukarı bakınca da görünsün
+const seaWaterPlane = new THREE.Mesh(new THREE.PlaneGeometry(110, 170), new THREE.MeshBasicMaterial({color: 0x0284c7, side: THREE.DoubleSide, transparent: true, opacity: 0.86}));
 seaWaterPlane.rotation.x = -Math.PI / 2;
 seaWaterPlane.position.set(109, 0.015, -70);
 beachSeaGroup.add(seaWaterPlane);
+
+// 🤿🌊🪸 DENİZ ALTI DÜNYASI (y = -5.5m): Kumlu Deniz Tabanı, Batık Korsan Gemisi, Mercan Kayalıkları ve Parlayan Batık Hazineler
+const SEA_FLOOR_Y = -5.5;
+const seaFloorGroup = new THREE.Group();
+beachSeaGroup.add(seaFloorGroup);
+const seaFloorPlane = new THREE.Mesh(new THREE.PlaneGeometry(110, 170), M(0xb45309));
+seaFloorPlane.rotation.x = -Math.PI / 2;
+seaFloorPlane.position.set(109, SEA_FLOOR_Y, -70);
+seaFloorGroup.add(seaFloorPlane);
+// Deniz kıyısı su altı yamacı (x: 54.4)
+addTo(seaFloorGroup, B(0.8, 5.6, 170), M(0x92400e), 54.4, SEA_FLOOR_Y + 2.8, -70);
+// 🏴‍☠️🚢 Batık Korsan Gemisi Enkazı (x: 78, y: -5.5, z: -32)
+const shipwreckGroup = new THREE.Group();
+shipwreckGroup.position.set(78.0, SEA_FLOOR_Y, -32.0);
+shipwreckGroup.rotation.set(0.18, 0.45, -0.24); // Deniz dibinde yan yatmış batık gemi
+seaFloorGroup.add(shipwreckGroup);
+addTo(shipwreckGroup, B(3.8, 1.8, 9.5), M(0x451a03), 0, 0.9, 0); // Gemi ahşap gövdesi
+addTo(shipwreckGroup, B(4.1, 0.35, 9.2), M(0x78350f), 0, 1.85, 0); // Küpeşte
+addTo(shipwreckGroup, new THREE.ConeGeometry(2.0, 3.4, 4).rotateX(Math.PI / 2).rotateY(Math.PI / 4), M(0x451a03), 0, 1.1, 5.8); // Sivri pruva
+addTo(shipwreckGroup, B(3.4, 1.5, 2.8), M(0x78350f), 0, 2.5, -3.2); // Kaptan köşkü enkazı
+addTo(shipwreckGroup, new THREE.CylinderGeometry(0.18, 0.24, 6.5, 6), M(0x451a03), 0, 4.2, 1.2); // Kırık ön yelken direği
+addTo(shipwreckGroup, new THREE.CylinderGeometry(0.16, 0.22, 5.2, 6), M(0x451a03), 0, 3.6, -2.0).rotation.z = 0.35; // Yan yatmış arka direk
+addTo(shipwreckGroup, B(2.6, 0.14, 1.6), M(0x1e293b), 0.4, 5.2, 1.2).rotation.z = -0.3; // Yırtık siyah korsan yelkeni
+// Mercan kayalıkları ve deniz yosunları
+const coralGeo = new THREE.DodecahedronGeometry(0.85, 0);
+const kelpGeo = new THREE.CylinderGeometry(0.10, 0.14, 2.6, 5);
+const kelpMat = M(0x15803d);
+[
+  [64, -22, 0xf43f5e], [70, -45, 0xa855f7], [85, -25, 0xec4899], [92, -52, 0xf97316],
+  [66, -60, 0x14b8a6], [82, -72, 0xf43f5e], [96, -38, 0xa855f7], [74, -18, 0xf59e0b],
+  [88, -82, 0xec4899], [62, -48, 0x38bdf8], [102, -46, 0xf43f5e], [90, -18, 0x10b981]
+].forEach(([cx, cz, cCol], idx) => {
+  addTo(seaFloorGroup, coralGeo, M(cCol), cx, SEA_FLOOR_Y + 0.55, cz).scale.set(1.2, 0.9 + (idx % 3) * 0.3, 1.1);
+  addTo(seaFloorGroup, kelpGeo, kelpMat, cx + 0.9, SEA_FLOOR_Y + 1.3, cz - 0.6);
+  addTo(seaFloorGroup, kelpGeo, kelpMat, cx - 0.7, SEA_FLOOR_Y + 1.1, cz + 0.8);
+});
+// Suyun altında yüzen balık sürüleri
+const underwaterFishes = [];
+const uwFishGeo = B(0.55, 0.18, 0.22);
+[0xf97316, 0xfacc15, 0x38bdf8, 0xf43f5e, 0x4ade80, 0xc084fc].forEach((fCol, fi) => {
+  const fm = new THREE.Mesh(uwFishGeo, M(fCol));
+  const cx = 66 + (fi % 3) * 14, cz = -24 - Math.floor(fi / 3) * 26;
+  fm.position.set(cx, SEA_FLOOR_Y + 2.2 + (fi % 2) * 0.9, cz);
+  seaFloorGroup.add(fm);
+  underwaterFishes.push({m: fm, cx, cz, r: 3.5 + (fi % 3) * 1.4, a: fi * 1.1, sp: 0.7 + (fi % 3) * 0.22, y: SEA_FLOOR_Y + 2.0 + (fi % 3) * 0.7});
+});
+// 💎 Deniz Dibindeki Parlayan Aktif Batık Hazine Sandığı & Işık Sütunu
+const underwaterTreasureGroup = new THREE.Group();
+addTo(underwaterTreasureGroup, B(1.1, 0.65, 0.75), M(0x78350f), 0, 0.33, 0); // Sandık gövdesi
+addTo(underwaterTreasureGroup, B(1.14, 0.16, 0.79), M(0xfacc15), 0, 0.62, 0); // Altın kuşak
+addTo(underwaterTreasureGroup, B(0.95, 0.18, 0.60), new THREE.MeshBasicMaterial({color: 0xfef08a}), 0, 0.70, 0); // Parlayan altınlar & inciler
+const uwTreasureRing = addTo(underwaterTreasureGroup, new THREE.RingGeometry(1.1, 1.55, 12).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({color: 0x38bdf8, side: THREE.DoubleSide}), 0, 0.05, 0);
+const uwTreasureBeam = addTo(underwaterTreasureGroup, new THREE.CylinderGeometry(0.45, 0.95, 5.2, 8, 1, true), new THREE.MeshBasicMaterial({color: 0xfef08a, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false}), 0, 2.6, 0);
+seaFloorGroup.add(underwaterTreasureGroup);
 // Kıyı beyaz köpük şeridi ve denizde hareket eden 3B köpüklü dalgalar
 const seaShoreFoam = addTo(beachSeaGroup, B(0.65, 0.025, 160), new THREE.MeshBasicMaterial({color: 0xe0f2fe}), 54.4, 0.028, -70);
 const seaWaves = [];
@@ -9484,7 +9542,7 @@ pickNewDigTarget();
 pickNewIslandDigTarget();
 
 function isOnTreasureIslandNow(){
-  return !C.driving && !D.driving && !CM.driving && !(typeof BOAT !== 'undefined' && BOAT.driving) && !(typeof YACHT !== 'undefined' && YACHT.driving) && !(typeof HELI !== 'undefined' && HELI.flying) &&
+  return !(typeof isDivingUnderwater !== 'undefined' && isDivingUnderwater) && !C.driving && !D.driving && !CM.driving && !(typeof BOAT !== 'undefined' && BOAT.driving) && !(typeof YACHT !== 'undefined' && YACHT.driving) && !(typeof HELI !== 'undefined' && HELI.flying) &&
     (Math.hypot(P.x - SEA_ISLAND_POS.x, P.z - SEA_ISLAND_POS.z) <= 13.0 || (P.x >= 93.0 && P.x <= 100.0 && Math.abs(P.z - SEA_ISLAND_POS.z) <= 2.0));
 }
 
@@ -9622,6 +9680,121 @@ function updateDetectorZone(dt){
   }
 }
 
+// 🤿🌊💎 SUYUN ALTINA DALIP BATIK HAZİNE ARAMA SİSTEMİ
+let isDivingUnderwater = false;
+let diveBeepTimer = 0;
+const UNDERWATER_LOOT_ITEMS = [
+  {name: '🏴‍☠️ Batık Korsan Altın Sandığı', val: 6000},
+  {name: '🦪 Dev Siyah Okyanus İncisi', val: 4500},
+  {name: '👑 Poseidon\'un Altın Tacı', val: 7500},
+  {name: '🏺 Antik Batık Altın Amfora', val: 4000},
+  {name: '💎 Deniz Dibindeki Elmas Külçe', val: 5500},
+  {name: '🗡️ Kaptan Karasakal\'ın Zümrüt Kılıcı', val: 6500}
+];
+const underwaterTarget = {x: 78.0, z: -34.0};
+function pickNewUnderwaterTarget(){
+  // Batık gemi çevresi ve deniz tabanında (x: 60..102, z: -78..-16) rastgele nokta (adaya çok girmesin)
+  for(let tries = 0; tries < 10; tries++){
+    const tx = 60.0 + Math.random() * 42.0;
+    const tz = -78.0 + Math.random() * 62.0;
+    if(Math.hypot(tx - SEA_ISLAND_POS.x, tz - SEA_ISLAND_POS.z) > 15.0){
+      underwaterTarget.x = tx;
+      underwaterTarget.z = tz;
+      break;
+    }
+  }
+  if(typeof underwaterTreasureGroup !== 'undefined'){
+    underwaterTreasureGroup.position.set(underwaterTarget.x, SEA_FLOOR_Y, underwaterTarget.z);
+  }
+}
+pickNewUnderwaterTarget();
+
+function toggleUnderwaterDive(){
+  if(!active() || C.driving || D.driving || CM.driving || (typeof BOAT !== 'undefined' && BOAT.driving) || (typeof YACHT !== 'undefined' && YACHT.driving) || (typeof HELI !== 'undefined' && HELI.flying)) return;
+  if(!isDivingUnderwater){
+    if(P.x < 56.5) P.x = 58.5;
+    isDivingUnderwater = true;
+    P.y = SEA_FLOOR_Y;
+    beep(310, 0.18, 'sine', 0.12);
+    flash('🤿🌊 Suyun altına daldın! Deniz dibinde yürü ve parlayan batık hazineleri ara!', '#38bdf8');
+  } else {
+    isDivingUnderwater = false;
+    P.y = 0;
+    beep(620, 0.15, 'sine', 0.12);
+    flash('⬆️🌊 Su yüzeyine çıktın! Derin bir nefes aldın.', '#4ade80');
+  }
+  renderAll();
+}
+
+function collectUnderwaterTreasure(){
+  if(!isDivingUnderwater) return;
+  const dist = Math.hypot(P.x - underwaterTarget.x, P.z - underwaterTarget.z);
+  if(dist > 4.2){
+    flash('🤿 Batık hazineye biraz daha yaklaş!', '#38bdf8');
+    return;
+  }
+  const item = UNDERWATER_LOOT_ITEMS[(Math.random() * UNDERWATER_LOOT_ITEMS.length) | 0];
+  S.money = (S.money || 0) + item.val;
+  S.xp = (S.xp || 0) + 140;
+  checkLevelUp();
+  beep(920, 0.22, 'triangle', 0.15);
+  flash(`🤿💎 Deniz dibinden çıkardın: ${item.name} (+${item.val.toLocaleString('tr-TR')}₺)!`, '#fde047');
+  pickNewUnderwaterTarget();
+  renderAll();
+}
+if($('diveBtn')) $('diveBtn').onclick = toggleUnderwaterDive;
+if($('diveLootBtn')) $('diveLootBtn').onclick = collectUnderwaterTreasure;
+window.addEventListener('keydown', e => {
+  if(e.key.toLowerCase() === 'g' && !e.repeat && $('diveBtn') && $('diveBtn').style.display === 'block'){
+    toggleUnderwaterDive();
+  }
+});
+
+function updateUnderwaterDive(dt){
+  const nowS = performance.now() * 0.001;
+  if(typeof underwaterFishes !== 'undefined'){
+    for(let i = 0; i < underwaterFishes.length; i++){
+      const uf = underwaterFishes[i];
+      uf.a += dt * uf.sp;
+      uf.m.position.set(uf.cx + Math.cos(uf.a) * uf.r, uf.y + Math.sin(uf.a * 2) * 0.25, uf.cz + Math.sin(uf.a) * uf.r);
+      uf.m.rotation.y = -uf.a;
+    }
+  }
+  if(typeof underwaterTreasureGroup !== 'undefined'){
+    const pulse = 0.9 + Math.abs(Math.sin(nowS * 4.5)) * 0.35;
+    uwTreasureRing.scale.set(pulse, pulse, 1);
+    uwTreasureBeam.rotation.y = nowS * 1.5;
+  }
+  const inVeh = C.driving || D.driving || CM.driving || (typeof BOAT !== 'undefined' && BOAT.driving) || (typeof YACHT !== 'undefined' && YACHT.driving) || (typeof HELI !== 'undefined' && HELI.flying);
+  if(isDivingUnderwater && (inVeh || P.x < 54.2)){
+    isDivingUnderwater = false;
+    P.y = 0;
+  }
+  const canDiveHere = !inVeh && !inHotelRoomState && !inBunkerState && P.x >= 48.0 && P.z >= -148.0 && P.z <= 8.0;
+  disp('diveBtn', (isDivingUnderwater || canDiveHere) ? 'block' : 'none');
+  if(isDivingUnderwater || canDiveHere){
+    txt('diveBtn', isDivingUnderwater ? '⬆️ Su Yüzeyine Çık (G)' : '🤿 Suyun Altına Dal (G)');
+  }
+  disp('underwaterOverlay', isDivingUnderwater ? 'block' : 'none');
+  if(isDivingUnderwater){
+    const dist = Math.hypot(P.x - underwaterTarget.x, P.z - underwaterTarget.z);
+    const sigPct = Math.max(5, Math.min(100, Math.round((1 - Math.min(dist, 35) / 35) * 100)));
+    const statusTxt = dist < 3.8 ? '🔥 BATIK HAZİNE BURADA! HEMEN AL!' : dist < 10 ? '⚡ Çok Yaklaştın (Sarı Işığa Git)' : '🌊 Deniz Dibinde Sarı Işığı Ara...';
+    disp('diveHud', 'block');
+    txt('diveHud', `🤿 SU ALTI RADARI: %${sigPct} (${dist.toFixed(1)}m) — ${statusTxt}`);
+    diveBeepTimer -= dt;
+    const interval = Math.max(0.16, Math.min(1.2, dist / 18));
+    if(diveBeepTimer <= 0){
+      diveBeepTimer = interval;
+      beep(Math.round(380 + sigPct * 4.2), 0.05, 'sine', 0.045);
+    }
+    disp('diveLootBtn', dist < 3.8 ? 'block' : 'none');
+  } else {
+    disp('diveHud', 'none');
+    disp('diveLootBtn', 'none');
+  }
+}
+
 // ⛏️ Yeraltı Küp Blok Madeni, Kademeli Kazma/Kürekler, Raylı Vagon ve TNT Dinamit Sistemi
 const PICK_TIERS = [
   {lv: 0, name: 'Yok (Kazma/Kürek Al!)', dmg: 0, mult: 1.0, price: 0},
@@ -9711,6 +9884,7 @@ function updateHouseAndBunker(dt){
 function getMineFloorY(px, pz){
   if(inBunkerState) return -6.0;
   if(typeof inHotelRoomState !== 'undefined' && inHotelRoomState > 0) return HOTEL_ROOM_ORIGIN.y;
+  if(typeof isDivingUnderwater !== 'undefined' && isDivingUnderwater) return -5.5;
   if(typeof SEA_ISLAND_POS !== 'undefined'){
     if(Math.hypot(px - SEA_ISLAND_POS.x, pz - SEA_ISLAND_POS.z) <= 9.5) return 0.75;
     if(Math.hypot(px - SEA_ISLAND_POS.x, pz - SEA_ISLAND_POS.z) <= 12.5) return 0.50;
@@ -13338,9 +13512,9 @@ function frame(now){
   } else {
     if(passengerOf) passengerOf = null;
     const onDock = P.x > -27.2 && P.x < -23.0 && Math.abs(P.z + 22) < 1.0;
-    const onMarinaDock = P.x >= 47.8 && P.x <= 62.2 && ((P.z >= -27.8 && P.z <= -24.2) || (P.z >= -39.8 && P.z <= -36.2));
-    const onSeaIsland = Math.hypot(P.x - 108.0, P.z - (-65.0)) <= 12.2 || (P.x >= 93.0 && P.x <= 100.0 && Math.abs(P.z + 65.0) <= 1.5);
-    const inSeaWater = !inHotelRoomState && P.x > 54.4 && !onMarinaDock && !onSeaIsland && (P.y || 0) < 1.5;
+    const onMarinaDock = !isDivingUnderwater && P.x >= 47.8 && P.x <= 62.2 && ((P.z >= -27.8 && P.z <= -24.2) || (P.z >= -39.8 && P.z <= -36.2));
+    const onSeaIsland = !isDivingUnderwater && (Math.hypot(P.x - 108.0, P.z - (-65.0)) <= 12.2 || (P.x >= 93.0 && P.x <= 100.0 && Math.abs(P.z + 65.0) <= 1.5));
+    const inSeaWater = !inHotelRoomState && P.x > 54.4 && !onMarinaDock && !onSeaIsland && ((P.y || 0) < 1.5 || isDivingUnderwater);
     const inHotelPool = (!inHotelRoomState && typeof HOTEL_POOLS !== 'undefined')
       ? HOTEL_POOLS.find(pl => (!pl.indoor || (P.y || 0) < 1.5) && Math.abs(P.x - pl.wx) < pl.hw && Math.abs(P.z - pl.wz) < pl.hd)
       : null;
@@ -13364,7 +13538,7 @@ function frame(now){
       camera.rotation.set(P.pitch, P.yaw, 0);
     }
     playerMesh.visible = thirdPerson;
-    playerMesh.position.set(P.x, P.y + (inPondWater ? (-0.75 + swimBob) : 0), P.z);
+    playerMesh.position.set(P.x, P.y + ((inPondWater && !isDivingUnderwater) ? (-0.75 + swimBob) : 0), P.z);
     playerMesh.rotation.y = P.yaw + Math.PI;
     // yürüme veya yüzme animasyonu: hareket ettikçe kol ve bacaklar sallanır / kulaç atar
     const pSpeed = Math.hypot(P.x - pLastX, P.z - pLastZ) / Math.max(dt, 0.001);
@@ -13473,6 +13647,7 @@ function frame(now){
   updateCarWashAndDrift(dt);
   updatePondFishes(dt);
   updateDetectorZone(dt);
+  updateUnderwaterDive(dt);
   updateMinerPlace(dt);
   const nearPeerCarKey = (!C.driving && !D.driving && !CM.driving) ? findNearbyPeerCar() : null;
   disp('passBtn', (passengerOf || nearPeerCarKey) ? 'block' : 'none');
@@ -14663,7 +14838,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-11-01-143803';
+const APP_VERSION = '2026-11-01-145916';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
