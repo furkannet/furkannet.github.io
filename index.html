@@ -200,6 +200,7 @@ button small{font-size:9px;margin-top:0}
   <button id="nightBtn" title="Gece">🌙<span class="t"> Gece</span></button>
   <button id="codeBtn" title="Kod">🎟<span class="t"> Kod</span></button>
   <button id="invBtn" title="Envanter">🎒<span class="t"> Envanter</span></button>
+  <button id="phoneBtn" title="Telefon & Araba İlanları" style="background:#b45309;border-color:#fde047">📱<span class="t"> İlanlar</span></button>
   <button id="tablet" style="display:none" title="Tablet">📱<span class="t"> Tablet</span></button>
   <button id="drive">🚚 Sür</button>
   <button id="shutter">🪟 Kapat</button>
@@ -377,6 +378,20 @@ button small{font-size:9px;margin-top:0}
       <button id="plateSave">Kaydet</button>
     </div>
     <button id="galClose" class="wide">Kapat</button>
+  </div>
+</div>
+<div id="phoneModal" class="modal">
+  <div class="card" style="border:2px solid #facc15;background:#0f172a">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px">
+      <h2 style="margin:0;color:#fde047">📱 Sarı Site · Araç İlanları</h2>
+      <button id="phoneRefreshBtn" style="background:#1e3a8a;border-color:#60a5fa;padding:5px 9px;font-weight:700">🔄 Yeni İlanlar</button>
+    </div>
+    <p style="margin:0 0 8px;font-size:12px;color:#cbd5e1">Kendi aracını ilana koyup sat veya 2. el kelepir araçları pazarlıkla ucuza al!</p>
+    <h3>📢 Senin Araçların (İlana Koy & Sat)</h3>
+    <div id="phoneMyVehBody"></div>
+    <h3>🚗 Güncel 2. El İlanlar</h3>
+    <div id="phoneListingsBody"></div>
+    <button id="phoneClose" class="wide">Telefonu Kapat</button>
   </div>
 </div>
 <div id="wageLbl" style="display:none;position:fixed;left:14px;bottom:14px;z-index:3;font-size:22px;font-weight:800;color:#ffd54a;text-shadow:0 2px 6px #000;pointer-events:none"></div>
@@ -12525,6 +12540,190 @@ function updateAtmosphericVisuals(dt){
     }
   }
 }
+function sellOwnedVehicle(isMoto, sellPrice, viaPhone){
+  const vehId = isMoto ? S.moto : S.car;
+  if(!vehId) return;
+  const def = CARS.find(c => c.id === vehId);
+  const vName = def ? def.name : 'Araç';
+  if(C.driving && ((isMoto && C.activeVeh === 'moto') || (!isMoto && C.activeVeh !== 'moto'))){
+    C.driving = false;
+    C.v = 0;
+    stopEngine();
+  }
+  if(isMoto){
+    S.moto = null;
+  } else {
+    S.car = null;
+    if(S.mods) S.mods.paint = null;
+  }
+  S.money = (S.money || 0) + sellPrice;
+  spawnOwnedCar();
+  broadcastCoopPos(true);
+  beep(880, 0.16, 'sine', 0.14);
+  flash(`💰 ${vName} ${viaPhone ? 'telefon ilanından müşteriye' : 'galeriye'} ${sellPrice.toLocaleString('tr-TR')}₺ karşılığında satıldı!`, '#fde047');
+  save();
+  if($('gal').style.display === 'flex') { renderGallery(); renderMods(); }
+  if($('phoneModal') && $('phoneModal').style.display === 'flex') renderPhoneModal();
+  renderAll();
+}
+
+const PHONE_SELLERS = ['Galerici Faruk', 'Doktor Kemal', 'Emekli Hüseyin Amca', 'Modifiyeci Berk', 'Acil Satıcı Mert', 'Öğretmen Selim', 'Esnaf Kadir Usta'];
+const PHONE_NOTES = [
+  'Doktordan tertemiz, garajda yatmış!',
+  'Acil nakit ihtiyacından kelepir fiyat!',
+  'Keyfe keder boyalı, dosta gider.',
+  'Az yakar çok kaçar, motoru saat gibi.',
+  'İlk sahibinden hatasız, pazarlık sünnettir.',
+  'Bakımları yeni yapıldı, masrafsız!'
+];
+let phoneListings = [];
+function generatePhoneListings(){
+  phoneListings = [];
+  const pool = [...CARS].sort(() => Math.random() - 0.5).slice(0, 5);
+  pool.forEach((c, idx) => {
+    const disc = 0.62 + Math.random() * 0.22; // Galeri fiyatının %62 - %84'ü arası 2. el fiyatı
+    const secPrice = Math.max(1000, Math.round((c.price * disc) / 250) * 250);
+    const km = (12 + Math.floor(Math.random() * 165)) * 1000;
+    phoneListings.push({
+      uid: 'ad_' + Date.now() + '_' + idx,
+      car: c,
+      seller: PHONE_SELLERS[(Math.random() * PHONE_SELLERS.length) | 0],
+      note: PHONE_NOTES[(Math.random() * PHONE_NOTES.length) | 0],
+      km,
+      price: secPrice,
+      bargained: false
+    });
+  });
+}
+generatePhoneListings();
+
+function renderPhoneModal(){
+  const myBox = $('phoneMyVehBody');
+  const listBox = $('phoneListingsBody');
+  if(!myBox || !listBox) return;
+  myBox.innerHTML = '';
+  const myCarDef = S.car ? CARS.find(c => c.id === S.car) : null;
+  const myMotoDef = S.moto ? CARS.find(c => c.id === S.moto) : null;
+  if(!myCarDef && !myMotoDef){
+    myBox.innerHTML = '<div class="row"><span style="color:var(--mut)">Şu an satılacak araban veya motorun yok. Aşağıdaki ilanlardan ucuza alabilirsin!</span></div>';
+  } else {
+    if(myCarDef){
+      const sellVal = Math.round(myCarDef.price * 0.88);
+      const r = document.createElement('div');
+      r.className = 'row';
+      r.innerHTML = `<span>🚗 <b>${myCarDef.name}</b><small>İlan Alıcı Teklifi: <b style="color:#4ade80">${sellVal.toLocaleString('tr-TR')}₺</b></small></span>`;
+      const b = document.createElement('button');
+      b.style.background = '#15803d';
+      b.style.borderColor = '#4ade80';
+      b.style.fontWeight = '700';
+      b.textContent = `💰 İlana Koy Sat (+${sellVal.toLocaleString('tr-TR')}₺)`;
+      b.onclick = () => sellOwnedVehicle(false, sellVal, true);
+      r.appendChild(b);
+      myBox.appendChild(r);
+    }
+    if(myMotoDef){
+      const sellVal = Math.round(myMotoDef.price * 0.88);
+      const r = document.createElement('div');
+      r.className = 'row';
+      r.innerHTML = `<span>🏍️ <b>${myMotoDef.name}</b><small>İlan Alıcı Teklifi: <b style="color:#4ade80">${sellVal.toLocaleString('tr-TR')}₺</b></small></span>`;
+      const b = document.createElement('button');
+      b.style.background = '#15803d';
+      b.style.borderColor = '#4ade80';
+      b.style.fontWeight = '700';
+      b.textContent = `💰 İlana Koy Sat (+${sellVal.toLocaleString('tr-TR')}₺)`;
+      b.onclick = () => sellOwnedVehicle(true, sellVal, true);
+      r.appendChild(b);
+      myBox.appendChild(r);
+    }
+  }
+  listBox.innerHTML = '';
+  if(!phoneListings.length){
+    listBox.innerHTML = '<div class="row"><span style="color:var(--mut)">Tüm ilanlar satıldı! "🔄 Yeni İlanlar" düğmesine bas.</span></div>';
+    return;
+  }
+  phoneListings.forEach((ad, idx) => {
+    const c = ad.car;
+    const isMoto = c.type === 'moto';
+    const alreadyOwned = isMoto ? (S.moto === c.id) : (S.car === c.id);
+    const d = document.createElement('div');
+    d.className = 'row';
+    d.style.flexWrap = 'wrap';
+    d.innerHTML = `<div style="flex:1;min-width:160px">
+      <b>${c.name}</b> <span style="font-size:11px;color:#fde047">(${ad.km.toLocaleString('tr-TR')} km)</span>
+      <small>👤 ${ad.seller}: "${ad.note}"</small>
+      <small>Sıfırı: <s>${c.price.toLocaleString('tr-TR')}₺</s> · <b style="color:#4ade80">İlan Fiyatı: ${ad.price.toLocaleString('tr-TR')}₺</b></small>
+    </div>`;
+    const btnWrap = document.createElement('div');
+    btnWrap.style.display = 'flex';
+    btnWrap.style.gap = '5px';
+    if(!ad.bargained && !alreadyOwned){
+      const bargBtn = document.createElement('button');
+      bargBtn.style.background = '#b45309';
+      bargBtn.style.minWidth = '72px';
+      bargBtn.textContent = '🤝 Pazarlık';
+      bargBtn.onclick = () => {
+        ad.bargained = true;
+        const drop = Math.max(250, Math.round((ad.price * (0.08 + Math.random() * 0.07)) / 250) * 250);
+        ad.price = Math.max(1000, ad.price - drop);
+        beep(640, 0.1, 'sine', 0.1);
+        flash(`🤝 ${ad.seller} ile pazarlık yaptın, fiyatı ${drop.toLocaleString('tr-TR')}₺ indirdi!`, '#fde047');
+        renderPhoneModal();
+      };
+      btnWrap.appendChild(bargBtn);
+    }
+    const buyBtn = document.createElement('button');
+    buyBtn.style.background = alreadyOwned ? '#334155' : '#1d4ed8';
+    buyBtn.style.borderColor = '#60a5fa';
+    buyBtn.style.fontWeight = '700';
+    buyBtn.textContent = alreadyOwned ? 'Sahipsin' : `Satın Al (${ad.price.toLocaleString('tr-TR')}₺)`;
+    buyBtn.disabled = alreadyOwned || (S.money || 0) < ad.price;
+    buyBtn.onclick = () => {
+      if((S.money || 0) < ad.price) return;
+      S.money -= ad.price;
+      C.driving = false; C.v = 0;
+      if(isMoto){
+        S.moto = c.id;
+        MOTO_STATE.x = -6.5; MOTO_STATE.z = -25.5; MOTO_STATE.h = 0;
+        C.activeVeh = 'moto';
+        C.x = MOTO_STATE.x; C.z = MOTO_STATE.z; C.h = 0;
+      } else {
+        S.car = c.id;
+        if(S.mk.garaj){ CAR_STATE.x = 18.75; CAR_STATE.z = -21; } else { CAR_STATE.x = -6.5; CAR_STATE.z = -30; }
+        CAR_STATE.h = 0;
+        C.activeVeh = 'car';
+        C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = 0;
+        if(S.mods) S.mods.paint = null;
+      }
+      phoneListings.splice(idx, 1);
+      spawnOwnedCar();
+      broadcastCoopPos(true);
+      beep(780, 0.14, 'sine', 0.13);
+      flash(`📱🎉 İlandan 2. el ${c.name} aldın ve sokağa park edildi!`, '#4ade80');
+      save();
+      renderPhoneModal();
+      renderAll();
+    };
+    btnWrap.appendChild(buyBtn);
+    d.appendChild(btnWrap);
+    listBox.appendChild(d);
+  });
+}
+if($('phoneBtn')) $('phoneBtn').onclick = () => {
+  setOpen = true;
+  renderPhoneModal();
+  $('phoneModal').style.display = 'flex';
+};
+if($('phoneClose')) $('phoneClose').onclick = () => {
+  setOpen = false;
+  $('phoneModal').style.display = 'none';
+};
+if($('phoneRefreshBtn')) $('phoneRefreshBtn').onclick = () => {
+  generatePhoneListings();
+  beep(580, 0.08, 'sine', 0.08);
+  flash('📱 Yeni 2. el araç ilanları yüklendi!', '#60a5fa');
+  renderPhoneModal();
+};
+
 function renderGallery(){
   const box = $('galBody');
   box.innerHTML = '';
@@ -12538,31 +12737,40 @@ function renderGallery(){
       d.className = 'row';
       d.innerHTML = `<span>${c.name}<small>${c.price.toLocaleString('tr-TR')}₺</small></span>`;
       const b = document.createElement('button');
-      b.textContent = owned ? 'Sahip' : 'Al';
-      b.disabled = owned || S.money < c.price;
-      b.onclick = () => {
-        if(S.money < c.price) return;
-        S.money -= c.price;
-        C.driving = false; C.v = 0;
-        if(isMotoSec){
-          S.moto = c.id;
-          MOTO_STATE.x = -6.5; MOTO_STATE.z = -25.5; MOTO_STATE.h = 0;
-          C.activeVeh = 'moto';
-          C.x = MOTO_STATE.x; C.z = MOTO_STATE.z; C.h = 0;
-        } else {
-          S.car = c.id;
-          if(S.mk.garaj){ CAR_STATE.x = 18.75; CAR_STATE.z = -21; } else { CAR_STATE.x = -6.5; CAR_STATE.z = -30; }
-          CAR_STATE.h = 0;
-          C.activeVeh = 'car';
-          C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = 0;
-          S.mods.paint = null;
-        }
-        spawnOwnedCar();
-        broadcastCoopPos(true);
-        beep(700, 0.1);
-        flash(`${c.name} alındı, sokağa park edildi! (Araban ve motorun ayrı durur)`, '#4ade80');
-        renderGallery(); renderMods(); renderAll();
-      };
+      if(owned){
+        const galSellPrice = Math.round(c.price * 0.80);
+        b.textContent = `💰 Sat (${galSellPrice.toLocaleString('tr-TR')}₺)`;
+        b.style.background = '#991b1b';
+        b.style.borderColor = '#f87171';
+        b.style.fontWeight = '700';
+        b.onclick = () => sellOwnedVehicle(isMotoSec, galSellPrice, false);
+      } else {
+        b.textContent = 'Al';
+        b.disabled = S.money < c.price;
+        b.onclick = () => {
+          if(S.money < c.price) return;
+          S.money -= c.price;
+          C.driving = false; C.v = 0;
+          if(isMotoSec){
+            S.moto = c.id;
+            MOTO_STATE.x = -6.5; MOTO_STATE.z = -25.5; MOTO_STATE.h = 0;
+            C.activeVeh = 'moto';
+            C.x = MOTO_STATE.x; C.z = MOTO_STATE.z; C.h = 0;
+          } else {
+            S.car = c.id;
+            if(S.mk.garaj){ CAR_STATE.x = 18.75; CAR_STATE.z = -21; } else { CAR_STATE.x = -6.5; CAR_STATE.z = -30; }
+            CAR_STATE.h = 0;
+            C.activeVeh = 'car';
+            C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = 0;
+            S.mods.paint = null;
+          }
+          spawnOwnedCar();
+          broadcastCoopPos(true);
+          beep(700, 0.1);
+          flash(`${c.name} alındı, sokağa park edildi! (Araban ve motorun ayrı durur)`, '#4ade80');
+          renderGallery(); renderMods(); renderAll();
+        };
+      }
       d.appendChild(b);
       box.appendChild(d);
     });
@@ -14868,7 +15076,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-11-01-151221';
+const APP_VERSION = '2026-11-01-165808';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
