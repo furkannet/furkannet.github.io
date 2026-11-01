@@ -4543,51 +4543,44 @@ function car(color, type = 'sedan', modelId = ''){
     const isChopper = modelId === 'chopper_motor';
     const isCross = modelId === 'cross_motor';
     const isSuperMoto = modelId === 'super_motor';
-    // 1. Alt karter / motor bloğu
-    addTo(g, B(0.34, 0.34, 0.78), DARK_GRILLE_M, 0, 0.52, -0.06);
-    addTo(g, B(0.32, 0.14, 0.62), TRIM_M, 0, 0.35, -0.08);
+    // 1. Alt karter / motor bloğu ve şasi (hiçbir motorda boşluk kalmaması için ortak sağlam omurga)
+    addTo(g, B(0.34, 0.34, 0.80), DARK_GRILLE_M, 0, 0.52, -0.06);
+    addTo(g, B(0.32, 0.14, 0.64), TRIM_M, 0, 0.35, -0.08);
+    // 2. Yan grenajlar, yakıt deposu, ön burun ve rüzgar camı (tüm motorlarda kesintisiz gövde bağlantısı)
+    [-0.18, 0.18].forEach(sx => {
+      const sideFairing = addTo(g, B(0.06, 0.38, 0.82), isChopper ? TRIM_M : paint, sx, 0.62, -0.22);
+      sideFairing.rotation.x = -0.16;
+      addTo(g, B(0.07, 0.10, 0.42), DARK_GRILLE_M, sx, 0.58, -0.22);
+      if(!isScooter && !isChopper){
+        addTo(g, B(isSuperMoto ? 0.20 : 0.08, 0.03, 0.28), TRIM_M, sx > 0 ? (isSuperMoto ? 0.28 : 0.22) : (isSuperMoto ? -0.28 : -0.22), 0.68, -0.58);
+      }
+    });
+    addTo(g, B(0.38, 0.24, 0.58), paint, 0, 0.82, -0.18);
+    const fuelTank = addTo(g, new THREE.SphereGeometry(0.22, 10, 8), paint, 0, 0.90, -0.18);
+    fuelTank.scale.set(0.92, 0.55, 1.35);
+    addTo(g, new THREE.CylinderGeometry(0.045, 0.045, 0.02, 8), CHROME_M, 0, 1.03, -0.20);
+    const nose = addTo(g, B(0.38, 0.24, 0.44), paint, 0, 0.80, -0.64);
+    nose.rotation.x = -0.18;
+    const screen = addTo(g, B(0.32, 0.04, 0.36), GLASS_M, 0, 0.98, -0.64);
+    screen.rotation.x = -0.55;
+    // Modele özel ayırt edici gövde eklentileri (boşluk bırakmadan ana gövde üstüne oturur)
     if(isScooter){
-      // 🛵 SCOOTER / KURYE MOTORU: Ortası ayak basmalı basamaklı (step-through), dik ön göğüs kalkanı ve geniş sele
-      addTo(g, B(0.42, 0.08, 0.65), TRIM_M, 0, 0.32, -0.15);                    // düz ayak basma tabanı
-      addTo(g, B(0.44, 0.56, 0.16), paint, 0, 0.62, -0.58).rotation.x = -0.12;  // dik ön bacak kalkanı (apron)
-      addTo(g, B(0.42, 0.34, 0.72), paint, 0, 0.60, 0.38);                      // tombul arka scooter gövdesi
-      addTo(g, B(0.38, 0.12, 0.42), GLASS_M, 0, 1.08, -0.58).rotation.x = -0.25;// dik uzun scooter rüzgar camı
+      addTo(g, B(0.46, 0.10, 0.68), TRIM_M, 0, 0.34, -0.16);                    // geniş scooter ayak basma tabanı
+      addTo(g, B(0.46, 0.52, 0.16), paint, 0, 0.64, -0.60).rotation.x = -0.10;  // dik ön scooter göğüs kalkanı
+      addTo(g, B(0.44, 0.32, 0.68), paint, 0, 0.64, 0.42);                      // tombul arka scooter yan kapakları
       if(modelId === 'kurye_motor'){
-        // 🛵 Kurye Motoru Arka Paket Taşıma Çantası (Topcase)
-        addTo(g, B(0.48, 0.44, 0.46), M(0xea580c), 0, 1.04, 0.78);
-        addTo(g, B(0.50, 0.06, 0.48), M(0xfef08a), 0, 1.06, 0.78);              // reflektörlü sarı şerit
+        addTo(g, B(0.48, 0.42, 0.46), M(0xea580c), 0, 1.16, 0.72);              // turuncu paket servis çantası (topcase)
+        addTo(g, B(0.50, 0.06, 0.48), M(0xfef08a), 0, 1.18, 0.72);              // sarı reflektör şeridi
       }
     } else if(isChopper){
-      // 🏍️ CHOPPER CRUISER: Alçak damla depo, uzun krom ön çatal, yüksek sırt dayama demiri (sissy bar) ve çift uzun krom egzoz
-      addTo(g, B(0.36, 0.20, 0.54), paint, 0, 0.76, -0.18).rotation.x = 0.18;   // eğimli damla yakıt deposu
-      addTo(g, B(0.38, 0.12, 0.46), M(0x451a03), 0, 0.64, 0.28);                // alçak deri kruzer koltuk
-      addTo(g, B(0.04, 0.62, 0.04), CHROME_M, -0.14, 1.02, 0.76).rotation.x = -0.22; // krom sissy-bar sol
-      addTo(g, B(0.04, 0.62, 0.04), CHROME_M, 0.14, 1.02, 0.76).rotation.x = -0.22;  // krom sissy-bar sağ
-      addTo(g, B(0.30, 0.14, 0.06), M(0x451a03), 0, 1.24, 0.82);                // artçı sırt yastığı
-      addTo(g, new THREE.CylinderGeometry(0.04, 0.04, 1.25, 8).rotateX(Math.PI / 2), CHROME_M, 0.22, 0.36, 0.25);
-      addTo(g, new THREE.CylinderGeometry(0.04, 0.04, 1.15, 8).rotateX(Math.PI / 2), CHROME_M, 0.22, 0.46, 0.30);
+      addTo(g, B(0.04, 0.58, 0.04), CHROME_M, -0.14, 1.14, 0.78).rotation.x = -0.20; // krom sissy-bar sol
+      addTo(g, B(0.04, 0.58, 0.04), CHROME_M, 0.14, 1.14, 0.78).rotation.x = -0.20;  // krom sissy-bar sağ
+      addTo(g, B(0.30, 0.16, 0.06), M(0x451a03), 0, 1.34, 0.84);                // yüksek deri sırt dayama yastığı
+      addTo(g, new THREE.CylinderGeometry(0.04, 0.04, 1.25, 8).rotateX(Math.PI / 2), CHROME_M, 0.22, 0.36, 0.25); // uzun krom egzoz 1
+      addTo(g, new THREE.CylinderGeometry(0.04, 0.04, 1.15, 8).rotateX(Math.PI / 2), CHROME_M, 0.22, 0.45, 0.30); // uzun krom egzoz 2
     } else if(isCross){
-      // 🏍️ DAĞ & CROSS MOTORU: Yüksek gagalı ön çamurluk, ince uzun ralli selesi ve elcik korumaları
-      addTo(g, B(0.28, 0.05, 0.48), paint, 0, 0.82, -0.82).rotation.x = 0.15;   // yüksek cross gaga çamurluk
-      addTo(g, B(0.30, 0.26, 0.48), paint, 0, 0.88, -0.22);                     // yüksek cross deposu
-      addTo(g, B(0.26, 0.12, 0.85), M(0x111827), 0, 0.86, 0.32);                // düz uzun cross selesi
-      [-0.17, 0.17].forEach(sx => addTo(g, B(0.04, 0.24, 0.38), M(0xfef08a), sx, 0.82, 0.52)); // yan yarış numara plakaları
-    } else {
-      // 🏍️ YARIŞ MOTORU (600RR) & ⚡ SÜPER MOTOR (NINJA H2)
-      [-0.18, 0.18].forEach(sx => {
-        const sideFairing = addTo(g, B(0.06, 0.38, 0.82), paint, sx, 0.62, -0.22);
-        sideFairing.rotation.x = -0.16;
-        addTo(g, B(0.07, 0.10, 0.42), DARK_GRILLE_M, sx, 0.58, -0.22);
-        addTo(g, B(isSuperMoto ? 0.18 : 0.08, 0.03, 0.26), TRIM_M, sx > 0 ? (isSuperMoto ? 0.27 : 0.22) : (isSuperMoto ? -0.27 : -0.22), 0.68, -0.58);
-      });
-      addTo(g, B(0.38, 0.24, 0.56), paint, 0, 0.82, -0.18);
-      const fuelTank = addTo(g, new THREE.SphereGeometry(0.22, 10, 8), paint, 0, 0.90, -0.18);
-      fuelTank.scale.set(0.92, 0.55, 1.35);
-      addTo(g, new THREE.CylinderGeometry(0.045, 0.045, 0.02, 8), CHROME_M, 0, 1.03, -0.20);
-      const nose = addTo(g, B(0.38, 0.24, 0.44), paint, 0, 0.80, -0.64);
-      nose.rotation.x = -0.18;
-      const screen = addTo(g, B(0.32, 0.04, 0.36), GLASS_M, 0, 0.98, -0.64);
-      screen.rotation.x = -0.55;
+      addTo(g, B(0.26, 0.05, 0.46), paint, 0, 0.78, -0.88).rotation.x = 0.14;   // yüksek cross gaga çamurluk
+      [-0.17, 0.17].forEach(sx => addTo(g, B(0.04, 0.22, 0.36), M(0xfef08a), sx, 0.84, 0.52)); // sarı yan yarış numara plakaları
     }
     // 5. Dijital gösterge paneli, gidon boğazı, gidon, elcikler ve dikiz aynaları
     const steerPivot = new THREE.Group();
@@ -4597,44 +4590,44 @@ function car(color, type = 'sedan', modelId = ''){
     addTo(steerPivot, B(0.14, 0.08, 0.14), TRIM_M, 0, 0.88, 0);                 // gidon boğazı (triple clamp)
     const dashCase = addTo(steerPivot, B(0.19, 0.105, 0.03), TRIM_M, 0, 0.96, -0.05);
     dashCase.rotation.x = -0.35;
-    const dashScreen = addTo(steerPivot, new THREE.PlaneGeometry(0.175, 0.092), motoDashMat, 0, 0.962, -0.034); // canlı 3B dijital hız göstergesi ekranı
+    const dashScreen = addTo(steerPivot, new THREE.PlaneGeometry(0.175, 0.092), motoDashMat, 0, 0.962, -0.034);
     dashScreen.rotation.x = -0.35;
-    addTo(steerPivot, B(isChopper ? 0.82 : 0.70, 0.04, 0.04), CHROME_M, 0, isChopper ? 1.08 : 0.93, 0); // gidon borusu
+    addTo(steerPivot, B(isChopper ? 0.80 : 0.70, 0.04, 0.04), CHROME_M, 0, isChopper ? 1.04 : 0.93, 0);
     [-0.33, 0.33].forEach(hx => {
-      addTo(steerPivot, B(0.14, 0.055, 0.055), TRIM_M, hx, isChopper ? 1.08 : 0.93, 0);
+      addTo(steerPivot, B(0.14, 0.055, 0.055), TRIM_M, hx, isChopper ? 1.04 : 0.93, 0);
       if(isCross) addTo(steerPivot, B(0.16, 0.09, 0.04), paint, hx, 0.94, -0.06); // cross elcik koruma kalkanı
     });
     [-1, 1].forEach(dir => {
       const mStem = addTo(steerPivot, B(0.10, 0.02, 0.02), CHROME_M, dir * 0.27, 0.98, -0.04);
-      mStem.rotation.z = dir * 0.42;                                            // gidondan yukarı uzanan kibar ayna kolu
+      mStem.rotation.z = dir * 0.42;
       const mirGrp = new THREE.Group();
       mirGrp.position.set(dir * 0.32, 1.03, -0.05);
-      mirGrp.rotation.y = -dir * 0.18;                                          // sürücünün gözüne doğru dönük açı
+      mirGrp.rotation.y = -dir * 0.18;
       mirGrp.rotation.x = -0.08;
       steerPivot.add(mirGrp);
-      addTo(mirGrp, B(0.145, 0.09, 0.024), TRIM_M, 0, 0, -0.014);               // siyah ayna dış kasası (küçültüldü)
-      addTo(mirGrp, B(0.138, 0.084, 0.008), motoMirrorFrameMat, 0, 0, -0.004);  // ince mavi iç çerçeve
-      addTo(mirGrp, GEO.motoMirrorGlass, motoMirrorGlassMat, 0, 0, 0.003);      // arkayı gösteren canlı ayna camı
+      addTo(mirGrp, B(0.145, 0.09, 0.024), TRIM_M, 0, 0, -0.014);
+      addTo(mirGrp, B(0.138, 0.084, 0.008), motoMirrorFrameMat, 0, 0, -0.004);
+      addTo(mirGrp, GEO.motoMirrorGlass, motoMirrorGlassMat, 0, 0, 0.003);
     });
     // 6. Kademeli sürücü selesi ve yukarı eğimli sivri yarış kuyruğu (depodan kuyruğa kesintisiz birleşir!)
-    addTo(g, B(0.34, 0.14, 0.48), TRIM_M, 0, 0.78, 0.26);                      // sürücü koltuğu
+    addTo(g, B(0.34, 0.14, 0.48), isChopper ? M(0x451a03) : TRIM_M, 0, 0.78, 0.26); // sürücü koltuğu
     addTo(g, B(0.28, 0.16, 0.42), DARK_GRILLE_M, 0, 0.72, 0.52);               // kuyruk altı şasi bağlantısı
     const tail = addTo(g, B(0.30, 0.15, 0.54), paint, 0, 0.88, 0.70);          // sivri arka kuyruk
     tail.rotation.x = 0.20;
-    addTo(g, B(0.26, 0.06, 0.28), TRIM_M, 0, 0.96, 0.68).rotation.x = 0.20;    // artçı selesi
-    // 7. Altın USD ön amortisör çatalları (ön teker göbeğinden z=-0.92 doğrudan gidon boğazına z=-0.62 bağlanır!)
+    addTo(g, B(0.26, 0.06, 0.28), isChopper ? M(0x451a03) : TRIM_M, 0, 0.96, 0.68).rotation.x = 0.20; // artçı selesi
+    // 7. Altın USD ön amortisör çatalları
     [-0.14, 0.14].forEach(fx => {
       const fork = addTo(g, GEO.motoFork, GOLD_FORK_M, fx, 0.63, -0.77);
       fork.rotation.x = 0.48;
-      addTo(g, B(0.05, 0.08, 0.08), TRIM_M, fx, 0.36, -0.92);                  // ön aks bağlantı ayağı
+      addTo(g, B(0.05, 0.08, 0.08), TRIM_M, fx, 0.36, -0.92);
     });
-    addTo(g, B(0.22, 0.06, 0.34), paint, 0, 0.67, -0.92);                      // ön teker üstü çamurluk (tekere değmez)
-    // 8. Arka maşa (swingarm: motor şasisinden arka teker göbeğine z=+0.92 uzanır)
+    addTo(g, B(0.22, 0.06, 0.34), paint, 0, 0.67, -0.92);
+    // 8. Arka maşa (swingarm)
     [-0.15, 0.15].forEach(rx => {
       const sw = addTo(g, B(0.045, 0.08, 0.64), M(0x4b5563), rx, 0.41, 0.62);
       sw.rotation.x = -0.14;
     });
-    // 9. Sağ yanda yukarı eğimli yarış egzozu (uç kapağı gövdeye tam yapışık!)
+    // 9. Sağ yanda yukarı eğimli yarış egzozu
     const mExPipe = addTo(g, new THREE.CylinderGeometry(0.032, 0.032, 0.42, 6), CHROME_M, 0.20, 0.40, 0.28);
     mExPipe.rotation.x = Math.PI / 2 - 0.28;
     const mExCan = addTo(g, new THREE.CylinderGeometry(0.055, 0.065, 0.48, 8), M(0x374151), 0.22, 0.54, 0.66);
@@ -4643,8 +4636,8 @@ function car(color, type = 'sedan', modelId = ''){
     // 10. Çift agresif ön far ve arka LED stop lambası (GEO.light ile far sistemiyle %100 uyumlu!)
     addTo(g, GEO.light, HEAD_M, -0.10, 0.78, -0.87);
     addTo(g, GEO.light, HEAD_M, 0.10, 0.78, -0.87);
-    addTo(g, GEO.light, TAIL_M, 0, 0.93, 0.97);
-    // 11. Arka plaka tutucu ve plaka (tekerleğe değmez, kuyruk altında temiz durur)
+    addTo(g, GEO.light, TAIL_M, 0, 0.93, 0.99);
+    // 11. Arka plaka tutucu ve plaka
     addTo(g, B(0.05, 0.14, 0.05), TRIM_M, 0, 0.82, 0.94).rotation.x = 0.30;
     addTo(g, GEO.plate, PLATE_M, 0, 0.75, 0.99);
     // 12. Ön ve arka motosiklet tekerlekleri + altın jantlar + çelik fren diskleri
@@ -4658,258 +4651,274 @@ function car(color, type = 'sedan', modelId = ''){
       addTo(w, GEO.motoDisc, CHROME_M, 0.13, 0, 0);
       if(!isRear) addTo(w, GEO.motoDisc, CHROME_M, -0.13, 0, 0);
     });
-    // 13. Üzerinde yarış tulumlu ve kasklı sürücü figürü (sürülürken görünür, sele ve gidona tam oturur)
+    // 13. Üzerinde yarış tulumlu ve kasklı sürücü figürü
     const rider = new THREE.Group();
     rider.name = 'motoRider';
-    addTo(rider, B(0.38, 0.52, 0.24), M(0x111827), 0, 1.15, 0.14).rotation.x = -0.42; // öne eğik gövde
-    addTo(rider, B(0.30, 0.22, 0.12), paint, 0, 1.22, 0.26).rotation.x = -0.42;       // sırt hörgücü
-    addTo(rider, new THREE.SphereGeometry(0.20, 10, 8), paint, 0, 1.50, -0.06);      // yarış kaskı
-    addTo(rider, B(0.30, 0.10, 0.06), GLASS_M, 0, 1.50, -0.23);                      // kask vizörü
-    addTo(rider, B(0.12, 0.46, 0.12), M(0x111827), -0.24, 1.04, -0.22).rotation.x = 0.78; // sol kol gidona uzanır
-    addTo(rider, B(0.12, 0.46, 0.12), M(0x111827), 0.24, 1.04, -0.22).rotation.x = 0.78;  // sağ kol gidona uzanır
-    addTo(rider, B(0.13, 0.42, 0.15), M(0x1f2937), -0.23, 0.66, 0.18).rotation.x = -0.35; // sol bacak
-    addTo(rider, B(0.13, 0.42, 0.15), M(0x1f2937), 0.23, 0.66, 0.18).rotation.x = -0.35; // sağ bacak
+    addTo(rider, B(0.38, 0.52, 0.24), M(0x111827), 0, 1.15, 0.14).rotation.x = -0.42;
+    addTo(rider, B(0.30, 0.22, 0.12), paint, 0, 1.22, 0.26).rotation.x = -0.42;
+    addTo(rider, new THREE.SphereGeometry(0.20, 10, 8), paint, 0, 1.50, -0.06);
+    addTo(rider, B(0.30, 0.10, 0.06), GLASS_M, 0, 1.50, -0.23);
+    addTo(rider, B(0.12, 0.46, 0.12), M(0x111827), -0.24, 1.04, -0.22).rotation.x = 0.78;
+    addTo(rider, B(0.12, 0.46, 0.12), M(0x111827), 0.24, 1.04, -0.22).rotation.x = 0.78;
+    addTo(rider, B(0.13, 0.42, 0.15), M(0x1f2937), -0.23, 0.66, 0.18).rotation.x = -0.35;
+    addTo(rider, B(0.13, 0.42, 0.15), M(0x1f2937), 0.23, 0.66, 0.18).rotation.x = -0.35;
     g.add(rider);
     const carSpot = new THREE.Mesh(new THREE.CircleGeometry(2.4, 16), carSpotMat);
     carSpot.rotation.x = -Math.PI / 2;
     carSpot.position.set(0, 0.05, -4.2);
     g.add(carSpot);
-    g.rotation.order = 'YXZ'; // önce yön (Y), sonra sağa-sola yatış (Z) uygulansın ki her yönde doğru yatsın!
+    g.rotation.order = 'YXZ';
     g.rotation.y = Math.PI;
     addBlob(g, 0.75, 1.9);
     return g;
   }
+
+  // --- TÜM 4 TEKERLEKLİ ARABALAR: KESİNTİSİZ GÖVDE VE %100 GÖRÜNÜR ÖN/ARKA FAR HİZALAMASI ---
   const isSport = type === 'sport';
+  const isCompact = modelId === 'kucuk';
+  const isLong = modelId === 'klasik' || modelId === 'luks';
+  const bodyLen = isCompact ? 3.68 : (isLong ? 4.44 : (isSport ? 4.36 : 4.24));
+  const halfZ = bodyLen / 2;
+  const bodyW = isSport ? 2.00 : (type === 'suv' || type === 'pickup' || type === 'van' ? 1.98 : 1.90);
+
   if(isSport){
+    // Tüm spor ve hiper arabalarda (Spor, Lambo, Ferrari, Bugatti) boşluksuz alçak gövde tabanı + üst omuz kuşağı
+    if(modelId === 'bugatti'){
+      addTo(g, B(bodyW, 0.44, halfZ), paint, 0, 0.46, -halfZ / 2);              // mavi ön yarı gövde
+      addTo(g, B(bodyW + 0.02, 0.46, halfZ), TRIM_M, 0, 0.47, halfZ / 2);       // siyah karbon arka yarı gövde
+    } else {
+      addTo(g, B(bodyW, 0.44, bodyLen), paint, 0, 0.46, 0);                     // ana alt spor gövde (y: 0.24 .. 0.68)
+    }
+    addTo(g, B(bodyW - 0.08, 0.16, bodyLen - 0.18), modelId === 'bugatti' ? TRIM_M : paint, 0, 0.70, 0.04); // üst omuz kuşağı (y: 0.62 .. 0.78 - kabinle tam birleşir!)
+    addTo(g, B(bodyW - 0.12, 0.16, 1.36), paint, 0, 0.66, -halfZ + 0.70).rotation.x = 0.12; // aerodinamik eğimli ön kaput
+    addTo(g, B(bodyW + 0.04, 0.08, 2.50), TRIM_M, 0, 0.25, 0);                  // alt karbon marşpiyel
+    // Kesintisiz spor kokpit, ön/arka/yan camlar
+    addTo(g, B(1.50, 0.34, 1.66), TRIM_M, 0, 0.90, -0.08);                      // spor kabin (y: 0.73 .. 1.07)
+    addTo(g, B(1.44, 0.05, 1.44), modelId === 'bugatti' ? TRIM_M : paint, 0, 1.08, -0.08); // spor tavan
+    addTo(g, B(1.42, 0.42, 0.04), GLASS_M, 0, 0.90, -0.94).rotation.x = 0.56;   // yatık ön cam
+    addTo(g, B(1.40, 0.40, 0.04), GLASS_M, 0, 0.90, 0.78).rotation.x = -0.56;   // yatık arka cam
+    addTo(g, B(0.04, 0.28, 1.46), GLASS_M, 0.76, 0.91, -0.08);                  // sağ yan cam
+    addTo(g, B(0.04, 0.28, 1.46), GLASS_M, -0.76, 0.91, -0.08);                 // sol yan cam
+    [-1.01, 1.01].forEach(sx => addTo(g, B(0.06, 0.24, 0.68), DARK_GRILLE_M, sx, 0.54, 0.38)); // yan hava kanalları
+    // Ön spor ızgara
+    addTo(g, B(1.36, 0.18, 0.05), DARK_GRILLE_M, 0, 0.42, -halfZ - 0.01);
+
     if(modelId === 'lambo'){
-      // 🏎️ LAMBORGHINI AVENTADOR: Çok alçak kama (wedge) burun, keskin altıgen yan hava kanalları, arkada siyah motor panjurları (louvers) ve dev difüzör
-      addTo(g, B(2.06, 0.34, 4.42), paint, 0, 0.40, 0);
-      addTo(g, B(1.98, 0.18, 1.55), paint, 0, 0.50, -1.45).rotation.x = 0.18;  // keskin kama burun
-      addTo(g, B(1.46, 0.30, 1.50), TRIM_M, 0, 0.76, -0.15);                   // basık savaş uçağı kokpiti
-      addTo(g, B(1.40, 0.04, 1.25), paint, 0, 0.93, -0.15);
-      addTo(g, B(1.40, 0.46, 0.04), GLASS_M, 0, 0.76, -1.02).rotation.x = 0.66;// çok yatık ön cam
+      // 🏎️ LAMBORGHINI AVENTADOR: Kademeli siyah arka motor panjurları (louvers) ve alçak geniş Lambo kanadı
       for(let lv = 0; lv < 4; lv++){
-        addTo(g, B(1.12, 0.04, 0.22), TRIM_M, 0, 0.84 - lv * 0.05, 0.62 + lv * 0.28).rotation.x = -0.25; // siyah motor üstü kademeli panjurlar
+        addTo(g, B(1.16, 0.04, 0.22), TRIM_M, 0, 0.96 - lv * 0.04, 0.85 + lv * 0.26).rotation.x = -0.20;
       }
-      [-1.02, 1.02].forEach(sx => addTo(g, B(0.08, 0.26, 0.75), DARK_GRILLE_M, sx, 0.48, 0.35)); // dev yan hava girişleri
-      addTo(g, B(1.92, 0.06, 0.30), TRIM_M, 0, 0.86, 2.02);                    // aktif siyah arka kanat
+      addTo(g, B(1.94, 0.06, 0.30), TRIM_M, 0, 0.94, halfZ - 0.22);
+      [-0.64, 0.64].forEach(px => addTo(g, B(0.06, 0.18, 0.18), TRIM_M, px, 0.84, halfZ - 0.22));
     } else if(modelId === 'ferrari'){
-      // 🏎️ FERRARI F8 TRIBUTO: Kavisli İtalyan gövde, ortadan geçen çift siyah yarış şeridi, cam motor kapağı altında kırmızı V8 motor ve F1 ön burun
-      addTo(g, B(1.98, 0.38, 4.36), paint, 0, 0.43, 0);
-      addTo(g, B(1.86, 0.20, 1.38), paint, 0, 0.56, -1.45).rotation.x = 0.14;
-      [-0.22, 0.22].forEach(rx => addTo(g, B(0.14, 0.02, 4.32), TRIM_M, rx, 0.66, 0)); // çift siyah yarış şeridi
-      addTo(g, B(1.48, 0.34, 1.55), TRIM_M, 0, 0.82, -0.12);
-      addTo(g, B(1.42, 0.44, 0.04), GLASS_M, 0, 0.82, -0.96).rotation.x = 0.58;
-      addTo(g, B(0.96, 0.04, 1.05), GLASS_M, 0, 0.78, 1.15).rotation.x = -0.28; // şeffaf motor camı
-      addTo(g, B(0.68, 0.14, 0.75), M(0xdc2626), 0, 0.68, 1.15);               // camın altından görünen kırmızı V8 motor bloğu
-      [-0.99, 0.99].forEach(sx => addTo(g, B(0.08, 0.24, 0.62), DARK_GRILLE_M, sx, 0.50, 0.42));
+      // 🏎️ FERRARI F8: Boydan boya çift siyah yarış şeridi ve şeffaf motor camı altında kırmızı V8 motor
+      [-0.20, 0.20].forEach(rx => addTo(g, B(0.14, 0.02, bodyLen - 0.16), TRIM_M, rx, 0.79, 0));
+      addTo(g, B(0.92, 0.03, 0.92), GLASS_M, 0, 0.82, 1.28);
+      addTo(g, B(0.68, 0.08, 0.72), M(0xdc2626), 0, 0.78, 1.28);
     } else if(modelId === 'bugatti'){
-      // 👑 BUGATTI CHIRON: Çift renkli (arka ve tavan siyah karbon, ön mavi), ikonik at nalı ön ızgara, yan C-şeridi ve sırt yüzgeci (spine fin)
-      addTo(g, B(2.04, 0.42, 2.25), paint, 0, 0.45, -1.08);                    // mavi ön yarı gövde
-      addTo(g, B(2.06, 0.46, 2.20), TRIM_M, 0, 0.47, 1.10);                    // siyah karbon arka yarı gövde
-      addTo(g, B(1.88, 0.20, 1.32), paint, 0, 0.60, -1.46).rotation.x = 0.12;
-      addTo(g, B(1.52, 0.36, 1.68), TRIM_M, 0, 0.86, -0.05);                   // siyah karbon kabin
-      addTo(g, B(0.06, 0.18, 1.65), CHROME_M, 0, 0.98, 0.88);                  // Bugatti orta sırt omurga yüzgeci
-      addTo(g, B(0.56, 0.36, 0.08), DARK_GRILLE_M, 0, 0.44, -2.21);            // ikonik at nalı ön ızgara
-      addTo(g, B(0.62, 0.38, 0.06), CHROME_M, 0, 0.45, -2.20);                 // at nalı krom çerçevesi
-      [-1.03, 1.03].forEach(sx => addTo(g, B(0.05, 0.42, 0.12), CHROME_M, sx, 0.64, 0.02)); // yan krom C imzası
-      addTo(g, B(1.88, 0.06, 0.36), TRIM_M, 0, 0.92, 2.05).rotation.x = 0.18;  // kalkık havalı fren kanadı (airbrake)
+      // 👑 BUGATTI CHIRON: At nalı krom ön ızgara, krom sırt omurga yüzgeci, yan C-şeridi ve aktif arka kanat
+      addTo(g, B(0.54, 0.34, 0.06), DARK_GRILLE_M, 0, 0.46, -halfZ - 0.02);
+      addTo(g, B(0.60, 0.36, 0.04), CHROME_M, 0, 0.46, -halfZ - 0.015);
+      addTo(g, B(0.05, 0.16, 1.45), CHROME_M, 0, 1.04, 0.82);
+      [-1.02, 1.02].forEach(sx => addTo(g, B(0.05, 0.38, 0.14), CHROME_M, sx, 0.68, 0.02));
+      addTo(g, B(1.86, 0.06, 0.34), TRIM_M, 0, 0.96, halfZ - 0.20).rotation.x = 0.14;
     } else {
-      // 🏎️ KIRMIZI SPOR ARABA (GT / Porsche 911 GT3 tarzı): Yuvarlak hatlı coupe ve yüksek GT yarış spoyleri
-      addTo(g, B(1.96, 0.40, 4.35), paint, 0, 0.44, 0);
-      addTo(g, B(1.88, 0.20, 1.35), paint, 0, 0.58, -1.45).rotation.x = 0.12;
-      addTo(g, B(1.90, 0.22, 1.15), paint, 0, 0.64, 1.55).rotation.x = -0.08;
-      addTo(g, B(2.02, 0.08, 2.50), TRIM_M, 0, 0.25, 0);
-      addTo(g, B(1.50, 0.34, 1.65), TRIM_M, 0, 0.84, -0.05);
-      addTo(g, B(1.44, 0.05, 1.42), paint, 0, 1.03, -0.05);
-      addTo(g, B(1.42, 0.44, 0.04), GLASS_M, 0, 0.84, -0.96).rotation.x = 0.56;
-      addTo(g, B(1.40, 0.42, 0.04), GLASS_M, 0, 0.84, 0.88).rotation.x = -0.58;
-      addTo(g, B(1.82, 0.06, 0.34), TRIM_M, 0, 1.06, 1.96);                    // yüksek GT arka yarış kanadı
-      [-0.58, 0.58].forEach(px => addTo(g, B(0.06, 0.28, 0.18), TRIM_M, px, 0.90, 1.96));
+      // 🏎️ SPOR GT: Yüksek GT yarış kanadı
+      addTo(g, B(1.84, 0.06, 0.34), TRIM_M, 0, 1.08, halfZ - 0.24);
+      [-0.58, 0.58].forEach(px => addTo(g, B(0.06, 0.30, 0.18), TRIM_M, px, 0.92, halfZ - 0.24));
     }
-    addTo(g, B(0.04, 0.28, 1.46), GLASS_M, 0.76, 0.86, -0.05);
-    addTo(g, B(0.04, 0.28, 1.46), GLASS_M, -0.76, 0.86, -0.05);
-  } else if(type === 'van'){
-    if(modelId === 'kartal'){
-      // 🚗 TOFAŞ KARTAL SLX (Station Wagon): Köşeli Tofaş ön burun + arkaya kadar uzanan alçak Station Wagon bagaj tavanı ve tavan barları
-      addTo(g, B(1.88, 0.52, 4.28), paint, 0, 0.54, 0);
-      addTo(g, B(1.84, 0.14, 1.25), paint, 0, 0.82, -1.42);                    // düz köşeli Tofaş kaputu
-      addTo(g, B(1.64, 0.52, 2.95), paint, 0, 1.14, 0.55);                     // arkaya kadar uzanan Station Wagon üst kabin
-      addTo(g, B(1.56, 0.48, 0.04), GLASS_M, 0, 1.14, -0.98).rotation.x = 0.32;// ön cam
-      addTo(g, B(1.54, 0.46, 0.04), GLASS_M, 0, 1.14, 2.04);                   // dik arka bagaj camı
-      addTo(g, B(0.04, 0.40, 2.68), GLASS_M, 0.83, 1.15, 0.55);                // uzun sağ yan camlar
-      addTo(g, B(0.04, 0.40, 2.68), GLASS_M, -0.83, 1.15, 0.55);               // uzun sol yan camlar
-      [-0.64, 0.64].forEach(rx => addTo(g, B(0.06, 0.07, 2.55), TRIM_M, rx, 1.44, 0.58)); // Kartal SLX tavan bagaj çıtaları
-      addTo(g, B(1.36, 0.22, 0.06), TRIM_M, 0, 0.64, -2.14);                   // siyah yatay Tofaş panjuru
-    } else {
-      // 🚐 VIP MİNİBÜS: Yüksek tavanlı, karartılmış panoramik yan camlı ve tavan klimalı lüks minibüs
-      addTo(g, GEO.vanBody, paint, 0, 0.95, 0);
-      addTo(g, B(1.96, 0.52, 0.45), paint, 0, 0.56, -2.05).rotation.x = 0.20;
-      addTo(g, GEO.vanWin, GLASS_M, 1.01, 1.38, -0.15);
-      addTo(g, GEO.vanWin, GLASS_M, -1.01, 1.38, -0.15);
-      addTo(g, B(1.76, 0.62, 0.04), GLASS_M, 0, 1.28, -2.11).rotation.x = 0.14;
-      addTo(g, B(1.68, 0.52, 0.04), GLASS_M, 0, 1.30, 2.11);
-      addTo(g, B(1.35, 0.26, 0.06), DARK_GRILLE_M, 0, 0.60, -2.26);
-      addTo(g, B(1.38, 0.04, 0.07), CHROME_M, 0, 0.74, -2.26);
-      addTo(g, B(0.95, 0.18, 1.15), M(0xe2e8f0), 0, 1.98, 0.35);               // tavan üstü VIP klima ünitesi
-    }
-  } else if(type === 'suv'){
-    if(modelId === 'gwagon'){
-      // 🛡️ ZIRHLI G-SERİSİ (Mercedes G-Wagon): Tam köşeli askeri/VIP küp kasa, çamurluk üstü sinyaller, ağır çelik bullbar ve krom stepne kapağı
-      addTo(g, B(2.04, 0.68, 4.32), paint, 0, 0.66, 0);
-      addTo(g, B(1.92, 0.72, 2.86), paint, 0, 1.34, 0.38);                     // köşeli yüksek G-Serisi kutu kabin
-      addTo(g, B(1.78, 0.54, 0.04), GLASS_M, 0, 1.34, -1.06).rotation.x = 0.10;// neredeyse tam dik ön cam
-      addTo(g, B(1.70, 0.50, 0.04), GLASS_M, 0, 1.34, 1.82);
-      addTo(g, B(0.04, 0.48, 2.55), GLASS_M, 0.97, 1.34, 0.38);
-      addTo(g, B(0.04, 0.48, 2.55), GLASS_M, -0.97, 1.34, 0.38);
-      addTo(g, B(1.44, 0.36, 0.16), CHROME_M, 0, 0.62, -2.24);                 // zırhlı ön çelik koruma barı
-      [-0.78, 0.78].forEach(fx => addTo(g, B(0.12, 0.08, 0.18), M(0xf59e0b), fx, 1.03, -1.75)); // G-Wagon kaput üstü sinyal çıkıntıları
-      addTo(g, new THREE.CylinderGeometry(0.42, 0.42, 0.24, 12).rotateX(Math.PI / 2), CHROME_M, 0, 1.02, 2.24); // krom çemberli stepne
-      addTo(g, new THREE.CylinderGeometry(0.36, 0.36, 0.26, 12).rotateX(Math.PI / 2), paint, 0, 1.02, 2.24);
-    } else {
-      // 🚙 LÜKS ARAZİ CİPİ (Range Rover tarzı): Siyah yüzer tavanlı (floating roof), gümüş alt korumalı modern SUV
-      addTo(g, B(2.02, 0.64, 4.30), paint, 0, 0.62, 0);
-      addTo(g, B(1.82, 0.54, 2.65), TRIM_M, 0, 1.20, 0.28);                    // siyah camlı yüzer kabin
-      addTo(g, B(1.86, 0.08, 2.72), M(0x111827), 0, 1.50, 0.28);               // kontrast parlak siyah tavan
-      addTo(g, B(1.74, 0.48, 0.04), GLASS_M, 0, 1.20, -1.06).rotation.x = 0.30;
-      addTo(g, B(1.66, 0.46, 0.04), GLASS_M, 0, 1.20, 1.62).rotation.x = -0.22;
-      addTo(g, B(0.04, 0.42, 2.38), GLASS_M, 0.92, 1.22, 0.28);
-      addTo(g, B(0.04, 0.42, 2.38), GLASS_M, -0.92, 1.22, 0.28);
-      addTo(g, B(1.38, 0.26, 0.06), CHROME_M, 0, 0.74, -2.16);                 // Range Rover gümüş ön ızgara
-    }
-  } else if(type === 'pickup'){
-    // 🛻 4x4 ARAZİ KAMYONETİ (Pickup): Çift kabin, açık arka kasa, çelik roll-bar ve üstünde 4 adet tepe projektör lambası!
-    addTo(g, B(2.00, 0.62, 4.38), paint, 0, 0.62, 0);
-    addTo(g, B(1.80, 0.58, 1.65), paint, 0, 1.20, -0.35);
-    addTo(g, B(1.70, 0.48, 0.04), GLASS_M, 0, 1.22, -1.20).rotation.x = 0.28;
-    addTo(g, B(0.04, 0.42, 1.35), GLASS_M, 0.91, 1.22, -0.35);
-    addTo(g, B(0.04, 0.42, 1.35), GLASS_M, -0.91, 1.22, -0.35);
-    addTo(g, B(1.66, 0.08, 1.55), TRIM_M, 0, 0.72, 1.32);
-    addTo(g, B(1.64, 0.52, 0.10), TRIM_M, 0, 1.18, 0.58);                      // kasa üstü roll-bar
-    [-0.52, -0.18, 0.18, 0.52].forEach(lx => addTo(g, B(0.18, 0.14, 0.10), HEAD_M, lx, 1.50, 0.56)); // 4'lü tepe arazi projektörü
-    addTo(g, B(1.40, 0.30, 0.06), DARK_GRILLE_M, 0, 0.68, -2.20);
-  } else if(modelId === 'kucuk'){
-    // 🚗 KÜÇÜK HATCHBACK (Mini Cooper / Golf tarzı): Kısa kompakt gövde (arkada çıkıntılı bagaj yok!), beyaz tavan ve kaput şeritleri
-    addTo(g, B(1.84, 0.54, 3.48), paint, 0, 0.54, -0.18);
-    addTo(g, B(1.56, 0.50, 1.92), TRIM_M, 0, 1.12, 0.08);
-    addTo(g, B(1.60, 0.08, 1.98), M(0xffffff), 0, 1.40, 0.08);                 // ikonik beyaz Mini tavanı
-    [-0.36, 0.36].forEach(sx => addTo(g, B(0.16, 0.02, 1.05), M(0xffffff), sx, 0.82, -1.32)); // beyaz kaput şeritleri
-    addTo(g, B(1.46, 0.48, 0.04), GLASS_M, 0, 1.12, -0.90).rotation.x = 0.32;
-    addTo(g, B(1.44, 0.46, 0.04), GLASS_M, 0, 1.12, 1.06).rotation.x = -0.22;  // dik inen hatchback arka cam
-    addTo(g, B(0.04, 0.40, 1.65), GLASS_M, 0.79, 1.14, 0.08);
-    addTo(g, B(0.04, 0.40, 1.65), GLASS_M, -0.79, 1.14, 0.08);
-  } else if(modelId === 'tofas'){
-    // 🚗 TOFAŞ ŞAHİN: Keskin köşeli kutu gibi 90'lar kasası, siyah plastik tamponlar, siyah ön panjur ve arka cam jaluzisi!
-    addTo(g, B(1.84, 0.50, 4.18), paint, 0, 0.52, 0);
-    addTo(g, B(1.52, 0.48, 1.86), paint, 0, 1.10, -0.08);                      // köşeli Tofaş tavan/kabin
-    addTo(g, B(1.44, 0.48, 0.04), GLASS_M, 0, 1.10, -1.04).rotation.x = 0.34;
-    addTo(g, B(1.42, 0.46, 0.04), GLASS_M, 0, 1.10, 0.88).rotation.x = -0.34;
-    for(let j = 0; j < 4; j++){
-      addTo(g, B(1.36, 0.03, 0.06), TRIM_M, 0, 1.26 - j * 0.10, 0.78 + j * 0.07); // Tofaş siyah arka cam jaluzisi
-    }
-    addTo(g, B(0.04, 0.40, 1.62), GLASS_M, 0.77, 1.10, -0.08);
-    addTo(g, B(0.04, 0.40, 1.62), GLASS_M, -0.77, 1.10, -0.08);
-    addTo(g, B(1.38, 0.22, 0.06), TRIM_M, 0, 0.62, -2.10);                     // siyah Tofaş ön panjuru
-    addTo(g, B(1.76, 0.06, 0.18), TRIM_M, 0, 0.82, 1.98);                      // siyah bagaj üstü çıta spoyler
-  } else if(modelId === 'klasik'){
-    // 🚘 KLASİK AMERİKAN (1959 Cadillac tarzı): Uzun pembe gövde, arkada ikonik sivri kuyruk yüzgeçleri (tailfins), beyaz tente tavan ve dev krom tamponlar
-    addTo(g, B(1.98, 0.48, 4.52), paint, 0, 0.50, 0);
-    addTo(g, B(1.54, 0.44, 1.75), M(0xffffff), 0, 1.06, -0.05);                // klasik beyaz tente tavan
-    [-0.86, 0.86].forEach(fx => {
-      addTo(g, B(0.10, 0.34, 1.35), paint, fx, 0.82, 1.52).rotation.x = 0.16;  // ikonik Cadillac arka kuyruk yüzgeçleri!
-      addTo(g, B(0.12, 0.04, 1.36), CHROME_M, fx, 0.98, 1.52).rotation.x = 0.16;
-    });
-    addTo(g, B(1.46, 0.44, 0.04), GLASS_M, 0, 1.06, -0.96).rotation.x = 0.36;
-    addTo(g, B(1.96, 0.24, 0.18), CHROME_M, 0, 0.36, -2.26);                   // dev krom ön tampon
-    addTo(g, B(1.96, 0.24, 0.18), CHROME_M, 0, 0.36, 2.26);                    // dev krom arka tampon
-  } else if(modelId === 'elektrikli'){
-    // ⚡ ELEKTRİKLİ SÜPER SEDAN (Togg / Tesla tarzı): Önde boydan boya parlayan mavi LED ışık barı, kapalı aerodinamik burun ve komple cam tavan
-    addTo(g, B(1.96, 0.54, 4.30), paint, 0, 0.54, 0);
-    addTo(g, B(1.62, 0.48, 2.20), GLASS_M, 0, 1.14, 0.05);                     // komple panoramik cam kabin/tavan
-    addTo(g, B(1.86, 0.07, 0.06), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0, 0.72, -2.16); // boydan boya mavi LED far şeridi
-    [-0.99, 0.99].forEach(sx => addTo(g, B(0.03, 0.04, 0.22), CHROME_M, sx, 0.76, -0.15)); // gömme krom kapı kolları
-  } else if(modelId === 'luks'){
-    // 🖤 MAKAM ARABASI (Rolls-Royce / Maybach tarzı): Uzun limuzin gövde, gümüş çift renk kaput & tavan, dik krom Pantheon ızgara ve altın kaput heykelciği
-    addTo(g, B(1.98, 0.58, 4.54), paint, 0, 0.56, 0);
-    addTo(g, B(1.78, 0.04, 1.48), M(0xcbd5e1), 0, 0.87, -1.42);                // gümüş Maybach/Rolls kaputu
-    addTo(g, B(1.66, 0.54, 2.35), TRIM_M, 0, 1.18, 0.08);
-    addTo(g, B(1.68, 0.06, 2.38), M(0xcbd5e1), 0, 1.47, 0.08);                 // gümüş makam tavanı
-    addTo(g, B(1.56, 0.50, 0.04), GLASS_M, 0, 1.18, -1.12).rotation.x = 0.28;
-    addTo(g, B(1.54, 0.48, 0.04), GLASS_M, 0, 1.18, 1.28).rotation.x = -0.26;
-    addTo(g, B(0.04, 0.44, 2.05), GLASS_M, 0.84, 1.18, 0.08);
-    addTo(g, B(0.04, 0.44, 2.05), GLASS_M, -0.84, 1.18, 0.08);
-    addTo(g, B(0.96, 0.42, 0.08), CHROME_M, 0, 0.66, -2.26);                   // dik krom Rolls-Royce tapınak ızgarası
-    addTo(g, B(0.06, 0.14, 0.06), M(0xfacc15), 0, 0.94, -2.18);                // altın kaput üstü heykelcik (Spirit of Ecstasy)
+  } else if(type === 'van' && modelId !== 'kartal'){
+    // 🚐 VIP MİNİBÜS: Yüksek tavanlı, panoramik yan camlı ve tavan klimalı minibüs (halfZ = 2.12 ile tam hizalı)
+    addTo(g, B(1.98, 1.42, bodyLen), paint, 0, 0.96, 0);
+    addTo(g, B(1.94, 0.50, 0.42), paint, 0, 0.56, -halfZ + 0.12).rotation.x = 0.18;
+    addTo(g, GEO.vanWin, GLASS_M, 1.00, 1.36, -0.10);
+    addTo(g, GEO.vanWin, GLASS_M, -1.00, 1.36, -0.10);
+    addTo(g, B(1.76, 0.58, 0.04), GLASS_M, 0, 1.30, -halfZ - 0.01);
+    addTo(g, B(1.68, 0.52, 0.04), GLASS_M, 0, 1.30, halfZ + 0.01);
+    addTo(g, B(1.36, 0.26, 0.05), DARK_GRILLE_M, 0, 0.58, -halfZ - 0.01);
+    addTo(g, B(1.40, 0.04, 0.06), CHROME_M, 0, 0.72, -halfZ - 0.01);
+    addTo(g, B(0.96, 0.18, 1.15), M(0xe2e8f0), 0, 1.74, 0.30);                  // tavan üstü VIP klima
   } else {
-    // 🚗 Gerçekçi Sedan / Taksi: kavisli kaput ve bagaj, eğimli ön/arka camlar, B sütunu, krom ızgara, kapı kolları ve sunroof
-    addTo(g, B(1.92, 0.54, 4.24), paint, 0, 0.54, 0);                        // ana alt gövde
-    addTo(g, B(1.84, 0.18, 1.28), paint, 0, 0.84, -1.42).rotation.x = 0.10;  // hafif eğimli ön kaput
-    addTo(g, B(1.84, 0.16, 0.96), paint, 0, 0.85, 1.56).rotation.x = -0.06;  // arka bagaj kapağı
-    addTo(g, B(1.96, 0.09, 2.45), TRIM_M, 0, 0.28, 0);                       // alt marşpiyel kuşağı
-    // Üst kabin, boyalı tavan ve koyu cam sunroof
-    addTo(g, B(1.58, 0.50, 2.02), TRIM_M, 0, 1.16, -0.12);
-    addTo(g, B(1.52, 0.06, 1.88), paint, 0, 1.43, -0.12);                    // boyalı tavan
-    addTo(g, B(0.92, 0.02, 0.68), GLASS_M, 0, 1.465, -0.22);                 // tavan sunroof camı
-    // Eğimli ön cam (windshield) ve arka cam (rear window)
-    addTo(g, B(1.48, 0.54, 0.04), GLASS_M, 0, 1.17, -1.22).rotation.x = 0.42;
-    addTo(g, B(1.46, 0.50, 0.04), GLASS_M, 0, 1.17, 0.98).rotation.x = -0.40;
-    // Yan camlar ve ortadaki siyah kapı direği (B-pillar)
-    addTo(g, B(0.04, 0.40, 1.72), GLASS_M, 0.80, 1.18, -0.12);
-    addTo(g, B(0.04, 0.40, 1.72), GLASS_M, -0.80, 1.18, -0.12);
-    [-0.81, 0.81].forEach(sx => {
-      addTo(g, B(0.04, 0.42, 0.10), TRIM_M, sx, 1.18, -0.12);                // B sütunu
-      addTo(g, GEO.handle, CHROME_M, sx > 0 ? 0.97 : -0.97, 0.78, -0.25);    // ön kapı kolu
-      addTo(g, GEO.handle, CHROME_M, sx > 0 ? 0.97 : -0.97, 0.78, 0.52);     // arka kapı kolu
-      addTo(g, B(0.03, 0.05, 2.35), TRIM_M, sx > 0 ? 0.97 : -0.97, 0.52, 0); // yan koruma çıtası
+    // --- TÜM SEDAN, HATCHBACK, TOFAŞ, KARTAL, KLASİK, ELEKTRİKLİ, LÜKS, SUV, G-WAGON VE PICKUP ---
+    // 1. Kesintisiz Alt Gövde + Üst Omuz/Kaput/Bagaj Kuşağı (hiçbir modelde kabin ile gövde arasında boşluk kalmaz!)
+    addTo(g, B(bodyW, 0.58, bodyLen), paint, 0, 0.55, 0);                       // ana alt gövde (y: 0.26 .. 0.84)
+    addTo(g, B(bodyW - 0.06, 0.16, bodyLen - 0.12), paint, 0, 0.86, 0);         // üst kaput/omuz/bagaj kuşağı (y: 0.78 .. 0.94)
+    addTo(g, B(bodyW + 0.04, 0.09, bodyLen - 1.50), TRIM_M, 0, 0.28, 0);        // alt marşpiyel kuşağı
+    // Yan kapı kolları ve koruma çıtaları
+    [-1, 1].forEach(dir => {
+      const hx = dir * (bodyW / 2 + 0.01);
+      addTo(g, GEO.handle, CHROME_M, hx, 0.78, -0.25);
+      if(!isCompact) addTo(g, GEO.handle, CHROME_M, hx, 0.78, 0.52);
+      addTo(g, B(0.03, 0.05, bodyLen - 1.65), TRIM_M, hx, 0.52, 0);
     });
-    // Ön radyatör ızgarası, krom çerçeve ve alt hava girişi
-    addTo(g, B(1.16, 0.24, 0.05), DARK_GRILLE_M, 0, 0.64, -2.13);
-    addTo(g, B(1.20, 0.04, 0.06), CHROME_M, 0, 0.76, -2.13);
-    addTo(g, B(1.20, 0.03, 0.06), CHROME_M, 0, 0.64, -2.13);
-    addTo(g, B(1.36, 0.10, 0.05), DARK_GRILLE_M, 0, 0.38, -2.13);
-    if(type === 'taxi'){
-      addTo(g, GEO.taxiSign, TAXI_M, 0, 1.56, -0.15);                        // çatının üstünde TAKSİ tabelası
-      addTo(g, B(1.95, 0.07, 3.80), TRIM_M, 0, 0.66, 0);                     // taksi yan siyah dama kuşağı
+    // Ön radyatör ızgarası ve krom çerçevesi (her zaman ön yüzün -halfZ dışında, tam görünür!)
+    const gZ = -halfZ - 0.015;
+    if(modelId === 'luks'){
+      addTo(g, B(0.96, 0.38, 0.05), CHROME_M, 0, 0.68, gZ);                     // dik krom Rolls-Royce ızgarası
+      addTo(g, B(1.78, 0.03, 1.45), M(0xcbd5e1), 0, 0.945, -1.35);              // gümüş çift renk kaput
+      addTo(g, B(0.06, 0.14, 0.06), M(0xfacc15), 0, 1.01, -halfZ + 0.10);       // altın kaput heykelciği
+    } else if(modelId === 'elektrikli'){
+      addTo(g, B(1.78, 0.07, 0.05), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0, 0.76, gZ); // boydan boya mavi LED bar
+      addTo(g, B(1.32, 0.12, 0.04), DARK_GRILLE_M, 0, 0.42, gZ);
+    } else if(modelId === 'tofas' || modelId === 'kartal'){
+      addTo(g, B(1.36, 0.22, 0.05), TRIM_M, 0, 0.68, gZ);                       // siyah yatay Tofaş panjuru
+      addTo(g, B(1.32, 0.03, 0.06), CHROME_M, 0, 0.68, gZ - 0.005);
+    } else {
+      addTo(g, B(1.22, 0.24, 0.05), DARK_GRILLE_M, 0, 0.66, gZ);
+      addTo(g, B(1.26, 0.04, 0.06), CHROME_M, 0, 0.78, gZ);
+      addTo(g, B(1.26, 0.03, 0.06), CHROME_M, 0, 0.66, gZ);
+      addTo(g, B(1.36, 0.10, 0.05), DARK_GRILLE_M, 0, 0.40, gZ);
+    }
+
+    // 2. Modele Özel Üst Kabin, Camlar ve Karakteristik Detaylar (kabin tabanı y=0.90, gövde üstü y=0.94 ile iç içe geçer, asla havada kalmaz!)
+    if(type === 'suv' && modelId === 'gwagon'){
+      // 🛡️ ZIRHLI G-SERİSİ (G-Wagon): Yüksek köşeli askeri/VIP kutu kabin, çamurluk üstü sarı sinyaller, ön bullbar ve yüksek stepne
+      addTo(g, B(1.84, 0.64, 2.76), paint, 0, 1.24, 0.34);
+      addTo(g, B(1.72, 0.50, 0.04), GLASS_M, 0, 1.26, -1.06).rotation.x = 0.12; // dik ön cam
+      addTo(g, B(1.68, 0.48, 0.04), GLASS_M, 0, 1.26, 1.73);                    // dik arka cam
+      addTo(g, B(0.04, 0.46, 2.46), GLASS_M, 0.93, 1.26, 0.34);                 // sağ yan camlar
+      addTo(g, B(0.04, 0.46, 2.46), GLASS_M, -0.93, 1.26, 0.34);                // sol yan camlar
+      [-0.78, 0.78].forEach(fx => addTo(g, B(0.12, 0.08, 0.18), M(0xf59e0b), fx, 0.98, -1.72)); // kaput üstü turuncu sinyaller
+      addTo(g, B(1.12, 0.34, 0.12), CHROME_M, 0, 0.62, -halfZ - 0.05);          // ön çelik koruma demiri (bullbar)
+      // Arka stepne tekerleği (arka stop lambalarının ÜSTÜNDE y=1.18 konumunda durur, ışıkları kapatmaz!)
+      addTo(g, new THREE.CylinderGeometry(0.36, 0.36, 0.20, 12).rotateX(Math.PI / 2), CHROME_M, 0, 1.18, halfZ + 0.08);
+      addTo(g, new THREE.CylinderGeometry(0.30, 0.30, 0.22, 12).rotateX(Math.PI / 2), paint, 0, 1.18, halfZ + 0.08);
+    } else if(type === 'suv'){
+      // 🚙 LÜKS ARAZİ CİPİ (Range Rover): Siyah yüzer tavanlı (floating roof) geniş SUV kabin
+      addTo(g, B(1.78, 0.56, 2.64), TRIM_M, 0, 1.20, 0.26);
+      addTo(g, B(1.82, 0.08, 2.70), M(0x111827), 0, 1.50, 0.26);                // kontrast siyah tavan
+      addTo(g, B(1.68, 0.48, 0.04), GLASS_M, 0, 1.20, -1.10).rotation.x = 0.28;
+      addTo(g, B(1.64, 0.46, 0.04), GLASS_M, 0, 1.20, 1.62).rotation.x = -0.22;
+      addTo(g, B(0.04, 0.42, 2.36), GLASS_M, 0.90, 1.22, 0.26);
+      addTo(g, B(0.04, 0.42, 2.36), GLASS_M, -0.90, 1.22, 0.26);
+    } else if(type === 'pickup'){
+      // 🛻 4x4 ARAZİ KAMYONETİ (Pickup): Çift kabin, açık arka kasa, çelik roll-bar ve 4 adet tepe projektörü
+      addTo(g, B(1.76, 0.56, 1.68), TRIM_M, 0, 1.20, -0.32);
+      addTo(g, B(1.72, 0.06, 1.58), paint, 0, 1.50, -0.32);
+      addTo(g, B(1.66, 0.48, 0.04), GLASS_M, 0, 1.20, -1.20).rotation.x = 0.28;
+      addTo(g, B(1.62, 0.44, 0.04), GLASS_M, 0, 1.20, 0.54);
+      addTo(g, B(0.04, 0.42, 1.42), GLASS_M, 0.89, 1.22, -0.32);
+      addTo(g, B(0.04, 0.42, 1.42), GLASS_M, -0.89, 1.22, -0.32);
+      addTo(g, B(1.68, 0.06, 1.38), DARK_GRILLE_M, 0, 0.95, 1.32);              // siyah açık arka kasa içi
+      addTo(g, B(1.64, 0.54, 0.10), TRIM_M, 0, 1.20, 0.66);                     // kasa üstü çelik roll-bar
+      [-0.52, -0.18, 0.18, 0.52].forEach(lx => addTo(g, B(0.18, 0.14, 0.10), HEAD_M, lx, 1.52, 0.64)); // 4'lü tepe arazi projektörü
+    } else if(modelId === 'kartal'){
+      // 🚗 TOFAŞ KARTAL SLX: Arkaya kadar uzanan Station Wagon kabin ve tavan bagaj çıtaları
+      addTo(g, B(1.62, 0.52, 2.86), TRIM_M, 0, 1.18, 0.48);
+      addTo(g, B(1.58, 0.06, 2.78), paint, 0, 1.46, 0.48);
+      addTo(g, B(1.52, 0.48, 0.04), GLASS_M, 0, 1.18, -1.00).rotation.x = 0.34;
+      addTo(g, B(1.50, 0.46, 0.04), GLASS_M, 0, 1.18, 1.94).rotation.x = -0.14;
+      addTo(g, B(0.04, 0.40, 2.58), GLASS_M, 0.82, 1.19, 0.48);
+      addTo(g, B(0.04, 0.40, 2.58), GLASS_M, -0.82, 1.19, 0.48);
+      [-0.62, 0.62].forEach(rx => addTo(g, B(0.06, 0.07, 2.45), TRIM_M, rx, 1.52, 0.52)); // tavan bagaj barları
+    } else if(isCompact){
+      // 🚗 KÜÇÜK HATCHBACK (Mini Cooper / Golf): Kompakt kasa, beyaz kontrast tavan ve beyaz kaput şeritleri
+      addTo(g, B(1.58, 0.50, 2.08), TRIM_M, 0, 1.16, 0.18);
+      addTo(g, B(1.62, 0.08, 2.14), M(0xffffff), 0, 1.44, 0.18);                // beyaz Mini Cooper tavanı
+      [-0.36, 0.36].forEach(sx => addTo(g, B(0.16, 0.02, 0.92), M(0xffffff), sx, 0.95, -1.28)); // beyaz kaput şeritleri
+      addTo(g, B(1.48, 0.48, 0.04), GLASS_M, 0, 1.16, -0.90).rotation.x = 0.34;
+      addTo(g, B(1.46, 0.46, 0.04), GLASS_M, 0, 1.16, 1.26).rotation.x = -0.22; // dik hatchback arka cam
+      addTo(g, B(0.04, 0.40, 1.82), GLASS_M, 0.80, 1.18, 0.18);
+      addTo(g, B(0.04, 0.40, 1.82), GLASS_M, -0.80, 1.18, 0.18);
+    } else if(modelId === 'tofas'){
+      // 🚗 TOFAŞ ŞAHİN: Köşeli kabin, siyah arka cam jaluzisi ve siyah bagaj üstü spoyler
+      addTo(g, B(1.56, 0.50, 1.94), TRIM_M, 0, 1.16, -0.08);
+      addTo(g, B(1.52, 0.06, 1.84), paint, 0, 1.43, -0.08);
+      addTo(g, B(1.46, 0.48, 0.04), GLASS_M, 0, 1.16, -1.10).rotation.x = 0.34;
+      addTo(g, B(1.44, 0.46, 0.04), GLASS_M, 0, 1.16, 0.94).rotation.x = -0.34;
+      for(let j = 0; j < 4; j++){
+        addTo(g, B(1.38, 0.03, 0.06), TRIM_M, 0, 1.32 - j * 0.09, 0.84 + j * 0.06); // siyah arka cam jaluzisi
+      }
+      addTo(g, B(0.04, 0.40, 1.68), GLASS_M, 0.79, 1.17, -0.08);
+      addTo(g, B(0.04, 0.40, 1.68), GLASS_M, -0.79, 1.17, -0.08);
+      addTo(g, B(1.74, 0.06, 0.18), TRIM_M, 0, 0.97, halfZ - 0.16);             // siyah bagaj spoyleri
+    } else if(modelId === 'klasik'){
+      // 🚘 KLASİK AMERİKAN (1959 Cadillac): Beyaz tente tavan ve arkada ikonik sivri kuyruk yüzgeçleri (tailfins)
+      addTo(g, B(1.56, 0.48, 1.88), TRIM_M, 0, 1.15, -0.08);
+      addTo(g, B(1.60, 0.08, 1.94), M(0xffffff), 0, 1.42, -0.08);               // klasik beyaz tente tavan
+      addTo(g, B(1.46, 0.46, 0.04), GLASS_M, 0, 1.15, -1.06).rotation.x = 0.34;
+      addTo(g, B(1.44, 0.44, 0.04), GLASS_M, 0, 1.15, 0.90).rotation.x = -0.34;
+      addTo(g, B(0.04, 0.38, 1.62), GLASS_M, 0.79, 1.16, -0.08);
+      addTo(g, B(0.04, 0.38, 1.62), GLASS_M, -0.79, 1.16, -0.08);
+      [-0.84, 0.84].forEach(fx => {
+        addTo(g, B(0.10, 0.30, 1.25), paint, fx, 1.04, 1.48).rotation.x = 0.14; // ikonik Cadillac kuyruk yüzgeçleri
+        addTo(g, B(0.12, 0.04, 1.26), CHROME_M, fx, 1.18, 1.48).rotation.x = 0.14;
+      });
+    } else if(modelId === 'elektrikli'){
+      // ⚡ ELEKTRİKLİ SÜPER SEDAN (Togg / Tesla): Komple panoramik koyu cam kubbe tavan
+      addTo(g, B(1.60, 0.50, 2.16), GLASS_M, 0, 1.16, 0.02);
+      addTo(g, B(1.50, 0.50, 0.04), GLASS_M, 0, 1.16, -1.12).rotation.x = 0.40;
+      addTo(g, B(1.48, 0.48, 0.04), GLASS_M, 0, 1.16, 1.16).rotation.x = -0.40;
+      addTo(g, B(0.04, 0.40, 1.88), GLASS_M, 0.81, 1.17, 0.02);
+      addTo(g, B(0.04, 0.40, 1.88), GLASS_M, -0.81, 1.17, 0.02);
+    } else if(modelId === 'luks'){
+      // 🖤 MAKAM ARABASI (Rolls-Royce / Maybach): Uzun limuzin kabin ve gümüş makam tavanı
+      addTo(g, B(1.64, 0.52, 2.32), TRIM_M, 0, 1.18, 0.08);
+      addTo(g, B(1.66, 0.07, 2.36), M(0xcbd5e1), 0, 1.46, 0.08);                // gümüş makam tavanı
+      addTo(g, B(1.54, 0.50, 0.04), GLASS_M, 0, 1.18, -1.12).rotation.x = 0.30;
+      addTo(g, B(1.52, 0.48, 0.04), GLASS_M, 0, 1.18, 1.28).rotation.x = -0.28;
+      addTo(g, B(0.04, 0.42, 2.04), GLASS_M, 0.83, 1.19, 0.08);
+      addTo(g, B(0.04, 0.42, 2.04), GLASS_M, -0.83, 1.19, 0.08);
+    } else {
+      // 🚗 AİLE SEDANI & 🚕 TİCARİ TAKSİ: Sunrooflu sedan kabin
+      addTo(g, B(1.58, 0.50, 2.02), TRIM_M, 0, 1.16, -0.10);
+      addTo(g, B(1.52, 0.06, 1.88), paint, 0, 1.43, -0.10);
+      addTo(g, B(0.92, 0.02, 0.68), GLASS_M, 0, 1.465, -0.20);                  // sunroof camı
+      addTo(g, B(1.48, 0.52, 0.04), GLASS_M, 0, 1.17, -1.18).rotation.x = 0.40;
+      addTo(g, B(1.46, 0.50, 0.04), GLASS_M, 0, 1.17, 0.98).rotation.x = -0.38;
+      addTo(g, B(0.04, 0.40, 1.72), GLASS_M, 0.80, 1.18, -0.10);
+      addTo(g, B(0.04, 0.40, 1.72), GLASS_M, -0.80, 1.18, -0.10);
+      if(type === 'taxi'){
+        addTo(g, GEO.taxiSign, TAXI_M, 0, 1.56, -0.12);                         // çatının üstünde TAKSİ tabelası
+        addTo(g, B(bodyW + 0.03, 0.07, bodyLen - 0.30), TRIM_M, 0, 0.66, 0);    // taksi yan siyah dama kuşağı
+      }
     }
   }
-  // kapı çizgileri, farlar, çamurluk kemerleri ve tamponlar (spor araba yüksekliğine uyumlu)
-  const hoodY = isSport ? 0.68 : 0.94;
+
+  // --- TÜM ARABALAR İÇİN DİNAMİK HİZALANMIŞ TAMPONLAR, ÖN FARLAR, ARKA STOP LAMBALARI VE PLAKALAR ---
+  // lz ve bz her aracın kendi halfZ uzunluğundan hesaplanır; böylece hiçbir modelde arka/ön ışık gövde içinde kalmaz veya havada durmaz!
+  const hoodY = isSport ? 0.785 : 0.945;
   const lightY = isSport ? 0.54 : 0.68;
-  const plateY = isSport ? 0.42 : 0.54;
-  const mirY = isSport ? 0.78 : 1.06;
-  const bz = isSport ? 2.21 : 2.14;
-  const lz = isSport ? 2.20 : 2.12;
-  addTo(g, GEO.hood, TRIM_M, 0, hoodY, -0.82);
-  addTo(g, GEO.bumper, TRIM_M, 0, 0.28, -bz);
-  addTo(g, GEO.bumper, TRIM_M, 0, 0.28, bz);
-  addTo(g, B(1.65, 0.04, 0.14), CHROME_M, 0, 0.39, -bz);                     // ön tampon krom şerit
-  // Ön farlar ve arka stop lambaları (GEO.light ile gece/fren ışık sistemiyle %100 uyumlu!)
+  const plateY = isSport ? 0.40 : 0.52;
+  const mirY = isSport ? 0.80 : 1.06;
+  const lz = halfZ + 0.025;
+  const bz = halfZ + 0.035;
+  if(type !== 'van' || modelId === 'kartal'){
+    addTo(g, GEO.hood, TRIM_M, 0, hoodY, -0.92);
+  }
+  const bmpMat = modelId === 'klasik' ? CHROME_M : TRIM_M;
+  addTo(g, GEO.bumper, bmpMat, 0, 0.28, -bz);
+  addTo(g, GEO.bumper, bmpMat, 0, 0.28, bz);
+  addTo(g, B(1.65, 0.04, 0.14), CHROME_M, 0, 0.39, -bz);                        // ön tampon krom şerit
+  // Ön farlar ve arka stop lambaları (GEO.light ile gece/fren ışık sistemiyle %100 uyumlu ve her araçta dışarıda net görünür!)
   addTo(g, GEO.light, HEAD_M, -0.68, lightY, -lz);
   addTo(g, GEO.light, HEAD_M, 0.68, lightY, -lz);
   addTo(g, GEO.light, TAIL_M, -0.70, lightY, lz);
   addTo(g, GEO.light, TAIL_M, 0.70, lightY, lz);
-  addTo(g, B(1.42, 0.05, 0.04), TAIL_M, 0, lightY + 0.04, lz);               // modern boydan boya arka LED stop şeridi
-  // plakalar (ön ve arka)
-  addTo(g, GEO.plate, PLATE_M, 0, plateY, lz - 0.01);
-  addTo(g, GEO.plate, PLATE_M, 0, plateY, -(lz - 0.01)).rotation.y = Math.PI;
-  // Yan aynalar ve ayna camı
-  addTo(g, GEO.mirror, paint, -1.0, mirY, -0.85);
-  addTo(g, GEO.mirror, paint, 1.0, mirY, -0.85);
-  // Çift krom egzoz borusu (arkada, alt tarafta)
+  addTo(g, B(1.44, 0.06, 0.04), TAIL_M, 0, lightY + 0.04, lz);                  // boydan boya parlak kırmızı arka LED stop şeridi
+  // Plakalar (ön ve arka)
+  addTo(g, GEO.plate, PLATE_M, 0, plateY, lz + 0.01);
+  addTo(g, GEO.plate, PLATE_M, 0, plateY, -(lz + 0.01)).rotation.y = Math.PI;
+  // Yan aynalar
+  addTo(g, GEO.mirror, paint, -(bodyW / 2 + 0.04), mirY, -0.85);
+  addTo(g, GEO.mirror, paint, bodyW / 2 + 0.04, mirY, -0.85);
+  // Çift krom egzoz borusu (her aracın kendi arka tamponunun altında hizalı)
   [-0.52, 0.52].forEach(ex => {
     const exhaust = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.26, 8).rotateX(Math.PI / 2), CHROME_M);
-    exhaust.position.set(ex, 0.26, 2.16);
+    exhaust.position.set(ex, 0.26, halfZ + 0.02);
     g.add(exhaust);
   });
-  // Tekerlek yuvası çamurluk kemerleri (wheel arches) ve 4 kollu çelik jantlı tekerlekler
-  [[-0.95, 1.35], [0.95, 1.35], [-0.95, -1.35], [0.95, -1.35]].forEach(([x, z]) => {
-    addTo(g, GEO.arch, TRIM_M, x * 0.94, 0.38, z);                           // çamurluk kemeri
+  // Tekerlek yuvası çamurluk kemerleri ve 4 kollu çelik jantlı tekerlekler
+  const wheelZ = isCompact ? 1.18 : 1.35;
+  const wheelX = bodyW / 2 - 0.02;
+  [[-wheelX, wheelZ], [wheelX, wheelZ], [-wheelX, -wheelZ], [wheelX, -wheelZ]].forEach(([x, z]) => {
+    addTo(g, GEO.arch, TRIM_M, x * 0.94, 0.38, z);                              // çamurluk kemeri
     const w = addTo(g, GEO.wheel, TIRE_M, x, 0.36, z);
     w.name = 'wheel';
-    addTo(w, GEO.rim, RIM_M, 0, 0, 0);                                       // jant çemberi
-    addTo(w, GEO.spokeA, TRIM_M, 0, 0, 0);                                   // yatay jant kolu
-    addTo(w, GEO.spokeB, TRIM_M, 0, 0, 0);                                   // dikey jant kolu
-    addTo(w, GEO.hub, CHROME_M, 0, 0, 0);                                    // parlak jant göbeği
+    addTo(w, GEO.rim, RIM_M, 0, 0, 0);                                          // jant çemberi
+    addTo(w, GEO.spokeA, TRIM_M, 0, 0, 0);                                      // yatay jant kolu
+    addTo(w, GEO.spokeB, TRIM_M, 0, 0, 0);                                      // dikey jant kolu
+    addTo(w, GEO.hub, CHROME_M, 0, 0, 0);                                       // parlak jant göbeği
   });
   // far ışık lekesi: arabanın önündeki yolda
   const carSpot = new THREE.Mesh(new THREE.CircleGeometry(2.6, 16), carSpotMat);
@@ -15556,7 +15565,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-11-01-190811';
+const APP_VERSION = '2026-11-01-192507';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
