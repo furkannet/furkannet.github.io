@@ -263,6 +263,7 @@ button small{font-size:9px;margin-top:0}
 <button id="heliUpBtn" style="display:none;background:#16a34a;border-color:#86efac;font-weight:900">⬆️ Yüksel (Boşluk)</button>
 <button id="heliDownBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">⬇️ Alçal (Shift)</button>
 <button id="boatBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:900">🚤 Tekneye Bin (E)</button>
+<button id="yachtBtn" style="display:none;background:#0f172a;border-color:#fde047;color:#fde047;font-weight:900">🛥️ Lüks Yata Bin (E)</button>
 <button id="hotelRoomExitBtn" style="display:none;background:#dc2626;border-color:#fca5a5;font-weight:900">🚪 Odadan Lobiye Çık</button>
 </div>
 <div id="policeChaseHud" style="display:none;position:fixed;top:max(54px,calc(env(safe-area-inset-top) + 46px));left:50%;transform:translateX(-50%);z-index:24;background:linear-gradient(135deg,rgba(185,28,28,.96),rgba(29,78,216,.96));border:2px solid #fde047;color:#fff;padding:7px 16px;border-radius:999px;font-weight:900;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,.75);pointer-events:none;white-space:nowrap">🚨 POLİS KOVALIYOR! Kaç: 10 sn</div>
@@ -3536,6 +3537,73 @@ addTo(islandGroup, new THREE.ConeGeometry(1.25, 1.1, 10), M(0x1e293b), 2.5, 8.35
 [[-3, -4], [4, 3], [-2, 5]].forEach(([tx, tz], idx) => {
   makeNaturalTree(SEA_ISLAND_POS.x + tx, SEA_ISLAND_POS.z + tz, idx);
 });
+// Adada 5.000₺ Hazine Tabelası
+const islandSignTex = tex(256, 80, (g, w, h) => {
+  g.fillStyle = '#451a03'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#fde047'; g.lineWidth = 5; g.strokeRect(3, 3, w - 6, h - 6);
+  g.fillStyle = '#fde047'; g.font = 'bold 24px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🏝️ 5.000₺ HAZİNE ADASI', w / 2, h / 2 + 2);
+});
+const islandSign = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 0.85), new THREE.MeshBasicMaterial({map: islandSignTex, side: THREE.DoubleSide}));
+islandSign.position.set(-7.2, 1.9, -2.2);
+islandSign.rotation.y = -Math.PI / 2;
+islandGroup.add(islandSign);
+addTo(islandGroup, B(0.12, 1.6, 0.12), M(0x78350f), -7.2, 1.1, -3.2);
+addTo(islandGroup, B(0.12, 1.6, 0.12), M(0x78350f), -7.2, 1.1, -1.2);
+
+// 🛥️ VIP LÜKS YAT İSKELESİ (x: 48..62, z: -38.0) VE 2 KATLI DEV LÜKS MEGA YAT (x: 64.5, z: -38.0)
+addTo(beachSeaGroup, B(14.0, 0.24, 3.4), M(0x78350f), 55.0, 0.26, -38.0);
+addTo(beachSeaGroup, B(13.6, 0.04, 1.4), M(0xdc2626), 55.0, 0.39, -38.0); // VIP kırmızı halı
+for(let px = 49; px <= 61; px += 3){
+  addTo(beachSeaGroup, new THREE.CylinderGeometry(0.15, 0.15, 0.9, 6), M(0x451a03), px, 0.35, -39.5);
+  addTo(beachSeaGroup, new THREE.CylinderGeometry(0.15, 0.15, 0.9, 6), M(0x451a03), px, 0.35, -36.5);
+}
+const yachtMesh = new THREE.Group();
+const yachtGoldMat = M(0xfacc15), yachtHullMat = M(0xffffff), yachtDarkMat = M(0x0f172a), yachtGlassMat = M(0x38bdf8), yachtTeakMat = M(0xb45309);
+// Alt gövde ve sivri pruva (+Z ileri yön)
+addTo(yachtMesh, B(3.4, 0.45, 7.6), yachtDarkMat, 0, 0.22, -0.4);
+addTo(yachtMesh, B(3.8, 0.95, 7.2), yachtHullMat, 0, 0.78, -0.4);
+addTo(yachtMesh, B(3.86, 0.16, 7.25), yachtGoldMat, 0, 0.88, -0.4); // Altın lüks şerit
+addTo(yachtMesh, B(3.88, 0.12, 7.25), yachtDarkMat, 0, 0.56, -0.4);
+const yachtBow = addTo(yachtMesh, new THREE.ConeGeometry(1.95, 3.6, 4), yachtHullMat, 0, 0.78, 4.4);
+yachtBow.rotation.x = Math.PI / 2;
+yachtBow.rotation.y = Math.PI / 4;
+const yachtBowKeel = addTo(yachtMesh, new THREE.ConeGeometry(1.6, 3.2, 4), yachtDarkMat, 0, 0.30, 4.1);
+yachtBowKeel.rotation.x = Math.PI / 2;
+yachtBowKeel.rotation.y = Math.PI / 4;
+// Ana güverte (tik ağacı), arka yüzme platformu ve turkuaz jakuzi
+addTo(yachtMesh, B(3.5, 0.10, 7.0), yachtTeakMat, 0, 1.28, -0.4);
+addTo(yachtMesh, B(3.4, 0.12, 1.2), yachtTeakMat, 0, 0.52, -4.5); // Kıç yüzme platformu
+addTo(yachtMesh, B(1.8, 0.28, 1.5), yachtHullMat, 0, 1.42, -2.9); // Arka jakuzi çerçevesi
+addTo(yachtMesh, B(1.5, 0.30, 1.2), new THREE.MeshBasicMaterial({color: 0x38bdf8}), 0, 1.44, -2.9); // Jakuzi suyu
+addTo(yachtMesh, B(2.2, 0.18, 1.8), yachtHullMat, 0, 1.38, 2.4); // Ön güneşlenme yatakları
+// 1. Kat VIP Salon Kabini ve Panoramik Camlar
+addTo(yachtMesh, B(2.9, 1.05, 4.2), yachtHullMat, 0, 1.82, -0.1);
+addTo(yachtMesh, B(2.96, 0.52, 3.6), yachtGlassMat, 0, 1.90, -0.1); // Yan salon camları
+const yachtWindshield = addTo(yachtMesh, B(2.75, 0.65, 0.08), yachtGlassMat, 0, 1.88, 2.02);
+yachtWindshield.rotation.x = -0.35;
+// 2. Kat Flybridge (Üst Güverte), Kaptan Köşkü ve Radar Kulesi
+addTo(yachtMesh, B(3.0, 0.14, 4.4), yachtHullMat, 0, 2.38, -0.2);
+addTo(yachtMesh, B(3.04, 0.07, 4.42), yachtGoldMat, 0, 2.42, -0.2);
+addTo(yachtMesh, B(2.2, 0.45, 0.08), yachtGlassMat, 0, 2.65, 1.75).rotation.x = -0.35; // Üst güverte rüzgarlığı
+addTo(yachtMesh, B(1.2, 0.48, 0.65), yachtDarkMat, 0, 2.66, 1.15); // Üst kaptan konsolu
+addTo(yachtMesh, B(2.1, 0.35, 1.2), yachtHullMat, 0, 2.58, -1.2); // Üst VIP koltuk grubu
+addTo(yachtMesh, B(0.35, 1.15, 0.55), yachtHullMat, -1.25, 2.95, -1.6); // Radar kemeri sol
+addTo(yachtMesh, B(0.35, 1.15, 0.55), yachtHullMat, 1.25, 2.95, -1.6);  // Radar kemeri sağ
+addTo(yachtMesh, B(2.85, 0.14, 0.9), yachtHullMat, 0, 3.52, -1.6);      // T-Top tavan
+addTo(yachtMesh, new THREE.CylinderGeometry(0.38, 0.42, 0.18, 10), yachtGoldMat, 0, 3.68, -1.6); // Altın Radar kubbesi
+// Su altı mavi LED aydınlatma ve köpük izi
+addTo(yachtMesh, new THREE.CircleGeometry(5.2, 12).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({color: 0x38bdf8, transparent: true, opacity: 0.32, depthWrite: false, fog: false}), 0, 0.02, 0);
+const yachtWakeMesh = new THREE.Group();
+addTo(yachtWakeMesh, B(2.6, 0.05, 4.8), new THREE.MeshBasicMaterial({color: 0xe0f2fe}), 0, 0.05, -6.2);
+addTo(yachtWakeMesh, B(0.5, 0.06, 5.8), new THREE.MeshBasicMaterial({color: 0xffffff}), -1.45, 0.06, -6.6).rotation.y = 0.18;
+addTo(yachtWakeMesh, B(0.5, 0.06, 5.8), new THREE.MeshBasicMaterial({color: 0xffffff}), 1.45, 0.06, -6.6).rotation.y = -0.18;
+yachtWakeMesh.visible = false;
+yachtMesh.add(yachtWakeMesh);
+const YACHT = {x: 64.5, y: 0.05, z: -38.0, h: 0, v: 0, driving: false};
+yachtMesh.position.set(YACHT.x, YACHT.y, YACHT.z);
+scene.add(yachtMesh);
 
 // 🚤 3B GERÇEKÇİ LÜKS SÜRAT TEKNESİ / YAT MODELİ (iskele yanında suda hazır bekler: x: 61.5, z: -22.2)
 const boatMesh = new THREE.Group();
@@ -5335,9 +5403,35 @@ function boatUpdate(dt){
   boatMesh.rotation.set(-BOAT.v * 0.008, BOAT.h, -steer * 0.14);
 }
 
+function yachtUpdate(dt){
+  if(shopOpen || over || tutOpen || shiftEnded || setOpen) return;
+  const throttle = Math.max(-1, Math.min(1, -joy.dy + ((keys.w || keys.arrowup) ? 1 : 0) - ((keys.s || keys.arrowdown) ? 1 : 0)));
+  const steer = Math.max(-1, Math.min(1, joy.dx + ((keys.d || keys.arrowright) ? 1 : 0) - ((keys.a || keys.arrowleft) ? 1 : 0)));
+  YACHT.h -= steer * (0.72 + Math.min(1, Math.abs(YACHT.v) / 9) * 0.85) * dt;
+  const targetV = throttle >= 0 ? throttle * 19.0 : throttle * 7.0;
+  YACHT.v += (targetV - YACHT.v) * Math.min(1, 2.5 * dt);
+  const nx = YACHT.x + Math.sin(YACHT.h) * YACHT.v * dt;
+  const nz = YACHT.z + Math.cos(YACHT.h) * YACHT.v * dt;
+  const distToIsland = Math.hypot(nx - SEA_ISLAND_POS.x, nz - SEA_ISLAND_POS.z);
+  const hitMarinaDock = (nx < 63.0 && ((nz > -28.5 && nz < -23.5) || (nz > -40.5 && nz < -35.5)));
+  if(nx >= 57.5 && nx <= 158.0 && nz >= -148.0 && nz <= 8.0 && distToIsland > 12.6 && !hitMarinaDock){
+    YACHT.x = nx;
+    YACHT.z = nz;
+  } else {
+    YACHT.v *= -0.25;
+  }
+  const waveBob = Math.sin(performance.now() * 0.0035) * 0.05;
+  YACHT.y = 0.05 + waveBob;
+  P.x = YACHT.x; P.y = 1.4; P.z = YACHT.z;
+  yachtWakeMesh.visible = Math.abs(YACHT.v) > 1.2;
+  yachtMesh.position.set(YACHT.x, YACHT.y, YACHT.z);
+  yachtMesh.rotation.set(-YACHT.v * 0.006, YACHT.h, -steer * 0.10);
+}
+
 function updatePlayer(dt){
   if(shopOpen || over || tutOpen || shiftEnded || kick || setOpen || passengerOf) return;
   if(typeof HELI !== 'undefined' && HELI.flying){ heliUpdate(dt); return; }
+  if(typeof YACHT !== 'undefined' && YACHT.driving){ yachtUpdate(dt); return; }
   if(typeof BOAT !== 'undefined' && BOAT.driving){ boatUpdate(dt); return; }
   if(CM.driving){ comoUpdate(dt); return; }
   if(D.driving){ driveUpdate(dt); return; }
@@ -7389,6 +7483,7 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keydown', e => {
   if(e.key.toLowerCase() !== 'e') return;
   if($('heliBtn') && $('heliBtn').style.display === 'block') $('heliBtn').click();
+  else if($('yachtBtn') && $('yachtBtn').style.display === 'block') $('yachtBtn').click();
   else if($('boatBtn') && $('boatBtn').style.display === 'block') $('boatBtn').click();
   else if($('carBtn').style.display === 'block') $('carBtn').click();
   else if($('motoBtn') && $('motoBtn').style.display === 'block') $('motoBtn').click();
@@ -9363,37 +9458,64 @@ const RELIC_ITEMS = [
   {name: '💎 Elmas Broş', val: 520},
   {name: '👑 Kayıp Kral Tacı', val: 800}
 ];
+const ISLAND_RELIC_ITEMS = [
+  {name: '👑 Korsan Kralın Altın Tacı', val: 5000},
+  {name: '💎 Efsanevi Ada Elması', val: 5000},
+  {name: '🏆 Antik Altın Heykel', val: 5000},
+  {name: '⚱️ Kraliyet Altın Küpü', val: 5000},
+  {name: '🗡️ Zümrüt Kabzalı Kılıç', val: 5000},
+  {name: '📿 Korsan Kaptanın Hazine Kolyesi', val: 5000}
+];
 let dugFinds = [];
 let digTarget = {x: -28, z: -62};
+let islandDigTarget = {x: 108, z: -65};
 let detBeepTimer = 0;
 function pickNewDigTarget(){
   digTarget.x = -34.5 + Math.random() * 13.0; // -34.5 .. -21.5
   digTarget.z = -72.5 + Math.random() * 21.0; // -72.5 .. -51.5
 }
+function pickNewIslandDigTarget(){
+  const ang = Math.random() * Math.PI * 2;
+  const rad = 1.8 + Math.random() * 5.8;
+  islandDigTarget.x = SEA_ISLAND_POS.x + Math.cos(ang) * rad;
+  islandDigTarget.z = SEA_ISLAND_POS.z + Math.sin(ang) * rad;
+}
 pickNewDigTarget();
+pickNewIslandDigTarget();
+
+function isOnTreasureIslandNow(){
+  return !C.driving && !D.driving && !CM.driving && !(typeof BOAT !== 'undefined' && BOAT.driving) && !(typeof YACHT !== 'undefined' && YACHT.driving) && !(typeof HELI !== 'undefined' && HELI.flying) &&
+    (Math.hypot(P.x - SEA_ISLAND_POS.x, P.z - SEA_ISLAND_POS.z) <= 13.0 || (P.x >= 93.0 && P.x <= 100.0 && Math.abs(P.z - SEA_ISLAND_POS.z) <= 2.0));
+}
 
 function digTreasureNow(){
-  if(!(S.mk && S.mk.detektor)){
-    flash(`📡 Önce girişten Dedektör (${DETECTOR_PRICE}₺) satın almalısın!`, '#f87171');
-    return;
+  const onIsland = isOnTreasureIslandNow();
+  if(!onIsland){
+    if(!(S.mk && S.mk.detektor)){
+      flash(`📡 Önce girişten Dedektör (${DETECTOR_PRICE}₺) satın almalısın!`, '#f87171');
+      return;
+    }
+    if(!(S.mk && S.mk.kazma)){
+      flash(`⛏️ Toprağı kazmak için önce girişten Kazma (${PICKAXE_PRICE}₺) satın almalısın!`, '#f87171');
+      return;
+    }
   }
-  if(!(S.mk && S.mk.kazma)){
-    flash(`⛏️ Toprağı kazmak için önce girişten Kazma (${PICKAXE_PRICE}₺) satın almalısın!`, '#f87171');
-    return;
-  }
-  const dist = Math.hypot(P.x - digTarget.x, P.z - digTarget.z);
+  const activeTarget = onIsland ? islandDigTarget : digTarget;
+  const dist = Math.hypot(P.x - activeTarget.x, P.z - activeTarget.z);
   if(dist > 3.2){
     flash('📡 Sinyal zayıf! Dedektör sesini takip edip hedefe yaklaş.', '#fbbf24');
     return;
   }
-  const item = RELIC_ITEMS[(Math.random() * RELIC_ITEMS.length) | 0];
+  const pool = onIsland ? ISLAND_RELIC_ITEMS : RELIC_ITEMS;
+  const item = pool[(Math.random() * pool.length) | 0];
   dugFinds.push(item);
-  S.xp = (S.xp || 0) + 35;
+  S.xp = (S.xp || 0) + (onIsland ? 120 : 35);
   checkLevelUp();
   beep(880, 0.18, 'sine', 0.13);
-  spawnSmoke(digTarget.x, digTarget.z);
-  flash(`⛏️ Kazmayla çıkardın: ${item.name} (Değeri: ${item.val}₺)! Çantanda ${dugFinds.length} eşya var.`, '#4ade80');
-  pickNewDigTarget();
+  spawnSmoke(activeTarget.x, activeTarget.z);
+  flash(`⛏️ Kazmayla çıkardın: ${item.name} (Değeri: ${item.val.toLocaleString('tr-TR')}₺)! Çantanda ${dugFinds.length} eşya var.`, '#4ade80');
+  if(onIsland) pickNewIslandDigTarget();
+  else pickNewDigTarget();
   renderAll();
 }
 function sellDugFinds(){
@@ -9407,19 +9529,26 @@ function sellDugFinds(){
   dugFinds = [];
   S.money = (S.money || 0) + total;
   beep(920, 0.2, 'sine', 0.14);
-  flash(`💰 ${cnt} adet buluntu Antikacıya satıldı: +${total.toLocaleString('tr-TR')}₺!`, '#ffd54a');
+  flash(`💰 ${cnt} adet hazine satıldı: +${total.toLocaleString('tr-TR')}₺!`, '#ffd54a');
   renderAll();
 }
 if($('digBtn')) $('digBtn').onclick = digTreasureNow;
 if($('sellFindsBtn')) $('sellFindsBtn').onclick = sellDugFinds;
 
 function updateDetectorZone(dt){
-  const inZone = !C.driving && !D.driving && P.x >= DIG_ZONE.minX && P.x <= DIG_ZONE.maxX && P.z >= DIG_ZONE.minZ && P.z <= DIG_ZONE.maxZ;
+  const onIsland = isOnTreasureIslandNow();
+  const inParkZone = !C.driving && !D.driving && P.x >= DIG_ZONE.minX && P.x <= DIG_ZONE.maxX && P.z >= DIG_ZONE.minZ && P.z <= DIG_ZONE.maxZ;
+  const inZone = inParkZone || onIsland;
   const nearBuyer = !C.driving && !D.driving && Math.hypot(P.x - (-18.8), P.z - (-58.5)) < 6.2;
-  const hasDet = !!(S.mk && S.mk.detektor);
-  const hasPick = !!(S.mk && S.mk.kazma);
-  disp('buyDetBtn', (!hasDet && (nearBuyer || inZone)) ? 'block' : 'none');
-  disp('buyPickBtn', (!hasPick && (nearBuyer || inZone)) ? 'block' : 'none');
+  if(onIsland && S.mk && (!S.mk.detektor || !S.mk.kazma)){
+    S.mk.detektor = true;
+    S.mk.kazma = true;
+    flash('🏝️📡 Hazine Adasına çıktın! Dedektörün açıldı, 5.000₺ değerindeki hazineleri ara!', '#fde047');
+  }
+  const hasDet = onIsland || !!(S.mk && S.mk.detektor);
+  const hasPick = onIsland || !!(S.mk && S.mk.kazma);
+  disp('buyDetBtn', (!hasDet && (nearBuyer || inParkZone)) ? 'block' : 'none');
+  disp('buyPickBtn', (!hasPick && (nearBuyer || inParkZone)) ? 'block' : 'none');
   if(inZone){
     disp('detHud', 'block');
     if(!hasDet){
@@ -9429,10 +9558,12 @@ function updateDetectorZone(dt){
       disp('digBtn', 'none');
     } else {
       const nowS = performance.now() * 0.001;
-      const dist = Math.hypot(P.x - digTarget.x, P.z - digTarget.z);
+      const activeTarget = onIsland ? islandDigTarget : digTarget;
+      const groundY = onIsland ? 0.79 : 0.04;
+      const dist = Math.hypot(P.x - activeTarget.x, P.z - activeTarget.z);
       const sigPct = Math.max(5, Math.min(100, Math.round((1 - Math.min(dist, 16) / 16) * 100)));
-      const statusTxt = dist < 2.6 ? (hasPick ? '🔥 ÇOK YAKIN! KAZMAYLA KAZ!' : '⚠️ KAZMA ALMALISIN!') : dist < 6 ? '⚡ Yaklaşıyorsun' : '📡 Aranıyor...';
-      txt('detHud', `📡 DEDEKTÖR: %${sigPct} (${dist.toFixed(1)}m) — ${statusTxt}`);
+      const statusTxt = dist < 2.6 ? (hasPick ? (onIsland ? '🔥 5.000₺ HAZİNE! KAZMAYLA KAZ!' : '🔥 ÇOK YAKIN! KAZMAYLA KAZ!') : '⚠️ KAZMA ALMALISIN!') : dist < 6 ? '⚡ Yaklaşıyorsun' : (onIsland ? '🏝️ 5.000₺ Ada Hazinesi Aranıyor...' : '📡 Aranıyor...');
+      txt('detHud', `📡 ${onIsland ? 'ADA DEDEKTÖRÜ' : 'DEDEKTÖR'}: %${sigPct} (${dist.toFixed(1)}m) — ${statusTxt}`);
       detBeepTimer -= dt;
       const interval = Math.max(0.14, Math.min(1.1, dist / 11));
       if(detBeepTimer <= 0){
@@ -9441,7 +9572,7 @@ function updateDetectorZone(dt){
       }
       // Oyuncunun ayaklarında dedektör tarama halkası (yaklaştıkça hızlanır ve yeşile/altına döner)
       playerScanRing.visible = true;
-      playerScanRing.position.set(P.x, 0.045, P.z);
+      playerScanRing.position.set(P.x, groundY + 0.01, P.z);
       const scanT = (nowS * (1.2 + sigPct * 0.025)) % 1.0;
       const scanSc = 0.6 + scanT * 3.8;
       playerScanRing.scale.set(scanSc, scanSc, 1);
@@ -9454,7 +9585,7 @@ function updateDetectorZone(dt){
       // Hazine noktasına yaklaşınca yerde 3B Kırmızı-Altın "X" İşareti ve Radar Halkaları parlar
       if(dist < 5.5){
         digSpotRing.visible = true;
-        digSpotRing.position.set(digTarget.x, 0.04, digTarget.z);
+        digSpotRing.position.set(activeTarget.x, groundY, activeTarget.z);
         const pulse = 0.92 + Math.abs(Math.sin(nowS * 6.5)) * 0.22;
         xBar1.scale.set(pulse, 1, pulse);
         xBar2.scale.set(pulse, 1, pulse);
@@ -9471,6 +9602,9 @@ function updateDetectorZone(dt){
         digSpotRing.visible = false;
       }
       disp('digBtn', (dist < 2.9 && hasPick) ? 'block' : 'none');
+      if(dist < 2.9 && hasPick){
+        txt('digBtn', onIsland ? '⛏️ 5.000₺ Ada Hazinesini Kaz!' : '⛏️ Kazmayla Kaz!');
+      }
     }
   } else {
     disp('detHud', 'none');
@@ -9484,7 +9618,7 @@ function updateDetectorZone(dt){
   if(showSell){
     let sum = 0;
     for(let i = 0; i < dugFinds.length; i++) sum += dugFinds[i].val;
-    txt('sellFindsBtn', `💰 Bulduklarını Sat (${dugFinds.length} Eşya = ${sum}₺)`);
+    txt('sellFindsBtn', `💰 Bulduklarını Sat (${dugFinds.length} Eşya = ${sum.toLocaleString('tr-TR')}₺)`);
   }
 }
 
@@ -9577,6 +9711,11 @@ function updateHouseAndBunker(dt){
 function getMineFloorY(px, pz){
   if(inBunkerState) return -6.0;
   if(typeof inHotelRoomState !== 'undefined' && inHotelRoomState > 0) return HOTEL_ROOM_ORIGIN.y;
+  if(typeof SEA_ISLAND_POS !== 'undefined'){
+    if(Math.hypot(px - SEA_ISLAND_POS.x, pz - SEA_ISLAND_POS.z) <= 9.5) return 0.75;
+    if(Math.hypot(px - SEA_ISLAND_POS.x, pz - SEA_ISLAND_POS.z) <= 12.5) return 0.50;
+    if(px >= 93.0 && px <= 100.0 && Math.abs(pz - SEA_ISLAND_POS.z) <= 1.8) return 0.35;
+  }
 
   // 🏨 4 Katlı Grand Otel: Ortadaki Büyük Merdiven (1. Kat Y=0 -> 2. Kat Y=3.6 -> 3. Kat Y=7.2 -> 4. VIP Kat Y=10.8)
   const hlx = px - HOTEL_POS.x;
@@ -11043,9 +11182,9 @@ if($('boatBtn')) $('boatBtn').onclick = () => {
     // Adaya, iskeleye veya doğrudan denize in!
     const distIsland = Math.hypot(BOAT.x - SEA_ISLAND_POS.x, BOAT.z - SEA_ISLAND_POS.z);
     const distMarina = Math.hypot(BOAT.x - 58.0, BOAT.z - (-26.0));
-    if(distIsland < 18.0){
-      P.x = SEA_ISLAND_POS.x - 11.0; P.y = 0.55; P.z = SEA_ISLAND_POS.z;
-      flash('🏝️ Hazine Adası İskelesine çıktın!', '#4ade80');
+    if(distIsland < 20.0){
+      P.x = SEA_ISLAND_POS.x - 5.5; P.y = 0.75; P.z = SEA_ISLAND_POS.z;
+      flash('🏝️📡 Hazine Adasına çıktın! Dedektörün açıldı, 5.000₺ hazineleri kaz!', '#4ade80');
     } else if(distMarina < 11.0){
       P.x = 58.0; P.y = 0.25; P.z = -26.0;
       flash('🚤 Tekneden Yat Limanı İskelesine indin!', '#7dd3fc');
@@ -11059,11 +11198,45 @@ if($('boatBtn')) $('boatBtn').onclick = () => {
     passengerOf = null;
     C.driving = false; D.driving = false; CM.driving = false;
     if(typeof HELI !== 'undefined') HELI.flying = false;
+    if(typeof YACHT !== 'undefined') YACHT.driving = false;
     BOAT.driving = true;
     BOAT.v = 0;
     startEngine();
     beep(760, 0.16, 'triangle', 0.15);
     flash('🚤 Sürat Teknesine bindin! Denizde sür ve uzaktaki Deniz Fenerli Adaya git!', '#38bdf8');
+  }
+  renderAll();
+};
+if($('yachtBtn')) $('yachtBtn').onclick = () => {
+  if(!active()) return;
+  if(YACHT.driving){
+    YACHT.driving = false;
+    YACHT.v = 0;
+    yachtWakeMesh.visible = false;
+    const distIsland = Math.hypot(YACHT.x - SEA_ISLAND_POS.x, YACHT.z - SEA_ISLAND_POS.z);
+    const distMarina = Math.hypot(YACHT.x - 58.0, YACHT.z - (-38.0));
+    if(distIsland < 20.0){
+      P.x = SEA_ISLAND_POS.x - 5.5; P.y = 0.75; P.z = SEA_ISLAND_POS.z;
+      flash('🏝️📡 Lüks Yattan Hazine Adasına indin! Dedektörün açıldı, 5.000₺ hazineleri kaz!', '#fde047');
+    } else if(distMarina < 12.5){
+      P.x = 58.0; P.y = 0.30; P.z = -38.0;
+      flash('🛥️ Lüks Yattan VIP İskelesine indin!', '#fde047');
+    } else {
+      P.x = YACHT.x + 2.8; P.y = 0; P.z = YACHT.z;
+      flash('🏊 Lüks Yattan denize atladın, yüzüyorsun!', '#38bdf8');
+    }
+    stopEngine();
+    beep(520, 0.12, 'sine', 0.14);
+  } else {
+    passengerOf = null;
+    C.driving = false; D.driving = false; CM.driving = false;
+    if(typeof HELI !== 'undefined') HELI.flying = false;
+    if(typeof BOAT !== 'undefined') BOAT.driving = false;
+    YACHT.driving = true;
+    YACHT.v = 0;
+    startEngine();
+    beep(680, 0.18, 'triangle', 0.16);
+    flash('🛥️ 2 Katlı Lüks Yata bindin! Denizdeki Hazine Adasına sür ve 5.000₺ hazineleri bul!', '#fde047');
   }
   renderAll();
 };
@@ -11214,8 +11387,10 @@ function updateShopSpeakerAndScratch(dt){
     }
   }
   if(typeof BOAT !== 'undefined'){
-    const nearBoat = !BOAT.driving && !D.driving && !CM.driving && !(typeof HELI !== 'undefined' && HELI.flying) &&
-      (Math.hypot((C.driving ? C.x : P.x) - BOAT.x, (C.driving ? C.z : P.z) - BOAT.z) < 7.5 ||
+    const onIsl = typeof isOnTreasureIslandNow === 'function' && isOnTreasureIslandNow();
+    const nearBoat = !BOAT.driving && !(typeof YACHT !== 'undefined' && YACHT.driving) && !D.driving && !CM.driving && !(typeof HELI !== 'undefined' && HELI.flying) &&
+      (Math.hypot((C.driving ? C.x : P.x) - BOAT.x, (C.driving ? C.z : P.z) - BOAT.z) < 8.5 ||
+       (onIsl && Math.hypot(BOAT.x - SEA_ISLAND_POS.x, BOAT.z - SEA_ISLAND_POS.z) < 22.0) ||
        ((C.driving ? C.x : P.x) >= 46.5 && (C.driving ? C.x : P.x) <= 62.5 && Math.abs((C.driving ? C.z : P.z) + 26.0) < 5.5));
     disp('boatBtn', (BOAT.driving || nearBoat) ? 'block' : 'none');
     if(BOAT.driving || nearBoat) txt('boatBtn', BOAT.driving ? '🚪 Tekneden İskele/Adaya İn (E)' : '🚤 Sürat Teknesine Bin (E)');
@@ -11223,6 +11398,18 @@ function updateShopSpeakerAndScratch(dt){
     if(!BOAT.driving){
       boatMesh.position.y = 0.05 + Math.sin(nowWave * 2.6) * 0.045;
       boatMesh.rotation.z = Math.sin(nowWave * 1.9) * 0.025;
+    }
+    if(typeof YACHT !== 'undefined'){
+      const nearYacht = !YACHT.driving && !BOAT.driving && !D.driving && !CM.driving && !(typeof HELI !== 'undefined' && HELI.flying) &&
+        (Math.hypot((C.driving ? C.x : P.x) - YACHT.x, (C.driving ? C.z : P.z) - YACHT.z) < 10.5 ||
+         (onIsl && Math.hypot(YACHT.x - SEA_ISLAND_POS.x, YACHT.z - SEA_ISLAND_POS.z) < 24.0) ||
+         ((C.driving ? C.x : P.x) >= 46.5 && (C.driving ? C.x : P.x) <= 63.5 && Math.abs((C.driving ? C.z : P.z) + 38.0) < 5.8));
+      disp('yachtBtn', (YACHT.driving || nearYacht) ? 'block' : 'none');
+      if(YACHT.driving || nearYacht) txt('yachtBtn', YACHT.driving ? '🚪 Lüks Yattan İskele/Adaya İn (E)' : '🛥️ Lüks Yata Bin (E)');
+      if(!YACHT.driving){
+        yachtMesh.position.y = 0.05 + Math.sin(nowWave * 2.1 + 1.2) * 0.04;
+        yachtMesh.rotation.z = Math.sin(nowWave * 1.5 + 0.8) * 0.018;
+      }
     }
     if(typeof seaShoreFoam !== 'undefined'){
       seaShoreFoam.position.x = 54.4 + Math.sin(nowWave * 2.2) * 0.45;
@@ -13082,6 +13269,10 @@ function frame(now){
     playerMesh.visible = false;
     camera.position.set(HELI.x - Math.sin(HELI.h) * 8.4, HELI.y + 3.8, HELI.z - Math.cos(HELI.h) * 8.4);
     camera.rotation.set(P.pitch - 0.18, HELI.h + Math.PI + (P.yaw + Math.PI / 2), 0);
+  } else if(typeof YACHT !== 'undefined' && YACHT.driving){
+    playerMesh.visible = false;
+    camera.position.set(YACHT.x - Math.sin(YACHT.h) * 11.2, YACHT.y + 4.8, YACHT.z - Math.cos(YACHT.h) * 11.2);
+    camera.rotation.set(P.pitch - 0.18, YACHT.h + Math.PI + (P.yaw + Math.PI / 2), 0);
   } else if(typeof BOAT !== 'undefined' && BOAT.driving){
     playerMesh.visible = false;
     camera.position.set(BOAT.x - Math.sin(BOAT.h) * 7.2, BOAT.y + 3.1, BOAT.z - Math.cos(BOAT.h) * 7.2);
@@ -13147,7 +13338,7 @@ function frame(now){
   } else {
     if(passengerOf) passengerOf = null;
     const onDock = P.x > -27.2 && P.x < -23.0 && Math.abs(P.z + 22) < 1.0;
-    const onMarinaDock = P.x >= 47.8 && P.x <= 62.2 && P.z >= -27.8 && P.z <= -24.2;
+    const onMarinaDock = P.x >= 47.8 && P.x <= 62.2 && ((P.z >= -27.8 && P.z <= -24.2) || (P.z >= -39.8 && P.z <= -36.2));
     const onSeaIsland = Math.hypot(P.x - 108.0, P.z - (-65.0)) <= 12.2 || (P.x >= 93.0 && P.x <= 100.0 && Math.abs(P.z + 65.0) <= 1.5);
     const inSeaWater = !inHotelRoomState && P.x > 54.4 && !onMarinaDock && !onSeaIsland && (P.y || 0) < 1.5;
     const inHotelPool = (!inHotelRoomState && typeof HOTEL_POOLS !== 'undefined')
@@ -13792,7 +13983,8 @@ camera.add(heldDetectorFirst);
 
 scene.add(camera);
 function isHoldingDetectorNow(){
-  if(C.driving || D.driving || CM.driving) return false;
+  if(C.driving || D.driving || CM.driving || (typeof BOAT !== 'undefined' && BOAT.driving) || (typeof YACHT !== 'undefined' && YACHT.driving) || (typeof HELI !== 'undefined' && HELI.flying)) return false;
+  if(typeof isOnTreasureIslandNow === 'function' && isOnTreasureIslandNow()) return true;
   if(!(S.mk && S.mk.detektor)) return false;
   // Hazine arama alanında veya yakınındayken otomatik elinde dedektör tutar
   return (P.x >= DIG_ZONE.minX - 4 && P.x <= DIG_ZONE.maxX + 5 && P.z >= DIG_ZONE.minZ - 4 && P.z <= DIG_ZONE.maxZ + 4);
