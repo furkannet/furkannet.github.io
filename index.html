@@ -245,6 +245,7 @@ button small{font-size:9px;margin-top:0}
 <button id="digBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:700">⛏️ Kazmayla Kaz!</button>
 <button id="sellFindsBtn" style="display:none;background:#15803d;border-color:#4ade80;font-weight:700">💰 Bulduklarını Sat</button>
 <button id="minerBtn" style="display:none;background:#b45309;border-color:#fbbf24;font-weight:700">⛏️ Maden Dükkânı</button>
+<button id="minerGalBtn" style="display:none;background:#1d4ed8;border-color:#fde047;color:#fff;font-weight:900">🏪 Oto Galeri (Araçlarım & Sat)</button>
 <button id="mineHitBtn" style="display:none;background:#ca8a04;border-color:#fde047;font-weight:900">⛏️ Bloğu Kır!</button>
 <button id="mineSurfaceBtn" style="display:none;background:#0284c7;border-color:#7dd3fc;font-weight:900">⬆️ Yüzeye Çık</button>
 <button id="mineTntBtn" style="display:none;background:#dc2626;border-color:#fca5a5;font-weight:900">🧨 TNT Patlat!</button>
@@ -367,8 +368,8 @@ button small{font-size:9px;margin-top:0}
 </div>
 <div id="gal" class="modal">
   <div class="card">
-    <h2>Galeri</h2>
-    <p>Bir kerede bir araba. Aldığın araba sokağa park edilir, sen binip sürersin.</p>
+    <h2>🏪 Oto Galeri & Araçlarım</h2>
+    <p>Satın aldığın tüm arabalar ve motorlar <b>Madenin Yanındaki Oto Galeriye</b> park edilir. Oradan istediğini sürebilir veya satabilirsin!</p>
     <div id="galBody"></div>
     <h3>Modifiye (arabanı tamirhanede süsle)</h3>
     <div id="modBody"></div>
@@ -900,9 +901,9 @@ const CARS = [
 // COMOGENE dükkânı: sürülebilir (konumu ve yönü burada tutulur)
 const CM = {x:9.4, z:-12, h:0, v:0, driving:false};
 // oyuncunun arabası ve motoru: ikisi ayrı park edilir, hangisine yakınsan ona binip sürersin
-const C = {x:-6.5, z:-30, h:0, v:0, driving:false, maxV:6, driftOn:true, drifting:false, camDist:4.5, nitro:100, hazard:false, activeVeh:'car'};
-const CAR_STATE = {x:-6.5, z:-30, h:0};
-const MOTO_STATE = {x:-6.5, z:-25.5, h:0};
+const C = {x:13.8, z:-53.2, h:-Math.PI/2, v:0, driving:false, maxV:6, driftOn:true, drifting:false, camDist:4.5, nitro:100, hazard:false, activeVeh:'car'};
+const CAR_STATE = {x:13.8, z:-53.2, h:-Math.PI/2};
+const MOTO_STATE = {x:13.8, z:-50.8, h:-Math.PI/2};
 let ownedCarMesh = null, ownedMotoMesh = null;
 const active = () => !shopOpen && !over && !shiftEnded && !tutOpen && !setOpen;
 
@@ -4085,6 +4086,61 @@ addTo(minerBoss, new THREE.SphereGeometry(0.22, 8, 6), M(0xfacc15), 0, 1.9, 0);
 minerBoss.position.set(-3.8, 0, -3.5);
 minerBoss.rotation.y = -Math.PI / 2;
 minerGroup.add(minerBoss);
+
+// 5B) 🏪 MADENİN YANINDAKİ OTO GALERİ (satın alınan arabaların park edildiği ve satıldığı galeri alanı: x=16.5, z=-57.5)
+const MINER_AUTO_GAL_POS = {x: 16.5, z: -57.5, doorX: 11.8, doorZ: -57.5};
+const MINER_GAL_SLOTS = [
+  {x: 13.8, z: -56.4, h: -Math.PI / 2},
+  {x: 13.8, z: -59.6, h: -Math.PI / 2},
+  {x: 13.8, z: -62.8, h: -Math.PI / 2},
+  {x: 18.8, z: -53.2, h: -Math.PI / 2},
+  {x: 18.8, z: -56.4, h: -Math.PI / 2},
+  {x: 18.8, z: -59.6, h: -Math.PI / 2},
+  {x: 18.8, z: -62.8, h: -Math.PI / 2},
+  {x: 18.8, z: -50.8, h: -Math.PI / 2}
+];
+const minerAutoGalGroup = new THREE.Group();
+minerAutoGalGroup.position.set(MINER_AUTO_GAL_POS.x, 0, MINER_AUTO_GAL_POS.z);
+scene.add(minerAutoGalGroup);
+// Galeri asfalt zemin ve sarı-beyaz park çizgileri
+addTo(minerAutoGalGroup, B(11.2, 0.06, 15.6), M(0x1e293b), 0, 0.03, 0);
+addTo(minerAutoGalGroup, B(11.4, 0.04, 15.8), M(0xfacc15), 0, 0.015, 0);
+for(let pz = -6.2; pz <= 6.5; pz += 3.2){
+  addTo(minerAutoGalGroup, B(4.2, 0.02, 0.10), M(0xf8fafc), -2.6, 0.065, pz);
+  addTo(minerAutoGalGroup, B(4.2, 0.02, 0.10), M(0xf8fafc), 2.4, 0.065, pz);
+}
+// Arka çelik kolonlar, galeri sundurma çatısı ve cam ofis kabini
+[-7.2, -2.4, 2.4, 7.2].forEach(pz => {
+  addTo(minerAutoGalGroup, B(0.28, 3.6, 0.28), M(0xdc2626), 5.1, 1.8, pz);
+  addTo(minerAutoGalGroup, B(0.24, 3.6, 0.24), M(0x334155), -5.1, 1.8, pz);
+});
+addTo(minerAutoGalGroup, B(10.8, 0.26, 15.2), M(0x0f172a), 0, 3.65, 0);
+addTo(minerAutoGalGroup, B(11.0, 0.12, 15.4), M(0xdc2626), 0, 3.82, 0);
+// Galeri cam satış ofisi (sağ-arka köşede)
+addTo(minerAutoGalGroup, B(2.4, 2.6, 3.2), M(0x1e3a8a), 4.0, 1.3, 5.6);
+addTo(minerAutoGalGroup, B(0.08, 1.8, 2.6), new THREE.MeshBasicMaterial({color: 0xbae6fd, transparent: true, opacity: 0.45}), 2.78, 1.35, 5.6);
+// Üst tabela: OTO GALERİ - ALIM & SATIM
+const minerGalSignTex = tex(512, 112, (g, w, h) => {
+  g.fillStyle = '#0f172a'; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#facc15'; g.lineWidth = 7; g.strokeRect(4, 4, w - 8, h - 8);
+  g.fillStyle = '#fde047'; g.font = 'bold 34px sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('🏪 OTO GALERİ · ALIM & SATIM', w / 2, h / 2 - 12);
+  g.fillStyle = '#4ade80'; g.font = 'bold 20px sans-serif';
+  g.fillText('SATIN ALDIĞIN ARABALAR BURAYA GELİR!', w / 2, h / 2 + 24);
+});
+const minerGalSign = new THREE.Mesh(new THREE.PlaneGeometry(6.8, 1.35), new THREE.MeshBasicMaterial({map: minerGalSignTex, side: THREE.DoubleSide}));
+minerGalSign.position.set(-5.15, 4.45, 0);
+minerGalSign.rotation.y = -Math.PI / 2;
+minerAutoGalGroup.add(minerGalSign);
+// Oto Galeri yetkilisi NPC (girişte bekler)
+const minerGalDealer = human(0x1d4ed8, 0x0f172a, pick(SKINS), pick(HAIRS));
+minerGalDealer.position.set(-4.6, 0, 6.6);
+minerGalDealer.rotation.y = -Math.PI / 2;
+minerAutoGalGroup.add(minerGalDealer);
+// Ekstra satın alınan araçların 3B modelleri bu grupta sergilenir
+const minerGalCarsGroup = new THREE.Group();
+scene.add(minerGalCarsGroup);
 
 // arabacı: karavanın yanında bekler; tünelden gece yoluna (ve geri) götürür
 const driver = human(0xf1c40f, 0x222222, pick(SKINS), pick(HAIRS));
@@ -8470,6 +8526,14 @@ canvas.addEventListener('pointerup', e => {
     }
     return;
   }
+  // madenin yanındaki oto galeriye veya oradaki sergi araçlarına dokunmak = oto galeri ekranı
+  if(ray.intersectObject(minerAutoGalGroup, true).length || ray.intersectObject(minerGalCarsGroup, true).length){
+    if(Math.hypot(P.x - MINER_AUTO_GAL_POS.x, P.z - MINER_AUTO_GAL_POS.z) < 12){
+      askNPC('Oto Galerici', MINER_AUTO_GAL_POS.doorX, MINER_AUTO_GAL_POS.doorZ + 6.6, ['Hoş geldin! Satın aldığın tüm arabalar buraya park edilir, istediğini sür veya sat!']);
+      openGallery();
+    } else flash('Madenin yanındaki Oto Galeriye biraz yaklaş', '#f87171');
+    return;
+  }
   // arabacıya dokunmak = taksi
   if(ray.intersectObject(driver, true).length){
     // arabacıdan da araba alınır (galeri listesi)
@@ -8917,7 +8981,41 @@ function applyActiveVehBindings(){
   C.trunkSys = ownedCarMesh && ownedCarMesh.userData.vehCtrl ? ownedCarMesh.userData.vehCtrl.trunkSys : null;
   C.maxV = vc.maxV;
 }
+function ensureGalleryCars(){
+  if(!Array.isArray(S.galleryCars)) S.galleryCars = [];
+  if(S.car && !S.galleryCars.includes(S.car)) S.galleryCars.push(S.car);
+  if(S.moto && !S.galleryCars.includes(S.moto)) S.galleryCars.push(S.moto);
+  // Eğer aktif araba/motor boşsa ama galeride araç varsa ilkini aktif yap
+  if(!S.car){
+    const firstCar = S.galleryCars.find(id => { const d = CARS.find(c => c.id === id); return d && d.type !== 'moto'; });
+    if(firstCar) S.car = firstCar;
+  }
+  if(!S.moto){
+    const firstMoto = S.galleryCars.find(id => { const d = CARS.find(c => c.id === id); return d && d.type === 'moto'; });
+    if(firstMoto) S.moto = firstMoto;
+  }
+}
+function syncMinerGalleryShowroom(){
+  ensureGalleryCars();
+  if(typeof minerGalCarsGroup === 'undefined') return;
+  while(minerGalCarsGroup.children.length) minerGalCarsGroup.remove(minerGalCarsGroup.children[0]);
+  let slotIdx = 0;
+  S.galleryCars.forEach(vehId => {
+    if(vehId === S.car || vehId === S.moto) return;
+    const def = CARS.find(c => c.id === vehId);
+    if(!def || slotIdx >= MINER_GAL_SLOTS.length) return;
+    const sl = MINER_GAL_SLOTS[slotIdx++];
+    const m = car(def.color, def.type);
+    const mr = m.getObjectByName('motoRider');
+    if(mr) mr.visible = false;
+    m.position.set(sl.x, 0, sl.z);
+    m.rotation.y = sl.h + Math.PI;
+    m.userData.galVehId = vehId;
+    minerGalCarsGroup.add(m);
+  });
+}
 function spawnOwnedCar(){
+  ensureGalleryCars();
   if(ownedCarMesh){ scene.remove(ownedCarMesh); ownedCarMesh = null; }
   if(S.car){
     ownedCarMesh = buildOwnedVehicleMesh(S.car);
@@ -8932,6 +9030,7 @@ function spawnOwnedCar(){
     const mr = ownedMotoMesh.getObjectByName('motoRider');
     if(mr) mr.visible = !!(C.driving && C.activeVeh === 'moto');
   }
+  syncMinerGalleryShowroom();
   applyActiveVehBindings();
 }
 // kendi arabamız: fiziği basit, trafik arabalarına çarpınca can gider
@@ -10248,11 +10347,18 @@ function detonateMineTNT(){
   save(); renderAll();
 }
 if($('mineTntBtn')) $('mineTntBtn').onclick = detonateMineTNT;
+if($('minerGalBtn')) $('minerGalBtn').onclick = openGallery;
 
 function updateMinerPlace(dt){
   ensureMinerRigs();
   const distMine = Math.hypot(P.x - MINER_POS.x, P.z - MINER_POS.z);
   const inOrNearMine = !C.driving && !D.driving && !CM.driving && distMine < 9.5;
+  const nearMinerAutoGal = !C.driving && !D.driving && !CM.driving && Math.hypot(P.x - MINER_AUTO_GAL_POS.x, P.z - MINER_AUTO_GAL_POS.z) < 11.0;
+  disp('minerGalBtn', nearMinerAutoGal ? 'block' : 'none');
+  if(nearMinerAutoGal){
+    ensureGalleryCars();
+    txt('minerGalBtn', `🏪 Oto Galeri (${S.galleryCars.length} Araç · Sat / Sür)`);
+  }
   if(inOrNearMine) ensureInfiniteMineDepth(P.y || 0);
   // Kırılan bloklar kendi kendine çıkmaz, her yeni vardiyada (startShift) sıfırlanır!
   mineCartGoldPile.visible = S.rigs.bagVal > 0;
@@ -12540,31 +12646,81 @@ function updateAtmosphericVisuals(dt){
     }
   }
 }
-function sellOwnedVehicle(isMoto, sellPrice, viaPhone){
-  const vehId = isMoto ? S.moto : S.car;
-  if(!vehId) return;
+function parkVehicleAtMinerGallery(isMoto){
+  if(isMoto){
+    MOTO_STATE.x = 13.8; MOTO_STATE.z = -50.8; MOTO_STATE.h = -Math.PI / 2;
+    C.activeVeh = 'moto';
+    C.x = MOTO_STATE.x; C.z = MOTO_STATE.z; C.h = MOTO_STATE.h;
+  } else {
+    CAR_STATE.x = 13.8; CAR_STATE.z = -53.2; CAR_STATE.h = -Math.PI / 2;
+    C.activeVeh = 'car';
+    C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = CAR_STATE.h;
+  }
+}
+
+function selectGalleryVehicle(vehId, driveNow){
+  ensureGalleryCars();
   const def = CARS.find(c => c.id === vehId);
-  const vName = def ? def.name : 'Araç';
-  if(C.driving && ((isMoto && C.activeVeh === 'moto') || (!isMoto && C.activeVeh !== 'moto'))){
+  if(!def) return;
+  const isMoto = def.type === 'moto';
+  C.driving = false; C.v = 0;
+  if(isMoto){
+    S.moto = def.id;
+  } else {
+    S.car = def.id;
+  }
+  parkVehicleAtMinerGallery(isMoto);
+  spawnOwnedCar();
+  if(driveNow){
+    passengerOf = null;
+    P.yaw = -Math.PI / 2; P.pitch = isMoto ? 0.08 : 0;
+    C.driving = true; C.v = 0;
+    startEngine();
+    setOpen = false;
+    $('gal').style.display = 'none';
+    flash(`🏪🚗 ${def.name} Oto Galeriden çıkarıldı, sürüyorsun!`, '#4ade80');
+  } else {
+    flash(`🏪 ${def.name} Oto Galeride ön sıraya hazırlandı!`, '#7dd3fc');
+  }
+  save();
+  broadcastCoopPos(true);
+  if($('gal').style.display === 'flex') { renderGallery(); renderMods(); }
+  renderAll();
+}
+
+function sellVehicleById(vehId, sellPrice, viaPhone){
+  ensureGalleryCars();
+  const def = CARS.find(c => c.id === vehId);
+  if(!def) return;
+  const isMoto = def.type === 'moto';
+  const vName = def.name;
+  if(C.driving && ((isMoto && S.moto === vehId && C.activeVeh === 'moto') || (!isMoto && S.car === vehId && C.activeVeh !== 'moto'))){
     C.driving = false;
     C.v = 0;
     stopEngine();
   }
-  if(isMoto){
-    S.moto = null;
-  } else {
-    S.car = null;
+  S.galleryCars = S.galleryCars.filter(id => id !== vehId);
+  if(isMoto && S.moto === vehId){
+    S.moto = S.galleryCars.find(id => { const d = CARS.find(c => c.id === id); return d && d.type === 'moto'; }) || null;
+  } else if(!isMoto && S.car === vehId){
+    S.car = S.galleryCars.find(id => { const d = CARS.find(c => c.id === id); return d && d.type !== 'moto'; }) || null;
     if(S.mods) S.mods.paint = null;
   }
   S.money = (S.money || 0) + sellPrice;
   spawnOwnedCar();
   broadcastCoopPos(true);
   beep(880, 0.16, 'sine', 0.14);
-  flash(`💰 ${vName} ${viaPhone ? 'telefon ilanından müşteriye' : 'galeriye'} ${sellPrice.toLocaleString('tr-TR')}₺ karşılığında satıldı!`, '#fde047');
+  flash(`💰 ${vName} ${viaPhone ? 'telefon ilanından müşteriye' : 'Maden Yanı Oto Galeride'} ${sellPrice.toLocaleString('tr-TR')}₺ karşılığında satıldı!`, '#fde047');
   save();
   if($('gal').style.display === 'flex') { renderGallery(); renderMods(); }
   if($('phoneModal') && $('phoneModal').style.display === 'flex') renderPhoneModal();
   renderAll();
+}
+
+function sellOwnedVehicle(isMoto, sellPrice, viaPhone){
+  const vehId = isMoto ? S.moto : S.car;
+  if(!vehId) return;
+  sellVehicleById(vehId, sellPrice, viaPhone);
 }
 
 const PHONE_SELLERS = ['Galerici Faruk', 'Doktor Kemal', 'Emekli Hüseyin Amca', 'Modifiyeci Berk', 'Acil Satıcı Mert', 'Öğretmen Selim', 'Esnaf Kadir Usta'];
@@ -12598,43 +12754,30 @@ function generatePhoneListings(){
 generatePhoneListings();
 
 function renderPhoneModal(){
+  ensureGalleryCars();
   const myBox = $('phoneMyVehBody');
   const listBox = $('phoneListingsBody');
   if(!myBox || !listBox) return;
   myBox.innerHTML = '';
-  const myCarDef = S.car ? CARS.find(c => c.id === S.car) : null;
-  const myMotoDef = S.moto ? CARS.find(c => c.id === S.moto) : null;
-  if(!myCarDef && !myMotoDef){
-    myBox.innerHTML = '<div class="row"><span style="color:var(--mut)">Şu an satılacak araban veya motorun yok. Aşağıdaki ilanlardan ucuza alabilirsin!</span></div>';
+  if(!S.galleryCars.length){
+    myBox.innerHTML = '<div class="row"><span style="color:var(--mut)">Şu an Oto Galerinde satılacak aracın yok. Aşağıdaki ilanlardan ucuza alıp Madenin Yanındaki Oto Galeriye çekebilirsin!</span></div>';
   } else {
-    if(myCarDef){
-      const sellVal = Math.round(myCarDef.price * 0.88);
+    S.galleryCars.forEach(vehId => {
+      const def = CARS.find(c => c.id === vehId);
+      if(!def) return;
+      const sellVal = Math.round(def.price * 0.88);
       const r = document.createElement('div');
       r.className = 'row';
-      r.innerHTML = `<span>🚗 <b>${myCarDef.name}</b><small>İlan Alıcı Teklifi: <b style="color:#4ade80">${sellVal.toLocaleString('tr-TR')}₺</b></small></span>`;
+      r.innerHTML = `<span>${def.type === 'moto' ? '🏍️' : '🚗'} <b>${def.name}</b> <small style="color:#93c5fd">(Oto Galeride Park Halinde)</small><small>İlan Alıcı Teklifi: <b style="color:#4ade80">${sellVal.toLocaleString('tr-TR')}₺</b></small></span>`;
       const b = document.createElement('button');
       b.style.background = '#15803d';
       b.style.borderColor = '#4ade80';
       b.style.fontWeight = '700';
       b.textContent = `💰 İlana Koy Sat (+${sellVal.toLocaleString('tr-TR')}₺)`;
-      b.onclick = () => sellOwnedVehicle(false, sellVal, true);
+      b.onclick = () => sellVehicleById(def.id, sellVal, true);
       r.appendChild(b);
       myBox.appendChild(r);
-    }
-    if(myMotoDef){
-      const sellVal = Math.round(myMotoDef.price * 0.88);
-      const r = document.createElement('div');
-      r.className = 'row';
-      r.innerHTML = `<span>🏍️ <b>${myMotoDef.name}</b><small>İlan Alıcı Teklifi: <b style="color:#4ade80">${sellVal.toLocaleString('tr-TR')}₺</b></small></span>`;
-      const b = document.createElement('button');
-      b.style.background = '#15803d';
-      b.style.borderColor = '#4ade80';
-      b.style.fontWeight = '700';
-      b.textContent = `💰 İlana Koy Sat (+${sellVal.toLocaleString('tr-TR')}₺)`;
-      b.onclick = () => sellOwnedVehicle(true, sellVal, true);
-      r.appendChild(b);
-      myBox.appendChild(r);
-    }
+    });
   }
   listBox.innerHTML = '';
   if(!phoneListings.length){
@@ -12644,7 +12787,7 @@ function renderPhoneModal(){
   phoneListings.forEach((ad, idx) => {
     const c = ad.car;
     const isMoto = c.type === 'moto';
-    const alreadyOwned = isMoto ? (S.moto === c.id) : (S.car === c.id);
+    const alreadyOwned = S.galleryCars.includes(c.id);
     const d = document.createElement('div');
     d.className = 'row';
     d.style.flexWrap = 'wrap';
@@ -12675,30 +12818,25 @@ function renderPhoneModal(){
     buyBtn.style.background = alreadyOwned ? '#334155' : '#1d4ed8';
     buyBtn.style.borderColor = '#60a5fa';
     buyBtn.style.fontWeight = '700';
-    buyBtn.textContent = alreadyOwned ? 'Sahipsin' : `Satın Al (${ad.price.toLocaleString('tr-TR')}₺)`;
+    buyBtn.textContent = alreadyOwned ? 'Oto Galerinde Var' : `Satın Al (${ad.price.toLocaleString('tr-TR')}₺)`;
     buyBtn.disabled = alreadyOwned || (S.money || 0) < ad.price;
     buyBtn.onclick = () => {
       if((S.money || 0) < ad.price) return;
       S.money -= ad.price;
       C.driving = false; C.v = 0;
+      if(!S.galleryCars.includes(c.id)) S.galleryCars.push(c.id);
       if(isMoto){
         S.moto = c.id;
-        MOTO_STATE.x = -6.5; MOTO_STATE.z = -25.5; MOTO_STATE.h = 0;
-        C.activeVeh = 'moto';
-        C.x = MOTO_STATE.x; C.z = MOTO_STATE.z; C.h = 0;
       } else {
         S.car = c.id;
-        if(S.mk.garaj){ CAR_STATE.x = 18.75; CAR_STATE.z = -21; } else { CAR_STATE.x = -6.5; CAR_STATE.z = -30; }
-        CAR_STATE.h = 0;
-        C.activeVeh = 'car';
-        C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = 0;
         if(S.mods) S.mods.paint = null;
       }
+      parkVehicleAtMinerGallery(isMoto);
       phoneListings.splice(idx, 1);
       spawnOwnedCar();
       broadcastCoopPos(true);
       beep(780, 0.14, 'sine', 0.13);
-      flash(`📱🎉 İlandan 2. el ${c.name} aldın ve sokağa park edildi!`, '#4ade80');
+      flash(`📱🏪 ${c.name} alındı ve Madenin Yanındaki Oto Galeriye park edildi!`, '#4ade80');
       save();
       renderPhoneModal();
       renderAll();
@@ -12725,49 +12863,89 @@ if($('phoneRefreshBtn')) $('phoneRefreshBtn').onclick = () => {
 };
 
 function renderGallery(){
+  ensureGalleryCars();
   const box = $('galBody');
   box.innerHTML = '';
+  // 1) Madenin Yanındaki Oto Galerim (Satın Aldığın Araçlar)
+  const myH = document.createElement('h3');
+  myH.style.color = '#fde047';
+  myH.textContent = `🏪 Madenin Yanındaki Oto Galerim (${S.galleryCars.length} Araç)`;
+  box.appendChild(myH);
+  if(!S.galleryCars.length){
+    const emp = document.createElement('div');
+    emp.className = 'row';
+    emp.innerHTML = '<span style="color:var(--mut)">Henüz Oto Galerinde araban yok. Aşağıdan veya 📱 İlanlardan araba alınca Madenin Yanındaki Oto Galeriye gelir!</span>';
+    box.appendChild(emp);
+  } else {
+    S.galleryCars.forEach(vehId => {
+      const c = CARS.find(item => item.id === vehId);
+      if(!c) return;
+      const isMoto = c.type === 'moto';
+      const isActive = isMoto ? (S.moto === c.id) : (S.car === c.id);
+      const galSellPrice = Math.round(c.price * 0.85);
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.style.flexWrap = 'wrap';
+      row.innerHTML = `<span style="flex:1;min-width:150px"><b>${c.name}</b> ${isActive ? '<span style="color:#4ade80;font-size:11px">(Ön Sırada)</span>' : '<span style="color:#93c5fd;font-size:11px">(Galeride Parkta)</span>'}<small>Galeri Satış Fiyatı: <b style="color:#fde047">${galSellPrice.toLocaleString('tr-TR')}₺</b></small></span>`;
+      const btnWrap = document.createElement('div');
+      btnWrap.style.display = 'flex';
+      btnWrap.style.gap = '6px';
+      const driveBtn = document.createElement('button');
+      driveBtn.style.background = '#0284c7';
+      driveBtn.style.borderColor = '#7dd3fc';
+      driveBtn.style.fontWeight = '700';
+      driveBtn.textContent = '🚗 Sür';
+      driveBtn.onclick = () => selectGalleryVehicle(c.id, true);
+      const sellBtn = document.createElement('button');
+      sellBtn.style.background = '#991b1b';
+      sellBtn.style.borderColor = '#f87171';
+      sellBtn.style.fontWeight = '700';
+      sellBtn.textContent = `💰 Sat (+${galSellPrice.toLocaleString('tr-TR')}₺)`;
+      sellBtn.onclick = () => sellVehicleById(c.id, galSellPrice, false);
+      btnWrap.appendChild(driveBtn);
+      btnWrap.appendChild(sellBtn);
+      row.appendChild(btnWrap);
+      box.appendChild(row);
+    });
+  }
+
   const addSection = (title, list, isMotoSec) => {
     const h = document.createElement('h3');
     h.textContent = title;
     box.appendChild(h);
     list.forEach(c => {
-      const owned = isMotoSec ? (S.moto === c.id) : (S.car === c.id);
+      const owned = S.galleryCars.includes(c.id);
       const d = document.createElement('div');
       d.className = 'row';
       d.innerHTML = `<span>${c.name}<small>${c.price.toLocaleString('tr-TR')}₺</small></span>`;
       const b = document.createElement('button');
       if(owned){
-        const galSellPrice = Math.round(c.price * 0.80);
+        const galSellPrice = Math.round(c.price * 0.85);
         b.textContent = `💰 Sat (${galSellPrice.toLocaleString('tr-TR')}₺)`;
         b.style.background = '#991b1b';
         b.style.borderColor = '#f87171';
         b.style.fontWeight = '700';
-        b.onclick = () => sellOwnedVehicle(isMotoSec, galSellPrice, false);
+        b.onclick = () => sellVehicleById(c.id, galSellPrice, false);
       } else {
-        b.textContent = 'Al';
+        b.textContent = 'Al (Oto Galeriye Gelsin)';
         b.disabled = S.money < c.price;
         b.onclick = () => {
           if(S.money < c.price) return;
           S.money -= c.price;
           C.driving = false; C.v = 0;
+          if(!S.galleryCars.includes(c.id)) S.galleryCars.push(c.id);
           if(isMotoSec){
             S.moto = c.id;
-            MOTO_STATE.x = -6.5; MOTO_STATE.z = -25.5; MOTO_STATE.h = 0;
-            C.activeVeh = 'moto';
-            C.x = MOTO_STATE.x; C.z = MOTO_STATE.z; C.h = 0;
           } else {
             S.car = c.id;
-            if(S.mk.garaj){ CAR_STATE.x = 18.75; CAR_STATE.z = -21; } else { CAR_STATE.x = -6.5; CAR_STATE.z = -30; }
-            CAR_STATE.h = 0;
-            C.activeVeh = 'car';
-            C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = 0;
             S.mods.paint = null;
           }
+          parkVehicleAtMinerGallery(isMotoSec);
           spawnOwnedCar();
           broadcastCoopPos(true);
           beep(700, 0.1);
-          flash(`${c.name} alındı, sokağa park edildi! (Araban ve motorun ayrı durur)`, '#4ade80');
+          flash(`🏪🎉 ${c.name} alındı ve Madenin Yanındaki Oto Galeriye park edildi!`, '#4ade80');
+          save();
           renderGallery(); renderMods(); renderAll();
         };
       }
@@ -12775,8 +12953,8 @@ function renderGallery(){
       box.appendChild(d);
     });
   };
-  addSection('🚗 Arabalar', CARS.filter(c => c.type !== 'moto'), false);
-  addSection('🏍️ Motorlar (Araban Gitmez, Ayrı Alınır)', CARS.filter(c => c.type === 'moto'), true);
+  addSection('🚗 Sıfır Arabalar (Alınca Oto Galeriye Gelir)', CARS.filter(c => c.type !== 'moto'), false);
+  addSection('🏍️ Sıfır Motorlar (Alınca Oto Galeriye Gelir)', CARS.filter(c => c.type === 'moto'), true);
 }
 $('carBtn').onclick = () => {
   if(!active() || !S.car) return;
@@ -14281,9 +14459,12 @@ $('wheelBtn').onclick = spinWheel;
 resize();
 applySettings();
 drawPC();
-if(S.car || S.moto){
-  // garaj varsa araba oradan başlasın
-  if(S.mk.garaj && !C.driving){ CAR_STATE.x = 18.75; CAR_STATE.z = -21; CAR_STATE.h = 0; }
+ensureGalleryCars();
+if(S.car || S.moto || S.galleryCars.length){
+  if(!C.driving){
+    CAR_STATE.x = 13.8; CAR_STATE.z = -53.2; CAR_STATE.h = -Math.PI / 2;
+    MOTO_STATE.x = 13.8; MOTO_STATE.z = -50.8; MOTO_STATE.h = -Math.PI / 2;
+  }
   C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = CAR_STATE.h;
   spawnOwnedCar();
 }
@@ -15076,7 +15257,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-11-01-165808';
+const APP_VERSION = '2026-11-01-180122';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
