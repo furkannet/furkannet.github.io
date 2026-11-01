@@ -8981,10 +8981,16 @@ function applyActiveVehBindings(){
   C.trunkSys = ownedCarMesh && ownedCarMesh.userData.vehCtrl ? ownedCarMesh.userData.vehCtrl.trunkSys : null;
   C.maxV = vc.maxV;
 }
+const HOME_GARAGE_POS = {x: 18.75, z: -21, h: 0};
 function ensureGalleryCars(){
   if(!Array.isArray(S.galleryCars)) S.galleryCars = [];
   if(S.car && !S.galleryCars.includes(S.car)) S.galleryCars.push(S.car);
   if(S.moto && !S.galleryCars.includes(S.moto)) S.galleryCars.push(S.moto);
+  if(S.garageVeh && !S.galleryCars.includes(S.garageVeh)) S.garageVeh = null;
+  if(S.garageVeh){
+    S.mk.garaj = true;
+    if(typeof garajGroup !== 'undefined') garajGroup.visible = true;
+  }
   // Eğer aktif araba/motor boşsa ama galeride araç varsa ilkini aktif yap
   if(!S.car){
     const firstCar = S.galleryCars.find(id => { const d = CARS.find(c => c.id === id); return d && d.type !== 'moto'; });
@@ -9003,7 +9009,20 @@ function syncMinerGalleryShowroom(){
   S.galleryCars.forEach(vehId => {
     if(vehId === S.car || vehId === S.moto) return;
     const def = CARS.find(c => c.id === vehId);
-    if(!def || slotIdx >= MINER_GAL_SLOTS.length) return;
+    if(!def) return;
+    // Eğer bu araç "Evdeki Garaj Aracı" (S.garageVeh) olarak seçildiyse evin garajında dursun!
+    if(S.garageVeh === vehId){
+      const gm = car(def.color, def.type);
+      const gmr = gm.getObjectByName('motoRider');
+      if(gmr) gmr.visible = false;
+      gm.position.set(HOME_GARAGE_POS.x, 0, HOME_GARAGE_POS.z);
+      gm.rotation.y = HOME_GARAGE_POS.h + Math.PI;
+      gm.userData.galVehId = vehId;
+      gm.userData.inHomeGarage = true;
+      minerGalCarsGroup.add(gm);
+      return;
+    }
+    if(slotIdx >= MINER_GAL_SLOTS.length) return;
     const sl = MINER_GAL_SLOTS[slotIdx++];
     const m = car(def.color, def.type);
     const mr = m.getObjectByName('motoRider');
@@ -12646,16 +12665,67 @@ function updateAtmosphericVisuals(dt){
     }
   }
 }
-function parkVehicleAtMinerGallery(isMoto){
+function parkVehicleAtMinerGallery(isMoto, vehId){
+  const targetId = vehId || (isMoto ? S.moto : S.car);
+  const inHomeGar = targetId && S.garageVeh === targetId;
   if(isMoto){
-    MOTO_STATE.x = 13.8; MOTO_STATE.z = -50.8; MOTO_STATE.h = -Math.PI / 2;
+    MOTO_STATE.x = inHomeGar ? HOME_GARAGE_POS.x : 13.8;
+    MOTO_STATE.z = inHomeGar ? HOME_GARAGE_POS.z : -50.8;
+    MOTO_STATE.h = inHomeGar ? HOME_GARAGE_POS.h : -Math.PI / 2;
     C.activeVeh = 'moto';
     C.x = MOTO_STATE.x; C.z = MOTO_STATE.z; C.h = MOTO_STATE.h;
   } else {
-    CAR_STATE.x = 13.8; CAR_STATE.z = -53.2; CAR_STATE.h = -Math.PI / 2;
+    CAR_STATE.x = inHomeGar ? HOME_GARAGE_POS.x : 13.8;
+    CAR_STATE.z = inHomeGar ? HOME_GARAGE_POS.z : -53.2;
+    CAR_STATE.h = inHomeGar ? HOME_GARAGE_POS.h : -Math.PI / 2;
     C.activeVeh = 'car';
     C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = CAR_STATE.h;
   }
+}
+
+function setGarageVehicle(vehId){
+  ensureGalleryCars();
+  const def = CARS.find(c => c.id === vehId);
+  if(!def) return;
+  const isMoto = def.type === 'moto';
+  C.driving = false; C.v = 0;
+  if(S.garageVeh === vehId){
+    S.garageVeh = null;
+    if(isMoto && S.moto === vehId){
+      MOTO_STATE.x = 13.8; MOTO_STATE.z = -50.8; MOTO_STATE.h = -Math.PI / 2;
+    } else if(!isMoto && S.car === vehId){
+      CAR_STATE.x = 13.8; CAR_STATE.z = -53.2; CAR_STATE.h = -Math.PI / 2;
+    }
+    beep(540, 0.12, 'sine', 0.11);
+    flash(`🏪 ${def.name} garajdan çıkarıldı, Madenin Yanındaki Oto Galeriye gönderildi!`, '#7dd3fc');
+  } else {
+    const prevGarId = S.garageVeh;
+    S.garageVeh = vehId;
+    S.mk.garaj = true;
+    if(typeof garajGroup !== 'undefined') garajGroup.visible = true;
+    // Önceki garaj aracı aktifse onu Oto Galeriye geri çek
+    if(prevGarId === S.car && prevGarId !== vehId){
+      CAR_STATE.x = 13.8; CAR_STATE.z = -53.2; CAR_STATE.h = -Math.PI / 2;
+    }
+    if(prevGarId === S.moto && prevGarId !== vehId){
+      MOTO_STATE.x = 13.8; MOTO_STATE.z = -50.8; MOTO_STATE.h = -Math.PI / 2;
+    }
+    if(isMoto){
+      S.moto = vehId;
+      MOTO_STATE.x = HOME_GARAGE_POS.x; MOTO_STATE.z = HOME_GARAGE_POS.z; MOTO_STATE.h = HOME_GARAGE_POS.h;
+    } else {
+      S.car = vehId;
+      CAR_STATE.x = HOME_GARAGE_POS.x; CAR_STATE.z = HOME_GARAGE_POS.z; CAR_STATE.h = HOME_GARAGE_POS.h;
+    }
+    beep(760, 0.14, 'sine', 0.13);
+    flash(`🏠🚗 ${def.name} Garaj Aracı seçildi! Artık evinin yanındaki garajda kalacak.`, '#4ade80');
+  }
+  spawnOwnedCar();
+  save();
+  broadcastCoopPos(true);
+  if($('gal').style.display === 'flex') { renderGallery(); renderMods(); }
+  if($('phoneModal') && $('phoneModal').style.display === 'flex') renderPhoneModal();
+  renderAll();
 }
 
 function selectGalleryVehicle(vehId, driveNow){
@@ -12669,7 +12739,7 @@ function selectGalleryVehicle(vehId, driveNow){
   } else {
     S.car = def.id;
   }
-  parkVehicleAtMinerGallery(isMoto);
+  parkVehicleAtMinerGallery(isMoto, def.id);
   spawnOwnedCar();
   if(driveNow){
     passengerOf = null;
@@ -12678,9 +12748,9 @@ function selectGalleryVehicle(vehId, driveNow){
     startEngine();
     setOpen = false;
     $('gal').style.display = 'none';
-    flash(`🏪🚗 ${def.name} Oto Galeriden çıkarıldı, sürüyorsun!`, '#4ade80');
+    flash(`🏪🚗 ${def.name} sürülüyor!`, '#4ade80');
   } else {
-    flash(`🏪 ${def.name} Oto Galeride ön sıraya hazırlandı!`, '#7dd3fc');
+    flash(`🏪 ${def.name} seçildi!`, '#7dd3fc');
   }
   save();
   broadcastCoopPos(true);
@@ -12699,6 +12769,7 @@ function sellVehicleById(vehId, sellPrice, viaPhone){
     C.v = 0;
     stopEngine();
   }
+  if(S.garageVeh === vehId) S.garageVeh = null;
   S.galleryCars = S.galleryCars.filter(id => id !== vehId);
   if(isMoto && S.moto === vehId){
     S.moto = S.galleryCars.find(id => { const d = CARS.find(c => c.id === id); return d && d.type === 'moto'; }) || null;
@@ -12765,10 +12836,11 @@ function renderPhoneModal(){
     S.galleryCars.forEach(vehId => {
       const def = CARS.find(c => c.id === vehId);
       if(!def) return;
+      const inGar = S.garageVeh === def.id;
       const sellVal = Math.round(def.price * 0.88);
       const r = document.createElement('div');
       r.className = 'row';
-      r.innerHTML = `<span>${def.type === 'moto' ? '🏍️' : '🚗'} <b>${def.name}</b> <small style="color:#93c5fd">(Oto Galeride Park Halinde)</small><small>İlan Alıcı Teklifi: <b style="color:#4ade80">${sellVal.toLocaleString('tr-TR')}₺</b></small></span>`;
+      r.innerHTML = `<span>${def.type === 'moto' ? '🏍️' : '🚗'} <b>${def.name}</b> <small style="color:${inGar ? '#fde047' : '#93c5fd'}">(${inGar ? '🏠 Evin Garajında' : '🏪 Oto Galeride'})</small><small>İlan Alıcı Teklifi: <b style="color:#4ade80">${sellVal.toLocaleString('tr-TR')}₺</b></small></span>`;
       const b = document.createElement('button');
       b.style.background = '#15803d';
       b.style.borderColor = '#4ade80';
@@ -12825,13 +12897,19 @@ function renderPhoneModal(){
       S.money -= ad.price;
       C.driving = false; C.v = 0;
       if(!S.galleryCars.includes(c.id)) S.galleryCars.push(c.id);
+      // Eğer garaj aracı zaten seçiliyse onu bozma; yeni alınan araç Oto Galeriye gitsin!
       if(isMoto){
-        S.moto = c.id;
+        if(S.moto !== S.garageVeh){
+          S.moto = c.id;
+          parkVehicleAtMinerGallery(true, c.id);
+        }
       } else {
-        S.car = c.id;
-        if(S.mods) S.mods.paint = null;
+        if(S.car !== S.garageVeh){
+          S.car = c.id;
+          if(S.mods) S.mods.paint = null;
+          parkVehicleAtMinerGallery(false, c.id);
+        }
       }
-      parkVehicleAtMinerGallery(isMoto);
       phoneListings.splice(idx, 1);
       spawnOwnedCar();
       broadcastCoopPos(true);
@@ -12866,10 +12944,10 @@ function renderGallery(){
   ensureGalleryCars();
   const box = $('galBody');
   box.innerHTML = '';
-  // 1) Madenin Yanındaki Oto Galerim (Satın Aldığın Araçlar)
+  // 1) Madenin Yanındaki Oto Galerim & Ev Garajım
   const myH = document.createElement('h3');
   myH.style.color = '#fde047';
-  myH.textContent = `🏪 Madenin Yanındaki Oto Galerim (${S.galleryCars.length} Araç)`;
+  myH.textContent = `🏪 Oto Galerim & Ev Garajım (${S.galleryCars.length} Araç)`;
   box.appendChild(myH);
   if(!S.galleryCars.length){
     const emp = document.createElement('div');
@@ -12880,16 +12958,22 @@ function renderGallery(){
     S.galleryCars.forEach(vehId => {
       const c = CARS.find(item => item.id === vehId);
       if(!c) return;
-      const isMoto = c.type === 'moto';
-      const isActive = isMoto ? (S.moto === c.id) : (S.car === c.id);
+      const inGar = S.garageVeh === c.id;
       const galSellPrice = Math.round(c.price * 0.85);
       const row = document.createElement('div');
       row.className = 'row';
       row.style.flexWrap = 'wrap';
-      row.innerHTML = `<span style="flex:1;min-width:150px"><b>${c.name}</b> ${isActive ? '<span style="color:#4ade80;font-size:11px">(Ön Sırada)</span>' : '<span style="color:#93c5fd;font-size:11px">(Galeride Parkta)</span>'}<small>Galeri Satış Fiyatı: <b style="color:#fde047">${galSellPrice.toLocaleString('tr-TR')}₺</b></small></span>`;
+      row.innerHTML = `<span style="flex:1;min-width:140px"><b>${c.name}</b> ${inGar ? '<span style="color:#fde047;font-size:11px;font-weight:800">(🏠 Evin Garajında)</span>' : '<span style="color:#93c5fd;font-size:11px">(🏪 Oto Galeride)</span>'}<small>Galeri Satış: <b style="color:#4ade80">${galSellPrice.toLocaleString('tr-TR')}₺</b></small></span>`;
       const btnWrap = document.createElement('div');
       btnWrap.style.display = 'flex';
-      btnWrap.style.gap = '6px';
+      btnWrap.style.flexWrap = 'wrap';
+      btnWrap.style.gap = '5px';
+      const garBtn = document.createElement('button');
+      garBtn.style.background = inGar ? '#15803d' : '#b45309';
+      garBtn.style.borderColor = inGar ? '#4ade80' : '#fde047';
+      garBtn.style.fontWeight = '700';
+      garBtn.textContent = inGar ? '🏠 Garajda (Çıkar)' : '🏠 Garajda Kalsın';
+      garBtn.onclick = () => setGarageVehicle(c.id);
       const driveBtn = document.createElement('button');
       driveBtn.style.background = '#0284c7';
       driveBtn.style.borderColor = '#7dd3fc';
@@ -12902,6 +12986,7 @@ function renderGallery(){
       sellBtn.style.fontWeight = '700';
       sellBtn.textContent = `💰 Sat (+${galSellPrice.toLocaleString('tr-TR')}₺)`;
       sellBtn.onclick = () => sellVehicleById(c.id, galSellPrice, false);
+      btnWrap.appendChild(garBtn);
       btnWrap.appendChild(driveBtn);
       btnWrap.appendChild(sellBtn);
       row.appendChild(btnWrap);
@@ -12935,12 +13020,17 @@ function renderGallery(){
           C.driving = false; C.v = 0;
           if(!S.galleryCars.includes(c.id)) S.galleryCars.push(c.id);
           if(isMotoSec){
-            S.moto = c.id;
+            if(S.moto !== S.garageVeh){
+              S.moto = c.id;
+              parkVehicleAtMinerGallery(true, c.id);
+            }
           } else {
-            S.car = c.id;
-            S.mods.paint = null;
+            if(S.car !== S.garageVeh){
+              S.car = c.id;
+              S.mods.paint = null;
+              parkVehicleAtMinerGallery(false, c.id);
+            }
           }
-          parkVehicleAtMinerGallery(isMotoSec);
           spawnOwnedCar();
           broadcastCoopPos(true);
           beep(700, 0.1);
@@ -12957,7 +13047,17 @@ function renderGallery(){
   addSection('🏍️ Sıfır Motorlar (Alınca Oto Galeriye Gelir)', CARS.filter(c => c.type === 'moto'), true);
 }
 $('carBtn').onclick = () => {
-  if(!active() || !S.car) return;
+  if(!active()) return;
+  // Eğer evin garajındaki araca yakınsak onu aktif yapıp binelim
+  if(S.garageVeh && Math.hypot(P.x - HOME_GARAGE_POS.x, P.z - HOME_GARAGE_POS.z) < 4.2){
+    const gDef = CARS.find(c => c.id === S.garageVeh);
+    if(gDef && gDef.type !== 'moto' && S.car !== S.garageVeh){
+      S.car = S.garageVeh;
+      CAR_STATE.x = HOME_GARAGE_POS.x; CAR_STATE.z = HOME_GARAGE_POS.z; CAR_STATE.h = HOME_GARAGE_POS.h;
+      spawnOwnedCar();
+    }
+  }
+  if(!S.car) return;
   passengerOf = null;
   C.activeVeh = 'car';
   C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = CAR_STATE.h;
@@ -12970,7 +13070,16 @@ $('carBtn').onclick = () => {
   renderAll();
 };
 if($('motoBtn')) $('motoBtn').onclick = () => {
-  if(!active() || !S.moto) return;
+  if(!active()) return;
+  if(S.garageVeh && Math.hypot(P.x - HOME_GARAGE_POS.x, P.z - HOME_GARAGE_POS.z) < 4.2){
+    const gDef = CARS.find(c => c.id === S.garageVeh);
+    if(gDef && gDef.type === 'moto' && S.moto !== S.garageVeh){
+      S.moto = S.garageVeh;
+      MOTO_STATE.x = HOME_GARAGE_POS.x; MOTO_STATE.z = HOME_GARAGE_POS.z; MOTO_STATE.h = HOME_GARAGE_POS.h;
+      spawnOwnedCar();
+    }
+  }
+  if(!S.moto) return;
   passengerOf = null;
   C.activeVeh = 'moto';
   C.x = MOTO_STATE.x; C.z = MOTO_STATE.z; C.h = MOTO_STATE.h;
@@ -14036,20 +14145,22 @@ function frame(now){
   sty('hungerFill', 'background', hunger < 30 ? '#f87171' : '#ffb020');
   sty('thirstFill', 'width', thirst + '%');
   sty('thirstFill', 'background', thirst < 30 ? '#f87171' : '#38bdf8');
-  const nearCar = S.car && !C.driving && !D.driving && Math.hypot(P.x - CAR_STATE.x, P.z - CAR_STATE.z) < 4;
-  const nearMoto = S.moto && !C.driving && !D.driving && Math.hypot(P.x - MOTO_STATE.x, P.z - MOTO_STATE.z) < 3.6;
+  const garDef = S.garageVeh ? CARS.find(c => c.id === S.garageVeh) : null;
+  const nearGarVeh = garDef && !C.driving && !D.driving && Math.hypot(P.x - HOME_GARAGE_POS.x, P.z - HOME_GARAGE_POS.z) < 4.0;
+  const nearCar = (!C.driving && !D.driving && S.car && Math.hypot(P.x - CAR_STATE.x, P.z - CAR_STATE.z) < 4) || (nearGarVeh && garDef.type !== 'moto');
+  const nearMoto = (!C.driving && !D.driving && S.moto && Math.hypot(P.x - MOTO_STATE.x, P.z - MOTO_STATE.z) < 3.6) || (nearGarVeh && garDef.type === 'moto');
   const isDrivingMoto = !!(C.driving && C.activeVeh === 'moto');
   disp('carBtn', nearCar ? 'block' : 'none');
-  if(nearCar) txt('carBtn', '🚗 Arabaya Bin (E)');
+  if(nearCar) txt('carBtn', nearGarVeh && garDef.type !== 'moto' ? `🏠🚗 Garaj Aracına Bin (E)` : '🚗 Arabaya Bin (E)');
   disp('motoBtn', nearMoto ? 'block' : 'none');
-  if(nearMoto) txt('motoBtn', '🏍️ Motora Bin (E)');
+  if(nearMoto) txt('motoBtn', nearGarVeh && garDef.type === 'moto' ? `🏠🏍️ Garaj Motoruna Bin (E)` : '🏍️ Motora Bin (E)');
   // arabanın/motorun üstünde "BİN (E)" etiketi
   const cl = $('carLabel');
   if(nearCar || nearMoto){
     const useMotoLbl = nearMoto && (!nearCar || Math.hypot(P.x - MOTO_STATE.x, P.z - MOTO_STATE.z) < Math.hypot(P.x - CAR_STATE.x, P.z - CAR_STATE.z));
     cl.textContent = useMotoLbl ? '🏍️ MOTORA BİN (E)' : '🚗 ARABAYA BİN (E)';
-    const lx = useMotoLbl ? MOTO_STATE.x : CAR_STATE.x;
-    const lz = useMotoLbl ? MOTO_STATE.z : CAR_STATE.z;
+    const lx = nearGarVeh ? HOME_GARAGE_POS.x : (useMotoLbl ? MOTO_STATE.x : CAR_STATE.x);
+    const lz = nearGarVeh ? HOME_GARAGE_POS.z : (useMotoLbl ? MOTO_STATE.z : CAR_STATE.z);
     const v = new THREE.Vector3(lx, 2.2, lz).project(camera);
     cl.style.display = 'block';
     cl.style.left = ((v.x + 1) / 2 * window.innerWidth) + 'px';
@@ -14462,8 +14573,14 @@ drawPC();
 ensureGalleryCars();
 if(S.car || S.moto || S.galleryCars.length){
   if(!C.driving){
-    CAR_STATE.x = 13.8; CAR_STATE.z = -53.2; CAR_STATE.h = -Math.PI / 2;
-    MOTO_STATE.x = 13.8; MOTO_STATE.z = -50.8; MOTO_STATE.h = -Math.PI / 2;
+    const carInGar = S.car && S.garageVeh === S.car;
+    const motoInGar = S.moto && S.garageVeh === S.moto;
+    CAR_STATE.x = carInGar ? HOME_GARAGE_POS.x : 13.8;
+    CAR_STATE.z = carInGar ? HOME_GARAGE_POS.z : -53.2;
+    CAR_STATE.h = carInGar ? HOME_GARAGE_POS.h : -Math.PI / 2;
+    MOTO_STATE.x = motoInGar ? HOME_GARAGE_POS.x : 13.8;
+    MOTO_STATE.z = motoInGar ? HOME_GARAGE_POS.z : -50.8;
+    MOTO_STATE.h = motoInGar ? HOME_GARAGE_POS.h : -Math.PI / 2;
   }
   C.x = CAR_STATE.x; C.z = CAR_STATE.z; C.h = CAR_STATE.h;
   spawnOwnedCar();
@@ -15257,7 +15374,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-11-01-180122';
+const APP_VERSION = '2026-11-01-184041';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
