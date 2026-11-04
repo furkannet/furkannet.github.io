@@ -4498,40 +4498,80 @@ const motoDashCtx = motoDashCv.getContext('2d');
 const motoDashTex = new THREE.CanvasTexture(motoDashCv);
 const motoDashMat = new THREE.MeshBasicMaterial({map: motoDashTex});
 let lastMotoDashKey = '';
+function getMotoRpm(kmh, gearTxt){
+  if(gearTxt === 'N' || kmh === 0){
+    return 1200 + Math.floor(Math.sin(performance.now() * 0.008) * 60);
+  }
+  const g = parseInt(gearTxt, 10) || 1;
+  const gearRanges = [
+    {minK: 0, maxK: 52, minR: 2200, maxR: 13200},
+    {minK: 38, maxK: 94, minR: 6200, maxR: 13500},
+    {minK: 72, maxK: 138, minR: 7000, maxR: 13800},
+    {minK: 110, maxK: 185, minR: 7800, maxR: 14000},
+    {minK: 150, maxK: 235, minR: 8500, maxR: 14200},
+    {minK: 190, maxK: 350, minR: 9000, maxR: 14600}
+  ];
+  const r = gearRanges[g - 1] || gearRanges[0];
+  const frac = Math.max(0, Math.min(1, (kmh - r.minK) / Math.max(1, r.maxK - r.minK)));
+  return Math.round(r.minR + frac * (r.maxR - r.minR));
+}
 function updateMotoDashCanvas(kmh, gearTxt, fuelPct){
-  const key = kmh + '_' + gearTxt + '_' + fuelPct;
+  const rpm = getMotoRpm(kmh, gearTxt);
+  const rpmBars = Math.max(1, Math.min(14, Math.round(rpm / 1000)));
+  const shiftBlink = rpm >= 12800 ? (Math.floor(performance.now() / 150) % 2 === 0) : false;
+  const key = kmh + '_' + gearTxt + '_' + rpmBars + '_' + fuelPct + '_' + (shiftBlink ? '1' : '0');
   if(key === lastMotoDashKey) return;
   lastMotoDashKey = key;
   const g = motoDashCtx;
-  g.fillStyle = '#06101e';
+  g.fillStyle = '#07101d';
   g.fillRect(0, 0, 160, 88);
-  g.strokeStyle = '#38bdf8';
-  g.lineWidth = 4;
+  g.strokeStyle = '#0284c7';
+  g.lineWidth = 3;
   g.strokeRect(2, 2, 156, 84);
-  // Üstte devir (RPM) çubukları
-  const bars = 10;
-  const activeBars = Math.min(bars, Math.ceil((kmh % 45) / 45 * bars) + (kmh > 0 ? 1 : 0));
-  for(let i = 0; i < bars; i++){
-    g.fillStyle = i < activeBars ? (i >= 8 ? '#ef4444' : i >= 6 ? '#facc15' : '#4ade80') : '#1e293b';
-    g.fillRect(10 + i * 14, 10, 10, 11);
+  // Üstte 14 Kademeli LED Devir (RPM) Çubuğu (1k - 14k)
+  for(let i = 0; i < 14; i++){
+    if(i < rpmBars){
+      g.fillStyle = i >= 11 ? '#ef4444' : i >= 8 ? '#facc15' : '#06b6d4';
+    } else {
+      g.fillStyle = '#132236';
+    }
+    g.fillRect(7 + i * 10.5, 6, 8, 10);
   }
-  // Ortada büyük dijital hız (KM/S)
+  // Vites değiştirme ikaz ışığı (Shift Light)
+  if(rpm >= 12800){
+    g.fillStyle = shiftBlink ? '#ffffff' : '#ef4444';
+    g.beginPath();
+    g.arc(150, 11, 4.5, 0, Math.PI * 2);
+    g.fill();
+  }
+  // Ortada büyük ve net dijital hız (KM/S)
   g.fillStyle = '#ffffff';
-  g.font = 'bold 40px monospace';
+  g.font = 'bold 36px monospace';
   g.textAlign = 'center';
   g.textBaseline = 'middle';
-  g.fillText(String(kmh), 72, 50);
+  g.fillText(String(kmh), 70, 46);
   g.fillStyle = '#38bdf8';
-  g.font = 'bold 12px sans-serif';
-  g.fillText('KM/S', 72, 74);
-  // Sağda vites kutusu
-  g.fillStyle = '#fde047';
-  g.font = 'bold 26px monospace';
-  g.fillText(gearTxt, 134, 46);
-  // Solda benzin yüzdesi
-  g.fillStyle = fuelPct < 25 ? '#f87171' : '#86efac';
-  g.font = 'bold 12px monospace';
-  g.fillText('⛽' + fuelPct + '%', 30, 74);
+  g.font = 'bold 11px sans-serif';
+  g.fillText('KM/S', 70, 68);
+  // Sağda vites kutusu (Boşta 'N' yeşil, viteste altın sarısı)
+  g.strokeStyle = gearTxt === 'N' ? '#22c55e' : '#f59e0b';
+  g.lineWidth = 2;
+  g.strokeRect(123, 24, 28, 42);
+  g.fillStyle = gearTxt === 'N' ? '#4ade80' : '#fde047';
+  g.font = 'bold 24px monospace';
+  g.fillText(gearTxt, 137, 45);
+  g.fillStyle = '#94a3b8';
+  g.font = 'bold 9px sans-serif';
+  g.fillText('VİTES', 137, 74);
+  // Sol tarafta devir (RPM) sayısal değeri ve benzin yüzdesi
+  const rpmTxt = (rpm / 1000).toFixed(1) + 'k';
+  g.fillStyle = rpm >= 12800 ? '#ef4444' : '#38bdf8';
+  g.font = 'bold 10px monospace';
+  g.textAlign = 'left';
+  g.fillText('RPM ' + rpmTxt, 8, 38);
+  g.fillStyle = fuelPct < 25 ? '#f87171' : '#4ade80';
+  g.font = 'bold 10px monospace';
+  g.fillText('⛽' + fuelPct + '%', 8, 72);
   motoDashTex.needsUpdate = true;
 }
 updateMotoDashCanvas(0, 'N', 100);
@@ -14576,14 +14616,26 @@ function frame(now){
   disp('speedHud', anyDriving ? 'block' : 'none');
   if(anyDriving){
     const rawV = C.driving ? C.v : D.driving ? D.v : CM.driving ? CM.v : (typeof BOAT !== 'undefined' && BOAT.driving) ? BOAT.v : (typeof HELI !== 'undefined' && HELI.flying) ? HELI.v : 0;
+    const isMoto = C.driving && C.activeVeh === 'moto';
     const kmh = Math.round(Math.abs(rawV) * 18);
-    const gearTxt = rawV < -0.2 ? 'R' : kmh === 0 ? 'N' : String(Math.min(6, Math.max(1, Math.ceil(kmh / 38))));
+    let gearTxt;
+    if(isMoto){
+      if(kmh === 0 || rawV < -0.1) gearTxt = 'N';
+      else if(kmh <= 52) gearTxt = '1';
+      else if(kmh <= 94) gearTxt = '2';
+      else if(kmh <= 138) gearTxt = '3';
+      else if(kmh <= 185) gearTxt = '4';
+      else if(kmh <= 235) gearTxt = '5';
+      else gearTxt = '6';
+    } else {
+      gearTxt = rawV < -0.2 ? 'R' : kmh === 0 ? 'N' : String(Math.min(6, Math.max(1, Math.ceil(kmh / 38))));
+    }
     const fuelPct = Math.round(S.fuel || 0);
     txt('speedVal', String(kmh));
     sty('speedVal', 'color', kmh > 160 ? '#ef4444' : kmh > 100 ? '#facc15' : '#4ade80');
     txt('gearVal', 'Vites: ' + gearTxt);
     txt('fuelHudVal', '⛽ %' + fuelPct);
-    if(C.driving && C.activeVeh === 'moto') updateMotoDashCanvas(kmh, gearTxt, fuelPct);
+    if(isMoto) updateMotoDashCanvas(kmh, gearTxt, fuelPct);
   }
   // benzin istasyonunun yanında, durmuş arabada benzin doldurma
   const atBenzin = C.driving && Math.hypot(C.x - BENZIN_X, C.z + 52) < 8 && Math.abs(C.v) < 1 && S.fuel < 100;
@@ -15720,7 +15772,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-11-01-194351';
+const APP_VERSION = '2026-11-04-211613';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
