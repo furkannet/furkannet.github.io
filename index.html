@@ -5580,9 +5580,10 @@ function renderBoard(){
   if(!c){ $('boardBody').innerHTML = '<i style="color:var(--mut)">Müşteri yok</i>' + phoneHTML; return; }
   if(!c.waiting){ $('boardBody').innerHTML = `<b>${c.T.label}</b> <i style="color:var(--mut)">yürüyor…</i>` + phoneHTML; return; }
   const total = c.order.reduce((a, id) => a + PRICE[id], 0);
-  $('boardBody').innerHTML = `<b>${c.T.label}</b><ol>` +
+  const studentNote = c.type === 'ogrenci' ? '<div style="color:#ffd54a;font-weight:600;font-size:11px;margin:2px 0 4px">"Abi öğrenciyiz indirim yap!"</div>' : '';
+  $('boardBody').innerHTML = `<b>${c.T.label}</b>` + studentNote + `<ol>` +
     c.order.map(id => `<li>${ING[id]}</li>`).join('') +
-    `</ol><div class="tp">~${Math.round(total * c.T.pay)}₺</div>` + phoneHTML;
+    `</ol><div class="tp">~${Math.round(total * c.T.pay)}₺${c.type === 'ogrenci' ? ' (Öğrenci İndirimi)' : ''}</div>` + phoneHTML;
 }
 
 function renderPlate(){
@@ -8294,6 +8295,8 @@ function serve(auto = false){
     if(c.type === 'vip'){
       flash(`🌟 VIP ÜNLÜ MEMNUN KALDI! +${total}₺ (250₺ VIP Ödülü!)`, '#ffd700');
       if(typeof spawnFirework === 'function') spawnFirework(c.x, c.z);
+    } else if(c.type === 'ogrenci'){
+      flash(`🎓 "Eyvallah abi, kralsın!" +${total}₺ (Öğrenci İndirimi)`, '#4ade80');
     } else {
       flash(`+${total}₺`, '#4ade80');
     }
@@ -13573,7 +13576,7 @@ function askPasser(p){
 
 /* ================= Müşteriyle konuşma ================= */
 const LINES = {
-  ogrenci: ['Bugün param az ama açım...', 'Acı sos var mı?', 'Hızlı olur mu?'],
+  ogrenci: ['Abi öğrenciyiz indirim yap!', 'Abi öğrenciyiz etini biraz bol koysan?', 'Bugün param az abi öğrenciyiz...', 'Abi öğrenciye bir güzellik yaparsın artık!'],
   isadami: ['Vaktim dar, hızlı lütfen.', 'Yanında ayran olsun.', 'Tam mesai, acelem var.'],
   turist: ['Very nice! Döner ne demek?', 'Fotoğraf çekebilir miyim?', 'Yanına kola da alırım.'],
   emekli: ['Benim zamanımda döner daha ucuzdu.', 'Soğanı az koy evladım.', 'Yavaş yavaş gelirim, merak etme.'],
@@ -14121,7 +14124,17 @@ comoWalkers = comoWalkers.filter(w => !w.dead);
         } else {
           c.x = tx; c.z = tz; c.walk = false;
           c.g.rotation.y = hasRestQueue ? Math.PI / 2 : 0; // restoranda kasaya doğru bakar
-          if(!c.waiting){ c.waiting = true; changed = true; }
+          if(!c.waiting){
+            c.waiting = true;
+            changed = true;
+            if(c.type === 'ogrenci' && queue[0] === c && !c.talked){
+              bubbleCust = c; bubbleT = 3.5;
+              const b = $('bubble');
+              b.innerHTML = `<b>${c.T.label}:</b> Abi öğrenciyiz indirim yap!`;
+              placeBubble();
+              beep(420, 0.05, 'triangle', 0.03);
+            }
+          }
         }
       }
       if(play && !D.driving && c.waiting){
@@ -15772,7 +15785,7 @@ function rainSoundUpdate(){
 
 /* ================= Güncelleme kontrolü ================= */
 // Sürüm numarası yayinla.sh ile her yayında değişir. Sunucudaki version.json farklıysa oyuncuya "Yenile" uyarısı çıkar.
-const APP_VERSION = '2026-11-04-211613';
+const APP_VERSION = '2026-11-06-212557';
 let updateShown = false, latestVersion = '';
 // köşede küçük sürüm etiketi: hangi sürümde olduğumuz görünsün
 (function(){
