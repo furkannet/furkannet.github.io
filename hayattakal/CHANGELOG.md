@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## v0.3.2 (2026-11-11)
+- Efektler: namlu parlaması, koşarken toz izi, boss gelirken ekran titremesi
+
 ## v0.3.1 (2026-11-11)
 - Grafik: güneş diski, rüzgâr tozu, sıcak hava titreşimi ve kenar karartması
 

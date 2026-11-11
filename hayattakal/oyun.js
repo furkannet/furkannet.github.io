@@ -1,7 +1,7 @@
 'use strict';
 // Hayatta Kal - bağımlılıksız, düşük donanım dostu koşucu + hayatta kalma oyunu.
 // Sürüm numarasını elle değiştirme: yayinla.sh yönetir.
-var SURUM = '0.3.1';
+var SURUM = '0.3.2';
 
 (function () {
   // ================= TUVAL VE GÖRÜNÜM =================
@@ -425,6 +425,7 @@ var SURUM = '0.3.1';
       vEkle(kos ? K_KOS : K_ZOMBI, (Math.random() * 2 - 1) * (YOL - 0.4), sqZ + 14 + Math.random() * 10, hp);
     }
     yaziEkle(sqX, sqZ + 3, 'BOSS!', '#ff5a36');
+    sallanma = 0.35;
   }
 
   function hasarAl(n) {
@@ -532,6 +533,7 @@ var SURUM = '0.3.1';
         atisAcc -= 1;
         var j = (Math.random() * cizilen) | 0;
         mermiEkle(sqX + OX[j], sqZ + OZ[j] + 0.2, dmg);
+        if (Math.random() < 0.25) parca(sqX + OX[j], sqZ + OZ[j] + 0.3, 0.6, 2, 1, 0.4);
       }
       if (atisAcc > 1) atisAcc = 1;
     }
@@ -617,6 +619,7 @@ var SURUM = '0.3.1';
       if (bitir2) { bA[m] = 0; parca(bX[m], bZ[m], 0.4, 2, 1, 0.5); }
     }
 
+    if (hiz > 0.5 && Math.random() < 0.5) parca(sqX + (Math.random() - 0.5) * 1.6, sqZ - 0.8, 0.1, 3, 1, 0.3);
     for (var z = 0; z < TOZ; z++) {
       tozX[z] += tozV[z] * dt * 0.4; tozY[z] += tozV[z] * dt * 0.05;
       if (tozX[z] > 1) tozX[z] -= 1;
