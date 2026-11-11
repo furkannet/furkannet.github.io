@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## v0.4.0 (2026-11-11)
+- Ortamlar: 1-50 çöl, 51-99 orman, 100-150 şehir enkazı; sonra döngü
+
 ## v0.3.7 (2026-11-11)
 - Karakter oranları gerçekçi: küçük kafa, uzun bacak, ince kol ve geniş omuz
 
