@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## v0.3.3 (2026-11-11)
+- Grafik: uzak kum tepeleri (paralaks), zombilerde kum lekeleri, kapılarda parlama, bölüm geçince altın ışık
+
 ## v0.3.2 (2026-11-11)
 - Efektler: namlu parlaması, koşarken toz izi, boss gelirken ekran titremesi
 

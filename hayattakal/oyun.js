@@ -1,7 +1,7 @@
 'use strict';
 // Hayatta Kal - bağımlılıksız, düşük donanım dostu koşucu + hayatta kalma oyunu.
 // Sürüm numarasını elle değiştirme: yayinla.sh yönetir.
-var SURUM = '0.3.2';
+var SURUM = '0.3.3';
 
 (function () {
   // ================= TUVAL VE GÖRÜNÜM =================
@@ -9,7 +9,7 @@ var SURUM = '0.3.2';
   var ctx = cv.getContext('2d', { alpha: false });
   var W = 1, H = 1, PXR = 1, kalite = 1;
   var focal = 1, ufuk = 0, camH = 1, camZ = 0, camX = 0;
-  var gokGrad = null, sisGrad = null, vigC = null;
+  var gokGrad = null, sisGrad = null, vigC = null, duneC = null, flash = 0;
   var TOZ = 36, tozX = new Float32Array(TOZ), tozY = new Float32Array(TOZ), tozV = new Float32Array(TOZ);
   for (var ti = 0; ti < TOZ; ti++) { tozX[ti] = Math.random(); tozY[ti] = Math.random(); tozV[ti] = 0.02 + Math.random() * 0.05; }
 
@@ -53,6 +53,16 @@ var SURUM = '0.3.2';
     gokGrad.addColorStop(0, '#1d3a5f'); gokGrad.addColorStop(0.6, '#e88a5a'); gokGrad.addColorStop(1, '#ffd38a');
     sisGrad = ctx.createLinearGradient(0, ufuk, 0, ufuk + H * 0.09);
     sisGrad.addColorStop(0, 'rgba(201,120,80,0.95)'); sisGrad.addColorStop(1, 'rgba(201,120,80,0)');
+    duneC = tuval(Math.max(1, (W * 2) | 0), Math.max(1, (H * 0.12) | 0));
+    var dg = duneC.getContext('2d'), dh = duneC.height;
+    dg.fillStyle = '#d9b476';
+    dg.beginPath(); dg.moveTo(0, dh);
+    for (var dx = 0; dx <= duneC.width; dx += 8) dg.lineTo(dx, dh * (0.55 + 0.35 * Math.sin(dx * 0.011) * Math.sin(dx * 0.0037 + 1)));
+    dg.lineTo(duneC.width, dh); dg.fill();
+    dg.fillStyle = '#c69a5c';
+    dg.beginPath(); dg.moveTo(0, dh);
+    for (var dy = 0; dy <= duneC.width; dy += 8) dg.lineTo(dy, dh * (0.8 + 0.15 * Math.sin(dy * 0.017 + 2)));
+    dg.lineTo(duneC.width, dh); dg.fill();
     vigC = tuval(Math.max(1, W | 0), Math.max(1, H | 0));
     var vg = vigC.getContext('2d');
     var rg = vg.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.35, W * 0.5, H * 0.5, Math.max(W, H) * 0.75);
@@ -185,6 +195,10 @@ var SURUM = '0.3.2';
       g.fillRect(24, 26, 4, 3); g.fillRect(13, 31, 3, 2);
     }
     if (o.saç && o.zombi) { g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(22, 4, 2, 3); }
+    if (o.zombi) {
+      g.fillStyle = 'rgba(201,164,102,0.6)';
+      g.fillRect(10, 26, 3, 2); g.fillRect(25, 33, 4, 2); g.fillRect(13, 46, 3, 2); g.fillRect(22, 40, 2, 2);
+    }
   }
 
   var SPR_ASKER = sprite(40, 60, 2, function (g, f) {
@@ -441,6 +455,7 @@ var SURUM = '0.3.2';
     if (bitti) return;
     bitti = true; kazandi = kazan; bitisT = kazan ? 1.6 : 1.2;
     if (kazan) kazanc += 20 + 10 * kayit.bolum;
+    if (kazan) flash = 0.6;
   }
 
   function kapiUygula(i) {
@@ -636,6 +651,7 @@ var SURUM = '0.3.2';
     }
     for (var f = 0; f < MF; f++) if (fL[f] > 0) { fL[f] -= dt; fY[f] += dt * 1.4; }
 
+    if (flash > 0) flash -= dt;
     if (bitisT >= 0) { bitisT -= dt; if (bitisT < 0) sonucGoster(); }
   }
 
@@ -661,6 +677,7 @@ var SURUM = '0.3.2';
     var gr = Math.min(W, H) * 0.09;
     ctx.fillStyle = 'rgba(255,231,160,0.25)'; ctx.beginPath(); ctx.arc(W * 0.72, ufuk * 0.5, gr * 1.9, 0, 6.2832); ctx.fill();
     ctx.fillStyle = '#ffe7a0'; ctx.beginPath(); ctx.arc(W * 0.72, ufuk * 0.5, gr, 0, 6.2832); ctx.fill();
+    if (duneC) ctx.drawImage(duneC, -((sqX * 18 + camZ * 0.8) % W + W) % W, ufuk - duneC.height * 0.9);
     ctx.fillStyle = 'rgba(255,240,200,0.10)';
     for (var hz = 0; hz < 4; hz++) ctx.fillRect(0, ufuk - 4 - hz * 7 + Math.sin(t * 2 + hz) * 2, W, 2);
     ctx.fillStyle = '#c9a466'; ctx.fillRect(0, ufuk, W, H - ufuk);
@@ -734,6 +751,7 @@ var SURUM = '0.3.2';
     ctx.fillRect(ax - p, by - h - p, p * 2, h + p);
     ctx.fillRect(bx - p, by - h - p, p * 2, h + p);
     ctx.fillRect(ax, by - h - p, bx - ax, p * 1.6);
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(ax, by - h, bx - ax, p * 1.2);
     font(0.8 * k);
     ctx.fillStyle = '#fff';
     ctx.fillText(eTx[i], (ax + bx) * 0.5, by - h * 0.5);
@@ -826,6 +844,7 @@ var SURUM = '0.3.2';
     }
     ctx.globalAlpha = 1;
 
+    if (flash > 0) { ctx.globalAlpha = flash; ctx.fillStyle = '#ffd76a'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
     // rüzgâr tozu (ekran uzayında, ucuz)
     ctx.fillStyle = 'rgba(243,227,181,0.35)';
     for (var zt = 0; zt < TOZ; zt++) ctx.fillRect(tozX[zt] * W, ufuk + tozY[zt] * (H - ufuk), 2, 2);
