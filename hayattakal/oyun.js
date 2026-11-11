@@ -1,7 +1,7 @@
 'use strict';
 // Hayatta Kal - bağımlılıksız, düşük donanım dostu koşucu + hayatta kalma oyunu.
 // Sürüm numarasını elle değiştirme: yayinla.sh yönetir.
-var SURUM = '0.1.1';
+var SURUM = '0.2.0';
 
 (function () {
   // ================= TUVAL VE GÖRÜNÜM =================
@@ -340,8 +340,10 @@ var SURUM = '0.1.1';
       var t0 = r();
       if (ilk || t0 < 0.38) {
         ilk = false;
-        var iyi = (E < 90 && r() < 0.28) ? kapi(1, 2) : kapi(0, Math.round(3 + r() * (4 + L * 1.2)));
-        var kotu = r() < 0.55 ? kapi(0, -Math.round(2 + r() * (3 + L * 0.8))) : kapi(0, Math.round(1 + r() * 3));
+        var carpan = L >= 5 && r() < 0.3 ? 3 : 2;
+        var iyi = (E < 160 && r() < 0.4) ? kapi(1, carpan) : kapi(0, Math.round(3 + r() * (4 + L * 1.2)));
+        var kotu = r() < 0.5 ? kapi(0, -Math.round(2 + r() * (3 + L * 0.8))) : kapi(0, Math.round(1 + r() * 3));
+        if (L >= 3 && r() < 0.25) kotu = kapi(1, 0.5);
         var solIyi = r() < 0.5;
         var a = solIyi ? iyi : kotu, b = solIyi ? kotu : iyi;
         ev.push({ z: z, k: K_KAPI, x: -1.5, op: a.op, v: a.v });
@@ -350,6 +352,7 @@ var SURUM = '0.1.1';
         z += 14 + r() * 5;
       } else if (t0 < 0.85) {
         var n = kes(Math.round(E * (0.35 + r() * 0.3 + L * 0.025)), 3, 90);
+        if (L >= 4 && r() < 0.2) n = Math.min(120, n + Math.round(E * 0.4));
         var hp = Math.round(2 + L * 1.1);
         var derin = 2 + n * 0.12;
         for (var i = 0; i < n; i++) {
