@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## v0.3.1 (2026-11-11)
+- Grafik: güneş diski, rüzgâr tozu, sıcak hava titreşimi ve kenar karartması
+
 ## v0.3.0 (2026-11-11)
 - Özgün çöl teması: kumlu ortam, kaktüs ve enkaz dekorları, çöl kıyafetli askerler (özgün tasarım)
 

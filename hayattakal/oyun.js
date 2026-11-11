@@ -1,7 +1,7 @@
 'use strict';
 // Hayatta Kal - bağımlılıksız, düşük donanım dostu koşucu + hayatta kalma oyunu.
 // Sürüm numarasını elle değiştirme: yayinla.sh yönetir.
-var SURUM = '0.3.0';
+var SURUM = '0.3.1';
 
 (function () {
   // ================= TUVAL VE GÖRÜNÜM =================
@@ -9,7 +9,9 @@ var SURUM = '0.3.0';
   var ctx = cv.getContext('2d', { alpha: false });
   var W = 1, H = 1, PXR = 1, kalite = 1;
   var focal = 1, ufuk = 0, camH = 1, camZ = 0, camX = 0;
-  var gokGrad = null, sisGrad = null;
+  var gokGrad = null, sisGrad = null, vigC = null;
+  var TOZ = 36, tozX = new Float32Array(TOZ), tozY = new Float32Array(TOZ), tozV = new Float32Array(TOZ);
+  for (var ti = 0; ti < TOZ; ti++) { tozX[ti] = Math.random(); tozY[ti] = Math.random(); tozV[ti] = 0.02 + Math.random() * 0.05; }
 
   var YOL = 3;        // yolun yarı genişliği (dünya birimi)
   var KAMERA = 6;     // kameranın takımın ne kadar arkasında olduğu
@@ -51,6 +53,11 @@ var SURUM = '0.3.0';
     gokGrad.addColorStop(0, '#1d3a5f'); gokGrad.addColorStop(0.6, '#e88a5a'); gokGrad.addColorStop(1, '#ffd38a');
     sisGrad = ctx.createLinearGradient(0, ufuk, 0, ufuk + H * 0.09);
     sisGrad.addColorStop(0, 'rgba(201,120,80,0.95)'); sisGrad.addColorStop(1, 'rgba(201,120,80,0)');
+    vigC = tuval(Math.max(1, W | 0), Math.max(1, H | 0));
+    var vg = vigC.getContext('2d');
+    var rg = vg.createRadialGradient(W * 0.5, H * 0.5, Math.min(W, H) * 0.35, W * 0.5, H * 0.5, Math.max(W, H) * 0.75);
+    rg.addColorStop(0, 'rgba(20,8,0,0)'); rg.addColorStop(1, 'rgba(20,8,0,0.5)');
+    vg.fillStyle = rg; vg.fillRect(0, 0, W, H);
     sonFont = -1;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     if (durum !== 1) ciz();
@@ -610,6 +617,12 @@ var SURUM = '0.3.0';
       if (bitir2) { bA[m] = 0; parca(bX[m], bZ[m], 0.4, 2, 1, 0.5); }
     }
 
+    for (var z = 0; z < TOZ; z++) {
+      tozX[z] += tozV[z] * dt * 0.4; tozY[z] += tozV[z] * dt * 0.05;
+      if (tozX[z] > 1) tozX[z] -= 1;
+      if (tozY[z] > 1) tozY[z] -= 1;
+    }
+
     // parçacıklar
     for (var q = 0; q < MP; q++) {
       if (pL[q] <= 0) continue;
@@ -642,6 +655,11 @@ var SURUM = '0.3.0';
   // ================= ÇİZİM =================
   function arkaPlan() {
     ctx.fillStyle = gokGrad; ctx.fillRect(0, 0, W, ufuk + 1);
+    var gr = Math.min(W, H) * 0.09;
+    ctx.fillStyle = 'rgba(255,231,160,0.25)'; ctx.beginPath(); ctx.arc(W * 0.72, ufuk * 0.5, gr * 1.9, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = '#ffe7a0'; ctx.beginPath(); ctx.arc(W * 0.72, ufuk * 0.5, gr, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = 'rgba(255,240,200,0.10)';
+    for (var hz = 0; hz < 4; hz++) ctx.fillRect(0, ufuk - 4 - hz * 7 + Math.sin(t * 2 + hz) * 2, W, 2);
     ctx.fillStyle = '#c9a466'; ctx.fillRect(0, ufuk, W, H - ufuk);
 
     // çim şeritleri (hız hissi)
@@ -804,6 +822,12 @@ var SURUM = '0.3.0';
       ctx.fillStyle = fR[f]; ctx.fillText(fS[f], sx, sy - fY[f] * sk);
     }
     ctx.globalAlpha = 1;
+
+    // rüzgâr tozu (ekran uzayında, ucuz)
+    ctx.fillStyle = 'rgba(243,227,181,0.35)';
+    for (var zt = 0; zt < TOZ; zt++) ctx.fillRect(tozX[zt] * W, ufuk + tozY[zt] * (H - ufuk), 2, 2);
+    // vinyet: önceden çizilmiş tek görüntü
+    if (vigC) ctx.drawImage(vigC, 0, 0, W, H);
 
     if (durum !== 0) {
       // takım sayısı
