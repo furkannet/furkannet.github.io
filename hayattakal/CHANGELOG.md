@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## v0.2.1 (2026-11-11)
+- Görsel: parlak gökyüzü, canlı kapı renkleri, daha canlı çimen ve yol
+
 ## v0.2.0 (2026-11-11)
 - Last War tarzı: daha sık çarpanlı kapılar (x3), büyük asker dalgaları, tuzak kapılar
 

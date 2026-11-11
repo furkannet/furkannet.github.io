@@ -1,7 +1,7 @@
 'use strict';
 // Hayatta Kal - bağımlılıksız, düşük donanım dostu koşucu + hayatta kalma oyunu.
 // Sürüm numarasını elle değiştirme: yayinla.sh yönetir.
-var SURUM = '0.2.0';
+var SURUM = '0.2.1';
 
 (function () {
   // ================= TUVAL VE GÖRÜNÜM =================
@@ -48,7 +48,7 @@ var SURUM = '0.2.0';
     focal = Math.min(W * 0.9, H * 0.85);
     camH = (H * 0.8 - ufuk) * KAMERA / focal;
     gokGrad = ctx.createLinearGradient(0, 0, 0, ufuk);
-    gokGrad.addColorStop(0, '#23243a'); gokGrad.addColorStop(0.7, '#6b3f4a'); gokGrad.addColorStop(1, '#d9824f');
+    gokGrad.addColorStop(0, '#2a2f7a'); gokGrad.addColorStop(0.6, '#c2457a'); gokGrad.addColorStop(1, '#ffb36b');
     sisGrad = ctx.createLinearGradient(0, ufuk, 0, ufuk + H * 0.09);
     sisGrad.addColorStop(0, 'rgba(201,120,80,0.95)'); sisGrad.addColorStop(1, 'rgba(201,120,80,0)');
     sonFont = -1;
@@ -644,10 +644,10 @@ var SURUM = '0.2.0';
   // ================= ÇİZİM =================
   function arkaPlan() {
     ctx.fillStyle = gokGrad; ctx.fillRect(0, 0, W, ufuk + 1);
-    ctx.fillStyle = '#4b5320'; ctx.fillRect(0, ufuk, W, H - ufuk);
+    ctx.fillStyle = '#5e7a2a'; ctx.fillRect(0, ufuk, W, H - ufuk);
 
     // çim şeritleri (hız hissi)
-    ctx.fillStyle = '#434a1c';
+    ctx.fillStyle = '#4d6622';
     var z0 = Math.floor(camZ / 3) * 3, y1, y2;
     for (; z0 < camZ + UZAK; z0 += 3) {
       if (((z0 / 3) & 1) === 0) continue;
@@ -661,7 +661,7 @@ var SURUM = '0.2.0';
     var x1, x2, yN, x3, x4, yF;
     P(-YOL - 0.2, zN); x1 = sx; yN = sy; P(YOL + 0.2, zN); x2 = sx;
     P(YOL + 0.2, zF); x3 = sx; yF = sy; P(-YOL - 0.2, zF); x4 = sx;
-    ctx.fillStyle = '#7d766c';
+    ctx.fillStyle = '#8a8078';
     ctx.beginPath(); ctx.moveTo(x1, yN); ctx.lineTo(x2, yN); ctx.lineTo(x3, yF); ctx.lineTo(x4, yF); ctx.fill();
     P(-YOL, zN); x1 = sx; P(YOL, zN); x2 = sx; P(YOL, zF); x3 = sx; P(-YOL, zF); x4 = sx;
     ctx.fillStyle = '#4f4c49';
@@ -706,11 +706,11 @@ var SURUM = '0.2.0';
     P(eX[i] + KR[K_KAPI], z); var bx = sx;
     var h = KH[K_KAPI] * k;
     var iyi = eOp[i] === 1 || eV[i] > 0;
-    ctx.globalAlpha = 0.5;
-    ctx.fillStyle = eFl[i] > 0 ? '#ffffff' : (iyi ? (eOp[i] === 1 ? '#18b06b' : '#2f8cff') : '#ff3b3b');
+    ctx.globalAlpha = 0.72;
+    ctx.fillStyle = eFl[i] > 0 ? '#ffffff' : (iyi ? (eOp[i] === 1 ? '#22e08a' : '#3ea0ff') : '#ff4d6d');
     ctx.fillRect(ax, by - h, bx - ax, h);
     ctx.globalAlpha = 1;
-    ctx.fillStyle = iyi ? '#cfe6ff' : '#ffd0d0';
+    ctx.fillStyle = iyi ? '#e4f2ff' : '#ffe0e6';
     var p = 0.07 * k;
     ctx.fillRect(ax - p, by - h - p, p * 2, h + p);
     ctx.fillRect(bx - p, by - h - p, p * 2, h + p);
