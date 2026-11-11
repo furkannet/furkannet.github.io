@@ -1,7 +1,7 @@
 'use strict';
 // Hayatta Kal - bağımlılıksız, düşük donanım dostu koşucu + hayatta kalma oyunu.
 // Sürüm numarasını elle değiştirme: yayinla.sh yönetir.
-var SURUM = '0.3.4';
+var SURUM = '0.3.5';
 
 (function () {
   // ================= TUVAL VE GÖRÜNÜM =================
@@ -115,10 +115,12 @@ var SURUM = '0.3.4';
     g.fillStyle = 'rgba(0,0,0,0.35)'; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); g.fill();
   }
   // fw x fh boyutlu, n kareli sprite
+  // Sprite'lar 2 kat çözünürlükte çizilir (K); dünya boyutu değişmez, sadece detay artar.
+  var K = 2;
   function sprite(fw, fh, n, fn) {
-    var c = tuval(fw * n, fh), g = c.getContext('2d');
-    for (var i = 0; i < n; i++) { g.save(); g.translate(i * fw, 0); fn(g, i, fw, fh); g.restore(); }
-    return { c: c, b: beyazlat(c), w: fw, h: fh };
+    var c = tuval(fw * K * n, fh * K), g = c.getContext('2d');
+    for (var i = 0; i < n; i++) { g.save(); g.setTransform(K, 0, 0, K, i * fw * K, 0); fn(g, i, fw, fh); g.restore(); }
+    return { c: c, b: beyazlat(c), w: fw * K, h: fh * K };
   }
 
   // Tek insan modeli: asker ve zombiler aynı iskeleti kullanır (çizim bir kez yapılır, oyunda sadece drawImage).
@@ -135,6 +137,9 @@ var SURUM = '0.3.4';
     // gövde
     g.fillStyle = o.ust;
     g.fillRect(10, 20, 20, 19);
+    var tg = g.createLinearGradient(10, 0, 30, 0);
+    tg.addColorStop(0, 'rgba(0,0,0,0.3)'); tg.addColorStop(0.5, 'rgba(0,0,0,0)'); tg.addColorStop(1, 'rgba(0,0,0,0.2)');
+    g.fillStyle = tg; g.fillRect(10, 20, 20, 19);
     g.fillStyle = 'rgba(0,0,0,0.22)'; g.fillRect(10, 20, 4, 19); g.fillRect(26, 20, 4, 3);
     g.fillStyle = 'rgba(255,255,255,0.13)'; g.fillRect(22, 21, 6, 9);
     if (o.yelek) {
@@ -155,6 +160,9 @@ var SURUM = '0.3.4';
     g.fillStyle = o.ten;
     g.fillRect(17, 17, 6, 4);
     g.beginPath(); g.ellipse(20, 12, 7, 8, 0, 0, Math.PI * 2); g.fill();
+    var hg = g.createRadialGradient(17, 9, 1, 20, 12, 9);
+    hg.addColorStop(0, 'rgba(255,255,255,0.22)'); hg.addColorStop(1, 'rgba(0,0,0,0.28)');
+    g.fillStyle = hg; g.beginPath(); g.ellipse(20, 12, 7, 8, 0, 0, Math.PI * 2); g.fill();
     g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.ellipse(20, 18, 5, 2, 0, 0, Math.PI * 2); g.fill();
     // saç veya kask
     if (o.kask) {

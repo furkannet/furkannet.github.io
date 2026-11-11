@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## v0.3.5 (2026-11-11)
+- Karakterler 2 kat çözünürlükte çiziliyor, yüzde ve üniformada yumuşak gölge
+
 ## v0.3.4 (2026-11-11)
 - Karakterler: yüzde kaşlar ve dudak, kıyafet kıvrımları, asker kemer ve çene bağı, zombilerde dağınık saç
 
