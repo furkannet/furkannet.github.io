@@ -1,7 +1,7 @@
 'use strict';
 // Hayatta Kal - bağımlılıksız, düşük donanım dostu koşucu + hayatta kalma oyunu.
 // Sürüm numarasını elle değiştirme: yayinla.sh yönetir.
-var SURUM = '0.3.5';
+var SURUM = '0.3.6';
 
 (function () {
   // ================= TUVAL VE GÖRÜNÜM =================
@@ -117,6 +117,7 @@ var SURUM = '0.3.5';
   // fw x fh boyutlu, n kareli sprite
   // Sprite'lar 2 kat çözünürlükte çizilir (K); dünya boyutu değişmez, sadece detay artar.
   var K = 2;
+  var VB = 1.4; // karakterlerin ekrandaki büyütme oranı (çarpışma alanı değişmez)
   function sprite(fw, fh, n, fn) {
     var c = tuval(fw * K * n, fh * K), g = c.getContext('2d');
     for (var i = 0; i < n; i++) { g.save(); g.setTransform(K, 0, 0, K, i * fw * K, 0); fn(g, i, fw, fh); g.restore(); }
@@ -789,7 +790,7 @@ var SURUM = '0.3.5';
     var k = eK[i];
     P(eX[i], eZ[i]);
     if (k === K_KAPI) { kapiCiz(i); return; }
-    var spr = SPR[k], w = KW[k] * sk, h = KH[k] * sk;
+    var spr = SPR[k], vb = k <= K_TANK ? VB : 1, w = KW[k] * sk * vb, h = KH[k] * sk * vb;
     var f = 0;
     if (k <= K_BOSS) f = ((t * (k === K_KOS ? 10 : k === K_BOSS ? 3 : 6) + eSeed[i]) | 0) & 1;
     ctx.drawImage(eFl[i] > 0 ? spr.b : spr.c, f * spr.w, 0, spr.w, spr.h, sx - w * 0.5, sy - h, w, h);
@@ -809,7 +810,7 @@ var SURUM = '0.3.5';
 
   function askerleriCiz() {
     var frameHiz = hiz > 0.5 ? 9 : 0;
-    var spr = SPR_ASKER, w0 = 0.46, h0 = 0.68;
+    var spr = SPR_ASKER, w0 = 0.46 * VB, h0 = 0.68 * VB;
     for (var n = 0; n < MAXDIZ; n++) {
       var j = SIRA[n];
       if (j >= cizilen) continue;

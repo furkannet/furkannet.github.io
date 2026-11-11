@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## v0.3.6 (2026-11-11)
+- Asker ve zombiler yaklaşık yüzde 40 büyütüldü (çarpışma aynı)
+
 ## v0.3.5 (2026-11-11)
 - Karakterler 2 kat çözünürlükte çiziliyor, yüzde ve üniformada yumuşak gölge
 
