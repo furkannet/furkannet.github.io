@@ -1,7 +1,7 @@
 'use strict';
 // Hayatta Kal - bağımlılıksız, düşük donanım dostu koşucu + hayatta kalma oyunu.
 // Sürüm numarasını elle değiştirme: yayinla.sh yönetir.
-var SURUM = '0.3.6';
+var SURUM = '0.3.7';
 
 (function () {
   // ================= TUVAL VE GÖRÜNÜM =================
@@ -124,116 +124,109 @@ var SURUM = '0.3.6';
     return { c: c, b: beyazlat(c), w: fw * K, h: fh * K };
   }
 
-  // Tek insan modeli: asker ve zombiler aynı iskeleti kullanır (çizim bir kez yapılır, oyunda sadece drawImage).
+  // Tek insan modeli (gerçekçi oranlar: kafa ~1/6 boy, uzun bacak, ince kol).
   function insanCiz(g, f, o) {
     var s = f ? 1 : -1;               // yürüyüş salınımı
-    golge(g, 20, 57, 12, 3.5);
-    // bacaklar + botlar
+    golge(g, 20, 58, 9, 3);
+    // bacaklar (uzun) + botlar
     g.fillStyle = o.alt;
-    g.fillRect(12, 37, 7, f ? 17 : 19);
-    g.fillRect(21, 37, 7, f ? 19 : 17);
-    g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(12, 37, 2, 17); g.fillRect(21, 37, 2, 17);
+    g.fillRect(12.5, 35, 6.5, f ? 20 : 22);
+    g.fillRect(21, 35, 6.5, f ? 22 : 20);
+    g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(12.5, 35, 1.8, f ? 20 : 22); g.fillRect(21, 35, 1.8, f ? 22 : 20);
     g.fillStyle = '#1a140f';
-    g.fillRect(11, f ? 53 : 55, 8, 4); g.fillRect(21, f ? 55 : 53, 8, 4);
-    // gövde
+    g.fillRect(11.5, f ? 55 : 57, 7.5, 3); g.fillRect(21, f ? 57 : 55, 7.5, 3);
+    g.fillStyle = '#5a4a3a'; g.fillRect(12, f ? 56 : 58, 6, 0.8); g.fillRect(21.5, f ? 58 : 56, 6, 0.8);
+    // boyun
+    g.fillStyle = o.ten; g.fillRect(17.5, 14.5, 5, 4);
+    // gövde (omuzlar geniş, bel ince)
     g.fillStyle = o.ust;
-    g.fillRect(10, 20, 20, 19);
-    var tg = g.createLinearGradient(10, 0, 30, 0);
+    g.fillRect(11, 18, 18, 17);
+    var tg = g.createLinearGradient(11, 0, 29, 0);
     tg.addColorStop(0, 'rgba(0,0,0,0.3)'); tg.addColorStop(0.5, 'rgba(0,0,0,0)'); tg.addColorStop(1, 'rgba(0,0,0,0.2)');
-    g.fillStyle = tg; g.fillRect(10, 20, 20, 19);
-    g.fillStyle = 'rgba(0,0,0,0.22)'; g.fillRect(10, 20, 4, 19); g.fillRect(26, 20, 4, 3);
-    g.fillStyle = 'rgba(255,255,255,0.13)'; g.fillRect(22, 21, 6, 9);
+    g.fillStyle = tg; g.fillRect(11, 18, 18, 17);
+    g.fillStyle = 'rgba(255,255,255,0.13)'; g.fillRect(22, 19, 5, 8);
     if (o.yelek) {
-      g.fillStyle = o.yelek; g.fillRect(11, 22, 18, 11);
-      g.fillStyle = 'rgba(0,0,0,0.2)'; g.fillRect(11, 22, 3, 11);
-      g.fillStyle = '#222'; g.fillRect(19, 22, 2, 11);
+      g.fillStyle = o.yelek; g.fillRect(12, 19, 16, 10);
+      g.fillStyle = 'rgba(0,0,0,0.2)'; g.fillRect(12, 19, 2.5, 10);
+      g.fillStyle = '#222'; g.fillRect(19.2, 19, 1.6, 10);
     }
-    // kemer
-    g.fillStyle = '#2b2118'; g.fillRect(10, 36, 20, 3);
-    g.fillStyle = '#c9a227'; g.fillRect(18, 36, 4, 3);
-    // kollar (yürürken sallanır)
+    // kemer ve toka
+    g.fillStyle = '#2b2118'; g.fillRect(11, 33, 18, 2.2);
+    g.fillStyle = '#c9a227'; g.fillRect(18.5, 33, 3, 2.2);
+    // kollar (ince, yürürken sallanır)
     g.fillStyle = o.ust;
-    g.fillRect(5, 21 + s, 6, 14); g.fillRect(29, 21 - s, 6, 14);
-    g.fillStyle = 'rgba(0,0,0,0.2)'; g.fillRect(5, 21 + s, 2, 14); g.fillRect(29, 21 - s, 2, 14);
+    g.fillRect(7.5, 19 + s, 3.5, 14); g.fillRect(29, 19 - s, 3.5, 14);
+    g.fillStyle = 'rgba(0,0,0,0.2)'; g.fillRect(7.5, 19 + s, 1.2, 14); g.fillRect(29, 19 - s, 1.2, 14);
     g.fillStyle = o.ten;
-    g.fillRect(5, 34 + s, 6, 5); g.fillRect(29, 34 - s, 6, 5);
-    // boyun ve kafa
+    g.fillRect(7.6, 32.5 + s, 3.4, 3.5); g.fillRect(29.2, 32.5 - s, 3.4, 3.5);
+    // kafa (küçük ve oval)
     g.fillStyle = o.ten;
-    g.fillRect(17, 17, 6, 4);
-    g.beginPath(); g.ellipse(20, 12, 7, 8, 0, 0, Math.PI * 2); g.fill();
-    var hg = g.createRadialGradient(17, 9, 1, 20, 12, 9);
+    g.beginPath(); g.ellipse(20, 9.5, 5.6, 6.4, 0, 0, Math.PI * 2); g.fill();
+    var hg = g.createRadialGradient(18, 6.5, 1, 20, 9.5, 7);
     hg.addColorStop(0, 'rgba(255,255,255,0.22)'); hg.addColorStop(1, 'rgba(0,0,0,0.28)');
-    g.fillStyle = hg; g.beginPath(); g.ellipse(20, 12, 7, 8, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.ellipse(20, 18, 5, 2, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = hg; g.beginPath(); g.ellipse(20, 9.5, 5.6, 6.4, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.ellipse(20, 15.5, 4, 1.5, 0, 0, Math.PI * 2); g.fill();
     // saç veya kask
     if (o.kask) {
       g.fillStyle = o.kaskRenk || '#4b5a33';
-      g.beginPath(); g.arc(20, 11, 8.5, Math.PI, 0); g.fill();
-      g.fillRect(11, 11, 18, 2.5);
-      g.fillStyle = 'rgba(255,255,255,0.15)'; g.fillRect(15, 5, 6, 2);
+      g.beginPath(); g.arc(20, 8.5, 6.9, Math.PI, 0); g.fill();
+      g.fillRect(13.1, 8.5, 13.8, 2);
+      g.fillStyle = 'rgba(255,255,255,0.15)'; g.fillRect(16, 3.5, 5, 1.5);
     } else {
       g.fillStyle = o.saç;
-      g.beginPath(); g.ellipse(20, 8, 7.8, 4.8, 0, Math.PI, 0); g.fill();
-      g.fillRect(12, 8, 3, 6); g.fillRect(25, 8, 3, 4);
+      g.beginPath(); g.ellipse(20, 5.5, 6.2, 3.6, 0, Math.PI, 0); g.fill();
+      g.fillRect(14, 5.5, 2.4, 4.5); g.fillRect(23.6, 5.5, 2.4, 3);
     }
     // gözler
     if (o.zombi) {
       g.fillStyle = '#120a0a';
-      g.beginPath(); g.ellipse(16.5, 13, 2.4, 2, 0, 0, Math.PI * 2); g.fill();
-      g.beginPath(); g.ellipse(23.5, 13, 2.4, 2, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.ellipse(17, 9.8, 1.9, 1.6, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.ellipse(23, 9.8, 1.9, 1.6, 0, 0, Math.PI * 2); g.fill();
       g.fillStyle = o.goz;
-      daire(g, 16.5, 13, 1.1); daire(g, 23.5, 13, 1.1);
+      daire(g, 17, 9.8, 0.9); daire(g, 23, 9.8, 0.9);
     } else {
       g.fillStyle = '#fff';
-      g.beginPath(); g.ellipse(16.5, 12.5, 2, 1.3, 0, 0, Math.PI * 2); g.fill();
-      g.beginPath(); g.ellipse(23.5, 12.5, 2, 1.3, 0, 0, Math.PI * 2); g.fill();
-      g.fillStyle = '#222'; daire(g, 16.8, 12.5, 0.8); daire(g, 23.2, 12.5, 0.8);
-      g.fillStyle = '#4a2a18'; g.fillRect(14, 10, 5, 1); g.fillRect(21, 10, 5, 1);
+      g.beginPath(); g.ellipse(17, 9.3, 1.6, 1.1, 0, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.ellipse(23, 9.3, 1.6, 1.1, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#222'; daire(g, 17.2, 9.3, 0.7); daire(g, 22.8, 9.3, 0.7);
+      g.fillStyle = '#4a2a18'; g.fillRect(15, 7.2, 4, 0.8); g.fillRect(21, 7.2, 4, 0.8);
     }
     // burun ve ağız
-    g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(19.3, 14, 1.4, 2.5);
+    g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(19.4, 10.5, 1.2, 2);
     g.fillStyle = o.zombi ? '#2a0f0f' : '#7a4a3a';
-    if (o.zombi) g.fillRect(16, 18, 8, 2); else g.fillRect(17, 18, 6, 1);
-    // yüz: kaşlar, dudak, yanak, burun kenarı
+    if (o.zombi) g.fillRect(17, 13.5, 6, 1.6); else g.fillRect(17.5, 13.5, 5, 0.8);
     if (!o.zombi) {
-      g.fillStyle = o.saç; g.fillRect(14.5, 9, 4, 1); g.fillRect(21.5, 9, 4, 1);
-      g.fillStyle = 'rgba(200,90,70,0.25)'; g.fillRect(13, 14, 3, 2); g.fillRect(24, 14, 3, 2);
-      g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(18.5, 15, 1, 1); g.fillRect(21, 15, 1, 1);
-      g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(18, 15.5, 4, 1);
+      g.fillStyle = 'rgba(200,90,70,0.25)'; g.fillRect(14, 11, 2.5, 2); g.fillRect(23.5, 11, 2.5, 2);
     }
     // kıyafet kıvrımları ve cepler
     g.fillStyle = 'rgba(0,0,0,0.15)';
-    g.fillRect(14, 26, 1, 8); g.fillRect(25, 25, 1, 9); g.fillRect(19, 24, 1, 5);
-    g.fillStyle = 'rgba(0,0,0,0.2)'; g.fillRect(13, 28, 4, 4); g.fillRect(23, 28, 4, 4);
-    g.fillStyle = 'rgba(255,255,255,0.08)'; g.fillRect(13, 28, 4, 1); g.fillRect(23, 28, 4, 1);
-    // botlarda bağcık
-    g.fillStyle = '#5a4a3a'; g.fillRect(12, f ? 54 : 56, 6, 1); g.fillRect(22, f ? 56 : 54, 6, 1);
+    g.fillRect(14, 22, 1, 9); g.fillRect(25, 21, 1, 10); g.fillRect(19, 21, 1, 6);
+    g.fillStyle = 'rgba(0,0,0,0.2)'; g.fillRect(13, 25, 4, 4); g.fillRect(22.5, 25, 4, 4);
+    g.fillStyle = 'rgba(255,255,255,0.08)'; g.fillRect(13, 25, 4, 1); g.fillRect(22.5, 25, 4, 1);
     // yara ve yırtıklar
     if (o.yara) {
       g.fillStyle = '#7a0f0f';
-      g.fillRect(24, 9, 3, 1.2); g.fillRect(12, 21, 2, 6); g.fillRect(27, 27, 2, 4);
+      g.fillRect(24, 5, 2.5, 1); g.fillRect(12, 20, 1.5, 6); g.fillRect(27, 27, 1.5, 4);
     }
     if (o.yirtik) {
       g.fillStyle = o.ten;
-      g.fillRect(24, 26, 4, 3); g.fillRect(13, 31, 3, 2);
-    }
-    if (o.saç && o.zombi) {
-      g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(22, 4, 2, 3);
-      g.fillStyle = o.saç; g.fillRect(9, 9, 2, 6); g.fillRect(29, 6, 2, 7); g.fillRect(16, 2, 2, 4);
+      g.fillRect(23, 22, 4, 3); g.fillRect(12, 29, 3, 2);
     }
     if (o.zombi) {
       g.fillStyle = 'rgba(201,164,102,0.6)';
-      g.fillRect(10, 26, 3, 2); g.fillRect(25, 33, 4, 2); g.fillRect(13, 46, 3, 2); g.fillRect(22, 40, 2, 2);
+      g.fillRect(9, 24, 2.5, 1.5); g.fillRect(24, 30, 3, 1.5); g.fillRect(13, 44, 2.5, 1.5); g.fillRect(22, 40, 1.5, 1.5);
+      g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(22, 2, 1.5, 2.5);
+      g.fillStyle = o.saç; g.fillRect(9, 6, 1.8, 5); g.fillRect(29, 4, 1.8, 6); g.fillRect(16, 1, 1.8, 3);
     }
   }
 
   var SPR_ASKER = sprite(40, 60, 2, function (g, f) {
     insanCiz(g, f, { ten: '#e8b887', ust: '#c9a66b', alt: '#7a6a48', yelek: '#5c4b2e', saç: '#3a2a1a', goz: '#fff', kask: true, kaskRenk: '#8a7a50', zombi: false });
     g.fillStyle = '#b23a2e'; g.fillRect(12, 20, 16, 3); g.fillRect(24, 22, 3, 8);
-    g.fillStyle = '#222'; g.fillRect(31, 8, 3, 24); g.fillRect(29, 27, 6, 4);
-    g.fillStyle = '#2b2118'; g.fillRect(11, 16, 1, 7); g.fillRect(28, 16, 1, 7);
-    g.fillStyle = '#4a3b26'; g.fillRect(24, 36, 5, 3); g.fillRect(11, 36, 5, 3);
-    g.fillStyle = '#7a6a48'; g.fillRect(14, 21, 1, 14); g.fillRect(25, 21, 1, 14);
+    g.fillStyle = '#222'; g.fillRect(31.5, 12, 2.5, 22); g.fillRect(29, 30, 5, 3.5);
+    g.fillStyle = '#2b2118'; g.fillRect(11, 14, 1, 5); g.fillRect(28, 14, 1, 5);
+    g.fillStyle = '#4a3b26'; g.fillRect(23, 36, 4, 2.5); g.fillRect(13, 36, 4, 2.5);
+    g.fillStyle = '#7a6a48'; g.fillRect(14, 19, 1, 15); g.fillRect(25, 19, 1, 15);
   });
 
   function zombiCiz(g, f, ten, gomlek, pantolon, gozRenk) {

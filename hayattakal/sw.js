@@ -1,5 +1,5 @@
 // Çevrimdışı çalışma: önce ağ, ağ yoksa önbellek. Sürüm adı yayinla.sh ile değişir.
-var CACHE = 'hayattakal-0.3.6';
+var CACHE = 'hayattakal-0.3.7';
 var DOSYALAR = ['./', './index.html', './oyun.js', './manifest.json', './ikon.svg'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(DOSYALAR); }));

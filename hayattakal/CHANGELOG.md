@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## v0.3.7 (2026-11-11)
+- Karakter oranları gerçekçi: küçük kafa, uzun bacak, ince kol ve geniş omuz
+
 ## v0.3.6 (2026-11-11)
 - Asker ve zombiler yaklaşık yüzde 40 büyütüldü (çarpışma aynı)
 
