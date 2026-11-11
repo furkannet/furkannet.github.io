@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#1a1b26">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Hayatta Kal</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="ikon.svg" type="image/svg+xml">
+<style>
+html,body{margin:0;height:100%;background:#1a1b26;overflow:hidden;overscroll-behavior:none;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#fff}
+canvas{position:fixed;left:0;top:0;display:block;touch-action:none}
+.ekran{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(12,12,22,.74);text-align:center;padding:16px;box-sizing:border-box;overflow:auto;z-index:10}
+.gizli{display:none!important}
+h1{font-size:clamp(42px,12vw,86px);line-height:.92;margin:0 0 4px;color:#ffd166;text-shadow:0 4px 0 #b5442b,0 8px 18px #000;letter-spacing:2px}
+h2{font-size:clamp(30px,8vw,52px);margin:0;text-shadow:0 4px 12px #000}
+p{margin:0;font-size:18px}
+button{font:inherit;font-weight:800;border:0;border-radius:14px;padding:12px 22px;color:#fff;background:#2f8cff;box-shadow:0 4px 0 #1b5bb0;cursor:pointer;touch-action:manipulation;font-size:18px}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 #1b5bb0}
+button:disabled{opacity:.4;cursor:default}
+.buyuk{font-size:28px;padding:16px 52px;background:#2ecc71;box-shadow:0 5px 0 #1e8c4c}
+.satir{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+#yukselt button{width:112px;font-size:14px;padding:10px 6px;background:#3a3f5c;box-shadow:0 4px 0 #23263a;line-height:1.35}
+#yukselt button b{font-size:16px;color:#ffd166}
+.para{color:#ffd166;font-weight:800;font-size:22px}
+.kucuk{opacity:.75;font-size:14px}
+.surum{position:fixed;bottom:calc(8px + env(safe-area-inset-bottom));right:12px;opacity:.55;font-size:12px}
+#duraklatBtn{position:fixed;top:calc(30px + env(safe-area-inset-top));right:10px;width:44px;height:44px;padding:0;font-size:16px;background:rgba(0,0,0,.45);box-shadow:none;border-radius:10px;z-index:5}
+#guncelBtn{background:#ff9f1c;box-shadow:0 4px 0 #b86e00;font-size:15px}
+</style>
+</head>
+<body>
+<canvas id="oyun"></canvas>
+<button id="duraklatBtn" class="gizli" aria-label="Duraklat">❚❚</button>
+
+<div id="menu" class="ekran">
+  <h1>HAYATTA<br>KAL</h1>
+  <p id="mBolum">Bölüm 1</p>
+  <button id="oynaBtn" class="buyuk">OYNA</button>
+  <div class="para">◆ <span id="mPara">0</span></div>
+  <div id="yukselt" class="satir"></div>
+  <p class="kucuk">Telefonda parmağını kaydır, bilgisayarda fareyi ya da ◀ ▶ tuşlarını kullan.</p>
+  <button id="guncelBtn" class="gizli">Yeni sürüm var! Yenile</button>
+  <div class="surum" id="surum"></div>
+</div>
+
+<div id="durak" class="ekran gizli">
+  <h2>Duraklatıldı</h2>
+  <div class="satir">
+    <button id="devamBtn" class="buyuk">DEVAM</button>
+  </div>
+  <button id="menuBtn1">Menü</button>
+</div>
+
+<div id="sonuc" class="ekran gizli">
+  <h2 id="sBaslik">Bölüm Geçildi!</h2>
+  <p id="sYazi"></p>
+  <p class="para" id="sPara"></p>
+  <button id="sonucBtn" class="buyuk">DEVAM</button>
+  <button id="menuBtn2">Menü</button>
+</div>
+
+<script src="oyun.js"></script>
+</body>
+</html>

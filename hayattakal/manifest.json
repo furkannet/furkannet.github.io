@@ -1,0 +1,11 @@
+{
+  "name": "Hayatta Kal",
+  "short_name": "Hayatta Kal",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#1a1b26",
+  "theme_color": "#1a1b26",
+  "icons": [{ "src": "ikon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
