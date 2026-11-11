@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## v0.3.0 (2026-11-11)
+- Özgün çöl teması: kumlu ortam, kaktüs ve enkaz dekorları, çöl kıyafetli askerler (özgün tasarım)
+
 ## v0.2.1 (2026-11-11)
 - Görsel: parlak gökyüzü, canlı kapı renkleri, daha canlı çimen ve yol
 

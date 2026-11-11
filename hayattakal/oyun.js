@@ -1,7 +1,7 @@
 'use strict';
 // Hayatta Kal - bağımlılıksız, düşük donanım dostu koşucu + hayatta kalma oyunu.
 // Sürüm numarasını elle değiştirme: yayinla.sh yönetir.
-var SURUM = '0.2.1';
+var SURUM = '0.3.0';
 
 (function () {
   // ================= TUVAL VE GÖRÜNÜM =================
@@ -48,7 +48,7 @@ var SURUM = '0.2.1';
     focal = Math.min(W * 0.9, H * 0.85);
     camH = (H * 0.8 - ufuk) * KAMERA / focal;
     gokGrad = ctx.createLinearGradient(0, 0, 0, ufuk);
-    gokGrad.addColorStop(0, '#2a2f7a'); gokGrad.addColorStop(0.6, '#c2457a'); gokGrad.addColorStop(1, '#ffb36b');
+    gokGrad.addColorStop(0, '#1d3a5f'); gokGrad.addColorStop(0.6, '#e88a5a'); gokGrad.addColorStop(1, '#ffd38a');
     sisGrad = ctx.createLinearGradient(0, ufuk, 0, ufuk + H * 0.09);
     sisGrad.addColorStop(0, 'rgba(201,120,80,0.95)'); sisGrad.addColorStop(1, 'rgba(201,120,80,0)');
     sonFont = -1;
@@ -141,7 +141,7 @@ var SURUM = '0.2.1';
     g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.ellipse(20, 18, 5, 2, 0, 0, Math.PI * 2); g.fill();
     // saç veya kask
     if (o.kask) {
-      g.fillStyle = '#4b5a33';
+      g.fillStyle = o.kaskRenk || '#4b5a33';
       g.beginPath(); g.arc(20, 11, 8.5, Math.PI, 0); g.fill();
       g.fillRect(11, 11, 18, 2.5);
       g.fillStyle = 'rgba(255,255,255,0.15)'; g.fillRect(15, 5, 6, 2);
@@ -181,7 +181,8 @@ var SURUM = '0.2.1';
   }
 
   var SPR_ASKER = sprite(40, 60, 2, function (g, f) {
-    insanCiz(g, f, { ten: '#e8b887', ust: '#2d6cdf', alt: '#1d2b4f', yelek: '#41522c', saç: '#3a2a1a', goz: '#fff', kask: true, zombi: false });
+    insanCiz(g, f, { ten: '#e8b887', ust: '#c9a66b', alt: '#7a6a48', yelek: '#5c4b2e', saç: '#3a2a1a', goz: '#fff', kask: true, kaskRenk: '#8a7a50', zombi: false });
+    g.fillStyle = '#b23a2e'; g.fillRect(12, 20, 16, 3); g.fillRect(24, 22, 3, 8);
     g.fillStyle = '#222'; g.fillRect(31, 8, 3, 24); g.fillRect(29, 27, 6, 4);
   });
 
@@ -211,27 +212,24 @@ var SURUM = '0.2.1';
     g.fillStyle = '#ffd166'; g.fillRect(16, 14, 8, 16);
   });
   var SPR_AGAC = sprite(40, 70, 1, function (g) {
-    golge(g, 20, 66, 12, 3);
-    g.strokeStyle = '#4a3527'; g.lineCap = 'round';
-    g.lineWidth = 6; g.beginPath(); g.moveTo(20, 66); g.lineTo(20, 26); g.stroke();
-    g.lineWidth = 3; g.beginPath();
-    g.moveTo(20, 40); g.lineTo(8, 24); g.moveTo(20, 34); g.lineTo(32, 18);
-    g.moveTo(20, 28); g.lineTo(14, 8); g.moveTo(26, 24); g.lineTo(34, 10); g.moveTo(12, 28); g.lineTo(4, 22);
-    g.stroke();
+    golge(g, 20, 66, 9, 3);
+    g.fillStyle = '#4f7a3a';
+    g.fillRect(16, 14, 8, 52); g.beginPath(); g.arc(20, 14, 4, Math.PI, 0); g.fill();
+    g.fillRect(6, 34, 6, 6); g.fillRect(6, 24, 4, 12); g.fillRect(28, 42, 6, 6); g.fillRect(30, 30, 4, 14);
+    g.fillStyle = 'rgba(255,255,255,0.15)'; g.fillRect(17, 16, 2, 46);
   });
   var SPR_ARABA = sprite(64, 34, 1, function (g) {
     golge(g, 32, 30, 30, 4);
-    g.fillStyle = '#6e3b2a'; g.fillRect(2, 14, 60, 14);
-    g.fillStyle = '#8a4a33'; g.fillRect(12, 4, 36, 12);
-    g.fillStyle = '#29303a'; g.fillRect(15, 7, 13, 8); g.fillRect(31, 7, 14, 8);
+    g.fillStyle = '#8c5a3a'; g.fillRect(2, 14, 60, 14);
+    g.fillStyle = '#a86e48'; g.fillRect(12, 4, 36, 12);
+    g.fillStyle = '#2f2a26'; g.fillRect(15, 7, 13, 8); g.fillRect(31, 7, 14, 8);
     g.fillStyle = '#1a1a1a'; daire(g, 14, 29, 5); daire(g, 50, 29, 5);
-    g.fillStyle = '#4d2a1e'; g.fillRect(20, 18, 10, 4);
+    g.fillStyle = '#5c3a22'; g.fillRect(20, 18, 10, 4);
   });
   var SPR_VARIL = sprite(24, 32, 1, function (g) {
     golge(g, 12, 29, 10, 3);
-    g.fillStyle = '#b3381e'; g.fillRect(3, 3, 18, 26);
-    g.fillStyle = '#7d2614'; g.fillRect(3, 9, 18, 3); g.fillRect(3, 20, 18, 3);
-    g.fillStyle = '#ffd166'; g.fillRect(9, 13, 6, 6);
+    g.fillStyle = '#8a7a6a'; g.beginPath(); g.moveTo(3, 30); g.lineTo(5, 8); g.lineTo(12, 2); g.lineTo(19, 9); g.lineTo(21, 30); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(10, 6, 4, 18);
   });
   var DEKOR = [SPR_AGAC, SPR_ARABA, SPR_VARIL];
   var DEKOR_W = [1.6, 2.6, 0.6], DEKOR_H = [2.8, 1.4, 0.8];
@@ -644,10 +642,10 @@ var SURUM = '0.2.1';
   // ================= ÇİZİM =================
   function arkaPlan() {
     ctx.fillStyle = gokGrad; ctx.fillRect(0, 0, W, ufuk + 1);
-    ctx.fillStyle = '#5e7a2a'; ctx.fillRect(0, ufuk, W, H - ufuk);
+    ctx.fillStyle = '#c9a466'; ctx.fillRect(0, ufuk, W, H - ufuk);
 
     // çim şeritleri (hız hissi)
-    ctx.fillStyle = '#4d6622';
+    ctx.fillStyle = '#b08d56';
     var z0 = Math.floor(camZ / 3) * 3, y1, y2;
     for (; z0 < camZ + UZAK; z0 += 3) {
       if (((z0 / 3) & 1) === 0) continue;
@@ -661,14 +659,14 @@ var SURUM = '0.2.1';
     var x1, x2, yN, x3, x4, yF;
     P(-YOL - 0.2, zN); x1 = sx; yN = sy; P(YOL + 0.2, zN); x2 = sx;
     P(YOL + 0.2, zF); x3 = sx; yF = sy; P(-YOL - 0.2, zF); x4 = sx;
-    ctx.fillStyle = '#8a8078';
+    ctx.fillStyle = '#7a5c3c';
     ctx.beginPath(); ctx.moveTo(x1, yN); ctx.lineTo(x2, yN); ctx.lineTo(x3, yF); ctx.lineTo(x4, yF); ctx.fill();
     P(-YOL, zN); x1 = sx; P(YOL, zN); x2 = sx; P(YOL, zF); x3 = sx; P(-YOL, zF); x4 = sx;
-    ctx.fillStyle = '#4f4c49';
+    ctx.fillStyle = '#5e4630';
     ctx.beginPath(); ctx.moveTo(x1, yN); ctx.lineTo(x2, yN); ctx.lineTo(x3, yF); ctx.lineTo(x4, yF); ctx.fill();
 
     // orta çizgi
-    ctx.fillStyle = '#d8c25a';
+    ctx.fillStyle = '#f3e3b5';
     ctx.beginPath();
     var zz = Math.floor(camZ / 4) * 4;
     for (; zz < camZ + UZAK; zz += 4) {
