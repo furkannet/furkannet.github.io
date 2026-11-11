@@ -1,7 +1,7 @@
 'use strict';
 // Hayatta Kal - bağımlılıksız, düşük donanım dostu koşucu + hayatta kalma oyunu.
 // Sürüm numarasını elle değiştirme: yayinla.sh yönetir.
-var SURUM = '0.3.3';
+var SURUM = '0.3.4';
 
 (function () {
   // ================= TUVAL VE GÖRÜNÜM =================
@@ -185,6 +185,20 @@ var SURUM = '0.3.3';
     g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(19.3, 14, 1.4, 2.5);
     g.fillStyle = o.zombi ? '#2a0f0f' : '#7a4a3a';
     if (o.zombi) g.fillRect(16, 18, 8, 2); else g.fillRect(17, 18, 6, 1);
+    // yüz: kaşlar, dudak, yanak, burun kenarı
+    if (!o.zombi) {
+      g.fillStyle = o.saç; g.fillRect(14.5, 9, 4, 1); g.fillRect(21.5, 9, 4, 1);
+      g.fillStyle = 'rgba(200,90,70,0.25)'; g.fillRect(13, 14, 3, 2); g.fillRect(24, 14, 3, 2);
+      g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(18.5, 15, 1, 1); g.fillRect(21, 15, 1, 1);
+      g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(18, 15.5, 4, 1);
+    }
+    // kıyafet kıvrımları ve cepler
+    g.fillStyle = 'rgba(0,0,0,0.15)';
+    g.fillRect(14, 26, 1, 8); g.fillRect(25, 25, 1, 9); g.fillRect(19, 24, 1, 5);
+    g.fillStyle = 'rgba(0,0,0,0.2)'; g.fillRect(13, 28, 4, 4); g.fillRect(23, 28, 4, 4);
+    g.fillStyle = 'rgba(255,255,255,0.08)'; g.fillRect(13, 28, 4, 1); g.fillRect(23, 28, 4, 1);
+    // botlarda bağcık
+    g.fillStyle = '#5a4a3a'; g.fillRect(12, f ? 54 : 56, 6, 1); g.fillRect(22, f ? 56 : 54, 6, 1);
     // yara ve yırtıklar
     if (o.yara) {
       g.fillStyle = '#7a0f0f';
@@ -194,7 +208,10 @@ var SURUM = '0.3.3';
       g.fillStyle = o.ten;
       g.fillRect(24, 26, 4, 3); g.fillRect(13, 31, 3, 2);
     }
-    if (o.saç && o.zombi) { g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(22, 4, 2, 3); }
+    if (o.saç && o.zombi) {
+      g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(22, 4, 2, 3);
+      g.fillStyle = o.saç; g.fillRect(9, 9, 2, 6); g.fillRect(29, 6, 2, 7); g.fillRect(16, 2, 2, 4);
+    }
     if (o.zombi) {
       g.fillStyle = 'rgba(201,164,102,0.6)';
       g.fillRect(10, 26, 3, 2); g.fillRect(25, 33, 4, 2); g.fillRect(13, 46, 3, 2); g.fillRect(22, 40, 2, 2);
@@ -205,6 +222,9 @@ var SURUM = '0.3.3';
     insanCiz(g, f, { ten: '#e8b887', ust: '#c9a66b', alt: '#7a6a48', yelek: '#5c4b2e', saç: '#3a2a1a', goz: '#fff', kask: true, kaskRenk: '#8a7a50', zombi: false });
     g.fillStyle = '#b23a2e'; g.fillRect(12, 20, 16, 3); g.fillRect(24, 22, 3, 8);
     g.fillStyle = '#222'; g.fillRect(31, 8, 3, 24); g.fillRect(29, 27, 6, 4);
+    g.fillStyle = '#2b2118'; g.fillRect(11, 16, 1, 7); g.fillRect(28, 16, 1, 7);
+    g.fillStyle = '#4a3b26'; g.fillRect(24, 36, 5, 3); g.fillRect(11, 36, 5, 3);
+    g.fillStyle = '#7a6a48'; g.fillRect(14, 21, 1, 14); g.fillRect(25, 21, 1, 14);
   });
 
   function zombiCiz(g, f, ten, gomlek, pantolon, gozRenk) {

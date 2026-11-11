@@ -1,5 +1,8 @@
 # Değişiklikler
 
+## v0.3.4 (2026-11-11)
+- Karakterler: yüzde kaşlar ve dudak, kıyafet kıvrımları, asker kemer ve çene bağı, zombilerde dağınık saç
+
 ## v0.3.3 (2026-11-11)
 - Grafik: uzak kum tepeleri (paralaks), zombilerde kum lekeleri, kapılarda parlama, bölüm geçince altın ışık
 
